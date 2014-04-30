@@ -1,0 +1,7 @@
+.settings
+logs/*.log
+settings.xml
+.netbeans
+test/results/*.properties
+test/results/*.html
+test/results/*.log
