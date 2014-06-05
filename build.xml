@@ -50,10 +50,14 @@
 		<!-- Copy Static Assets -->	
       	<copy todir="${dir.build}/${project.name}">
         	<fileset file="readme.txt" />
-      		<fileset file="box.json" />
         	<fileset file="changelog.txt" />
         	<fileset file="license.txt" />
         	<fileset file="instructions.txt" />
+        </copy>
+        
+        <!-- Copy Static Assets -->	
+      	<copy todir="${dir.build}">
+        	<fileset file="box.json" />
         </copy>
         
         <!-- Replace Build Numbers -->
