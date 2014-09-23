@@ -5,3 +5,5 @@ settings.xml
 test/results/*.properties
 test/results/*.html
 test/results/*.log
+tests/results
+modules/javaloader

@@ -18,28 +18,75 @@ PLEASE NOTE THAT YOU MUST ALTER THE RUNNER'S URL ACCORDING TO YOUR ENVIRONMENT.
 -->
 <project name="testbox-ant-runner" default="run" basedir=".">
 	
-	<!-- THE URL TO THE RUNNER, PLEASE CHANGE ACCORDINGLY-->
-	<property name="url.runner"			value="http://cf10cboxdev.jfetmac/coldbox/ApplicationTemplates/testbox-runner/runner.cfm?"/>
 	<!-- FILL OUT THE BUNDLES TO TEST, CAN BE A LIST OF CFC PATHS -->
-	<property name="test.bundles"		value="" />
+	<property name="test.bundles"				value="" />
 	<!-- FILL OUT THE DIRECTORY MAPPING TO TEST -->
-	<property name="test.directory"		value="test.specs" />
+	<property name="test.directory"				value="tests.specs" />
+	<property name="test.directoryExcludes"		value="" />
 	<!-- FILL OUT IF YOU WANT THE DIRECTORY RUNNER TO RECURSE OR NOT -->
-	<property name="test.recurse"		value="true" />
+	<property name="test.recurse"				value="true" />
 	<!-- FILL OUT THE LABELS YOU WANT TO APPLY TO THE TESTS -->
-	<property name="test.labels"		value="" />
+	<property name="test.labels"				value="" />
 	<!-- FILL OUT THE TEST REPORTER YOU WANT, AVAILABLE REPORTERS ARE: ANTJunit, Codexwiki, console, dot, doc, json, junit, min, raw, simple, tap, text, xml -->
-	<property name="test.reporter"		value="simple" />
+	<property name="test.reporter"				value="simple" />
 	<!-- FILL OUT WHERE REPORTING RESULTS ARE STORED --> 
-	<property name="report.dir"  		value="${basedir}/results" />
-	<property name="junitreport.dir"  	value="${report.dir}/junitreport" />
-
+	<property name="report.dir"  				value="${basedir}/results" />
+	<property name="junitreport.dir"  			value="${report.dir}/junitreport" />
+	
+	<!-- Load Contrib Tasks -->
+	<path id="cp">
+		<fileset dir="../workbench/lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	<!-- Define Tasks -->
+	<taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="cp" />
+	
+	<!-- init -->
 	<target name="init" description="Init the tests">
+		<!-- Default environment check, if not passed via -Denvironment -->
+		<condition property="environment" value="local">
+			<not><isset property="environment" /></not>
+		</condition>
+		<if>
+			<available file="test-${environment}.properties" />
+			<then>
+				<!-- Load env properties -->
+				<echo>Loading properties from environment: ${environment}</echo>
+				<loadproperties srcFile="test-${environment}.properties"/>
+			</then>
+		</if>
+		<!-- Load root properties -->
+		<echo>Loading base properties</echo>
+		<loadproperties srcFile="test.properties"/>
+		
+		<!-- Start Init -->
+		<delete dir="${report.dir}" />
 		<mkdir dir="${junitreport.dir}" />
+		<!-- update permissions -->
+		<antcall target="update.permissions" /> 
+		<!-- Timestamp and latest run -->
 		<tstamp prefix="start">
 			<format property="TODAY" pattern="MM-dd-YYYY hh:mm:ss aa"/>
 		</tstamp>
 		<concat destfile="${report.dir}/latestrun.log">Tests ran at ${start.TODAY}</concat>
+	</target>
+	
+	<!-- update permissions on reports -->
+	<target name="update.permissions" description="Update staging server permissions">
+		<!-- Integration permissions -->
+		<if>
+			<equals arg1="${environment}" arg2="auto" />
+			<then>
+				<chmod file="${report.dir}/**" perm="g+wxrs" type="both" verbose="true" />
+				<chmod file="${report.dir}/**" perm="o+wrs"  type="both" verbose="true" />
+				<chown owner="stg-ortus" verbose="true">
+					<fileset dir="${report.dir}" />
+				</chown>
+			</then>
+			<else>
+			</else>
+		</if>
 	</target>
 	
 	<target name="run" depends="init" description="Run our tests and produce awesome results">  
@@ -54,8 +101,8 @@ PLEASE NOTE THAT YOU MUST ALTER THE RUNNER'S URL ACCORDING TO YOUR ENVIRONMENT.
 			 - Recurse
 			 - Labels
 		-->
-		<get dest="${report.dir}/results.html" 
-			 src="${url.runner}&amp;directory=${test.directory}&amp;recurse=${test.recurse}&amp;reporter=${test.reporter}&amp;labels=${test.labels}&amp;propertiesSummary=true" 
+		<get src="${url.runner}&amp;" 
+			 dest="${report.dir}/results.html" 
 			 verbose="true"/>
 		
 		<!-- Bundles Runner
@@ -75,6 +122,8 @@ PLEASE NOTE THAT YOU MUST ALTER THE RUNNER'S URL ACCORDING TO YOUR ENVIRONMENT.
         <property file="${report.dir}/TEST.properties"/>
         <!-- Echo them out -->
         <echoproperties regex="^(test|total).*"/>
+		<!-- update permissions again -->
+		<antcall target="update.permissions" /> 
         <!-- Fail build if they failed -->
         <fail if="test.failed"/>
 	</target>
@@ -93,8 +142,8 @@ PLEASE NOTE THAT YOU MUST ALTER THE RUNNER'S URL ACCORDING TO YOUR ENVIRONMENT.
 			 - ReportPath : The path where reports will be stored, by default it is the ${report.dir} directory.
 		-->
 		<get dest="${report.dir}/results.xml" 
-			 src="${url.runner}&amp;directory=${test.directory}&amp;recurse=${test.recurse}&amp;reporter=ANTJunit&amp;labels=${test.labels}&amp;reportPath=${report.dir}&amp;propertiesSummary=true" 
-			 verbose="true"/>
+					 src="${url.runner}&amp;directory=${test.directory}&amp;recurse=${test.recurse}&amp;reporter=ANTJunit&amp;labels=${test.labels}&amp;reportPath=${report.dir}&amp;propertiesSummary=true&amp;directoryExcludes=${test.directoryExcludes}&amp;cfid=123&amp;cftoken=123" 
+					 verbose="true"/>
 		
 		<!-- Bundles Runner
 			You can also run tests for specific bundles by using the runner with the bundles params
@@ -108,8 +157,18 @@ PLEASE NOTE THAT YOU MUST ALTER THE RUNNER'S URL ACCORDING TO YOUR ENVIRONMENT.
 			 src="${url.runner}&amp;bundles=${test.bundles}&amp;reporter=${test.reporter}&amp;labels=${test.labels}&amp;propertiesSummary=true" 
 			 verbose="true"/>
 		 -->
-
-		 <!-- Create fancy junit reports -->
+		
+		<!-- Check if file was created -->
+		<if>
+			<available file="${report.dir}/TEST.properties" />
+			<then>
+			</then>
+			<else>
+				<fail message="Build failed as ${report.dir}/TEST.properties was not found!" />
+			</else>
+		</if>
+		
+		<!-- Create fancy junit reports -->
 		<junitreport todir="${junitreport.dir}">  
 			<fileset dir="${report.dir}">  
 				<include name="TEST-*.xml"/>  
@@ -119,10 +178,23 @@ PLEASE NOTE THAT YOU MUST ALTER THE RUNNER'S URL ACCORDING TO YOUR ENVIRONMENT.
 			</report>
 		</junitreport> 
 		
+		<!-- Create fancy junit reports -->
+		<junitreport todir="${junitreport.dir}">  
+			<fileset dir="${report.dir}">  
+				<include name="TEST-*.xml"/>  
+			</fileset>
+			<report format="noframes" todir="${junitreport.dir}">
+				<param name="TITLE" expression="My Awesome TestBox Results"/>
+			</report>
+		</junitreport> 
+		<!-- Rename report -->
+		<move file="${junitreport.dir}/junit-noframes.html" tofile="${junitreport.dir}/index.html" />
         <!-- Read Result Properties -->
         <property file="${report.dir}/TEST.properties"/>
         <!-- Echo them out -->
         <echoproperties regex="^(test|total).*"/>
+		<!-- update permissions again -->
+		<antcall target="update.permissions" /> 
         <!-- Fail build if they failed -->
         <fail if="test.failed"/>
 	</target>

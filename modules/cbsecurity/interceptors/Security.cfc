@@ -342,7 +342,7 @@ For the latest usage, please visit the wiki.
 			var thisElement = "";
 
 			// Try to locate the file path
-			rulesFile = locateFilePath(getProperty('rulesFile'));
+			rulesFile = controller.locateFilePath(getProperty('rulesFile'));
 			// Validate Location
 			if( len(rulesFile) eq 0 ){
 				$throw('Security Rules File could not be located: #getProperty('rulesFile')#. Please check again.','','Security.rulesFileNotFound');
@@ -378,7 +378,7 @@ For the latest usage, please visit the wiki.
 			var node 	  	= "";
 
 			// Try to locate the file path
-			rulesFile = locateFilePath( getProperty('rulesFile') );
+			rulesFile = controller.locateFilePath( getProperty('rulesFile') );
 			// Validate Location
 			if( len( rulesFile ) eq 0 ){
 				$throw(message='Security Rules File could not be located: #getProperty('rulesFile')#. Please check again.', type='Security.rulesFileNotFound' );

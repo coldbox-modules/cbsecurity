@@ -1,0 +1,24 @@
+{
+	"name" 		: "ColdBox Security",
+	"author" 	: "Luis Majano <lmajano@ortussolutions.com",
+	"version"	: "1.0.0.@build.number@",
+	"slug"		: "cbsecurity",
+	"type"		: "modules",
+	"homepage"	: "http://www.coldbox.org",
+	"documentation"		: "http://wiki.coldbox.org/wiki/Security.cfm",
+	"repository"		: { "type" : "git", "url" : "https://github.com/ColdBox/cbox-security" },
+	"shortDescription"	: "This module provides a security rule engine for ColdBox Apps",
+	"license"			: [ 
+		{ "type" : "Apache2", "url" : "http://www.apache.org/licenses/LICENSE-2.0.html" } 
+	],
+	"contributors"		: [
+		"Brad Wood <bdw429s@gmail.com>", "Curt Gratz <gratz@computerknowhow.com>"
+	],
+	"engines"	: [
+		{ "type" : "railo", "version" : ">4.1" },
+		{ "type" : "adobe", "version" : ">9.02" }
+	],
+	"dependencies" 	:{
+		"javaloader" : "1.0.0"
+	}
+}

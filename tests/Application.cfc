@@ -9,8 +9,8 @@ component{
 	this.sessionManagement = true;
 
 	// any mappings go here, we create one that points to the root called test.
-	this.mappings[ "/test" ] = getDirectoryFromPath( getCurrentTemplatePath() );
-	rootPath = REReplaceNoCase( this.mappings[ "/test" ], "test(\\|/)", "" );
+	this.mappings[ "/tests" ] = getDirectoryFromPath( getCurrentTemplatePath() );
+	rootPath = REReplaceNoCase( this.mappings[ "/tests" ], "tests(\\|/)", "" );
 	this.mappings[ "/root" ]   = rootPath;
 	this.mappings[ "/cbsecurity" ]   = rootPath & "/modules/cbsecurity";
 

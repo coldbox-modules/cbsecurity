@@ -3,7 +3,8 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 	function setup(){
 		// setup properties
 		super.setup();
-		mockController.$("getAppHash", hash( "appHash" ) ).$("getAppRootPath", expandPath("/root") );
+		mockController.$( "getAppHash", hash( "appHash" ) )
+			.$( "getAppRootPath", expandPath("/root") );
 
 		security = interceptor;
 	}
@@ -50,7 +51,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 	}
 
 	function testRegisterValidator(){
-		var validator = CreateObject("component","test.resources.security");
+		var validator = CreateObject("component","tests.resources.security");
 
 		/* Register */
 		security.registerValidator( validator );
@@ -77,8 +78,9 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 	}
 
 	function testLoadJSONRules(){
-		interceptor.getProperties().rulesFile = expandPath( "/test/resources/security.json.cfm" );
+		interceptor.getProperties().rulesFile = expandPath( "/tests/resources/security.json.cfm" );
 		interceptor.getProperties().rules = [];
+		mockController.$( "locateFilePath", interceptor.getProperties().rulesFile );
 		makePublic( interceptor, "loadJSONRules" );
 		interceptor.loadJSONRules();
 

@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<project name="build" basedir="../" default="build">
+	<!-- Version: UPDATE ON EACH RELEASE AS NEEDED -->
+	<property name="project.name" 		value="antisamy" />
+	<property name="module.name" 		value="antisamy" />
+	<property name="project.version" 	value="1.0.0"/>
+	<property name="groupID" 			value="ortussolutions" />
+	
+	<!-- Build Labels -->
+	<tstamp prefix="start"/>
+	<path id="cp">
+		<fileset dir="workbench/lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	<!-- Define Tasks -->
+	<taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="cp" />
+	<!-- Import Box-Repo Tasks -->
+	<import><url url="https://raw.githubusercontent.com/Ortus-Solutions/box-tasks/master/box-repo.xml"/></import>
+	
+	<!-- Init -->
+	<target name="init" description="Init Build" unless="src.isInit">
+		<!-- Default environment check, if not passed via -Denvironment -->
+		<condition property="environment" value="local">
+			<not><isset property="environment" /></not>
+		</condition>
+		<if>
+			<available file="workbench/build-${environment}.properties" />
+			<then>
+				<!-- Load env properties -->
+				<echo>Loading properties from environment: ${environment}</echo>
+				<loadproperties srcFile="workbench/build-${environment}.properties"/>
+			</then>
+		</if>
+		<!-- Load root properties -->
+		<echo>Loading base properties</echo>
+		<loadproperties srcFile="workbench/build.properties"/>
+
+		<!-- Build Number -->
+		<propertyfile file="workbench/build.number" comment="Build Number for ANT. Edit not!">
+			<entry key="build.number" 
+					type="int" 
+			     	operation="+"
+					pattern="00000"
+			     	default="1" />
+		</propertyfile>
+		<property file="workbench/build.number"/>
+		
+		<!-- Build Label -->
+		<property name="build.label" value="${project.name}-${project.version}.${build.number}-${start.DSTAMP}${start.TSTAMP}"/>
+		<!-- Get Build Dependencies -->
+ 		<antcall target="getDependencies" />
+		<!-- Cleanup + Init -->
+		<delete dir="${dir.build}" />
+		<mkdir dir="${dir.build}"/>
+		<chmod file="${dir.build}/**" perm="og+wrs" type="both" />
+		<!-- Mark as init -->
+		<property name="src.isInit" value="true" />
+	</target>
+	
+	<!-- Build Project -->
+	<target name="build" depends="init,run-tests" description="Build the project">
+		<!-- Copy build ID -->
+		<concat destfile="${dir.build}/${build.label}">Built on ${start.TODAY}</concat>
+		
+		<!-- Copy src -->	
+      	<copy todir="${dir.build}" encoding="UTF-8">
+        	<fileset dir="modules/${module.name}" />
+        </copy>
+        <!-- Copy readme -->
+        <copy todir="${dir.build}" encoding="UTF-8" file="readme.txt" overwrite="true" />
+        
+        <!-- Replace Build Numbers -->
+		<replaceregexp match='@build.number@' replace="${build.number}" flags="ig" byline="true" encoding="UTF-8">
+		  <fileset dir="${dir.build}" />
+		</replaceregexp>
+		
+		<!-- Execute APIDocs -->
+        <get dest="${dir.build}/colddoc.html" src="${url.api}${project.version}&amp;path=${dir.api}" verbose="true"/>
+        <delete file="${dir.build}/colddoc.html" />
+        
+        <!-- Zip it -->
+		<zip destfile="${dir.exports}/${project.name}-apidocs-${project.version}.zip" basedir="${dir.build}/apidocs"></zip>
+		<zip destfile="${dir.exports}/${project.name}-${project.version}.zip" basedir="${dir.build}"></zip>
+		
+		<!-- Build Checksum -->
+		<checksum forceoverwrite="true" fileext=".md5">
+			<fileset dir="${dir.exports}">
+				<include name="*.zip" />
+			</fileset>
+		</checksum>
+		
+		<!-- Create Box Repo From macrodef -->
+		<box-repo location="${dir.artifacts}/${project.name}" 
+				  artifactID="${project.name}" 
+				  buildID="${build.number}"
+				  groupID="${groupID}"
+				  latest="${project.version}"
+				  classifiers="apidocs"/>
+				  
+		<!-- Cleanup -->
+		<delete dir="${dir.build}" />
+	</target>
+	
+	<!-- Run Tests For Platform -->
+    <target name="run-tests" description="Run TestBox Tests" depends="init">
+    	<echo>Running Tests for ${project.name}</echo>
+    	<!-- Run for Core -->
+    	<subant target="run-junit">
+          	<fileset dir="tests" includes="test.xml"/>
+    		<property name="environment" value="${environment}" />
+        </subant>
+    </target>
+    
+    <!-- Get Dependencies -->
+	<target name="getDependencies" description="Get all the necessary dependencies for the build process using: box.repo.url">
+		<!-- Download Dependency via box task-->
+ 		<box-dependency artifactID="javaloader" 
+ 						groupID="ortussolutions/coldbox-modules" 
+ 						version="${javaloader.version}"
+ 						extension="zip"
+ 						destination="modules/javaloader"
+ 						unzip="true"
+ 						removeZip="true"/>
+	</target>
+
+</project>
