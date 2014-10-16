@@ -47,7 +47,7 @@
 		<property file="workbench/build.number"/>
 		
 		<!-- Build Label -->
-		<property name="build.label" value="${project.name}-${project.version}.${build.number}-${start.DSTAMP}${start.TSTAMP}"/>
+		<property name="build.label" value="${project.name}-${project.version}+${build.number}-${start.DSTAMP}${start.TSTAMP}"/>
 		<!-- Get Build Dependencies -->
  		<antcall target="getDependencies" />
 		<!-- Cleanup + Init -->

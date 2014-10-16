@@ -23,7 +23,7 @@
 			missingTemplateHandler	= "",
 
 			//Extension Points
-			ApplicationHelper 				= "",
+			UDFLibraryFile 				= "",
 			coldboxExtensionsLocation 	= "",
 			modulesExternalLocation		= [],
 			pluginsExternalLocation 	= "",
