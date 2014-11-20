@@ -68,7 +68,7 @@
         	<fileset dir="modules/${module.name}" />
         </copy>
         <!-- Copy readme -->
-        <copy todir="${dir.build}" encoding="UTF-8" file="readme.txt" overwrite="true" />
+        <copy todir="${dir.build}" encoding="UTF-8" file="readme.md" overwrite="true" />
         
         <!-- Replace Build Numbers -->
 		<replaceregexp match='@build.number@' replace="${build.number}" flags="ig" byline="true" encoding="UTF-8">
