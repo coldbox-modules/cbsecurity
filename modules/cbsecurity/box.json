@@ -1,7 +1,7 @@
 {
 	"name" 		: "ColdBox Security",
 	"author" 	: "Luis Majano <lmajano@ortussolutions.com",
-	"version"	: "1.0.0+@build.number@",
+	"version"	: "1.0.0",
 	"slug"		: "cbsecurity",
 	"type"		: "modules",
 	"homepage"	: "http://www.coldbox.org",
