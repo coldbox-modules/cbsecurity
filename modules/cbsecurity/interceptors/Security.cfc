@@ -32,10 +32,10 @@ For the latest usage, please visit the wiki.
 			}
 			// Rule Source Checks
 			if( not propertyExists('rulesSource') ){
-				$throw(message="The rulesSource property has not been set.",type="interceptors.Security.SettingUndefinedException");
+				throw(message="The rulesSource property has not been set.",type="interceptors.Security.SettingUndefinedException");
 			}
 			if( not reFindnocase("^(xml|db|ioc|ocm|model|json)$",getProperty('rulesSource')) ){
-				$throw(message="The rules source you set is invalid: #getProperty('rulesSource')#.",
+				throw(message="The rules source you set is invalid: #getProperty('rulesSource')#.",
 					  detail="The valid sources are xml,db,ioc, model, ocm, or json",
 					  type="interceptors.Security.SettingUndefinedException");
 			}
@@ -121,7 +121,7 @@ For the latest usage, please visit the wiki.
 					instance.validator = oValidator;
 				}
 				catch(Any e){
-					$throw("Error creating validator",e.message & e.detail, "Security.validatorCreationException");
+					throw("Error creating validator",e.message & e.detail, "Security.validatorCreationException");
 				}
 			}
 			// See if using validator from ioc
@@ -130,7 +130,7 @@ For the latest usage, please visit the wiki.
 					instance.validator = getPlugin("IOC").getBean(getProperty('validatorIOC'));
 				}
 				catch(Any e){
-					$throw("Error creating validatorIOC",e.message & e.detail, "Security.validatorCreationException");
+					throw("Error creating validatorIOC",e.message & e.detail, "Security.validatorCreationException");
 				}
 			}
 			// See if using validator from Model Integration
@@ -139,7 +139,7 @@ For the latest usage, please visit the wiki.
 					instance.validator = getModel(getProperty('validatorModel') );
 				}
 				catch(Any e){
-					$throw("Error creating validatorModel: #getProperty('validatorModel')#",e.message & e.detail & e.tagContext.toString(), "interceptors.Security.validatorCreationException");
+					throw("Error creating validatorModel: #getProperty('validatorModel')#",e.message & e.detail & e.tagContext.toString(), "interceptors.Security.validatorCreationException");
 				}
 			}
 
@@ -280,7 +280,7 @@ For the latest usage, please visit the wiki.
 				instance.validator = arguments.validatorObject;
 			}
 			else{
-				$throw(message="Validator object does not have a 'userValidator' method, I can only register objects with this interface method.",type="Security.validatorException");
+				throw(message="Validator object does not have a 'userValidator' method, I can only register objects with this interface method.",type="Security.validatorException");
 			}
 		</cfscript>
 	</cffunction>
@@ -345,7 +345,7 @@ For the latest usage, please visit the wiki.
 			rulesFile = controller.locateFilePath(getProperty('rulesFile'));
 			// Validate Location
 			if( len(rulesFile) eq 0 ){
-				$throw('Security Rules File could not be located: #getProperty('rulesFile')#. Please check again.','','Security.rulesFileNotFound');
+				throw('Security Rules File could not be located: #getProperty('rulesFile')#. Please check again.','','Security.rulesFileNotFound');
 			}
 
 			// Set the correct expanded path now
@@ -381,7 +381,7 @@ For the latest usage, please visit the wiki.
 			rulesFile = controller.locateFilePath( getProperty('rulesFile') );
 			// Validate Location
 			if( len( rulesFile ) eq 0 ){
-				$throw(message='Security Rules File could not be located: #getProperty('rulesFile')#. Please check again.', type='Security.rulesFileNotFound' );
+				throw(message='Security Rules File could not be located: #getProperty('rulesFile')#. Please check again.', type='Security.rulesFileNotFound' );
 			}
 			// Set the correct expanded path now
 			setProperty( 'rulesFile', rulesFile );
@@ -389,7 +389,7 @@ For the latest usage, please visit the wiki.
 			jsonRules = fileRead( rulesFile );
 			// Validate JSON
 			if( not isJSON( jsonRules ) ){
-				$throw(message='Security Rules File is not valid JSON: #getProperty('rulesFile')#. Please check again.', type='Security.invalidJSON' );
+				throw(message='Security Rules File is not valid JSON: #getProperty('rulesFile')#. Please check again.', type='Security.invalidJSON' );
 			}
 			jsonRules = deserializeJSON( jsonRules );
 			// Loop And create Rules
@@ -557,7 +557,7 @@ For the latest usage, please visit the wiki.
 				{
 					// Check if file property exists
 					if( not propertyExists('rulesFile') ){
-						$throw(message="Missing setting for #getProperty('rulesSource')# source: rulesFile ", type="Security.settingUndefinedException");
+						throw(message="Missing setting for #getProperty('rulesSource')# source: rulesFile ", type="Security.settingUndefinedException");
 					}
 					break;
 				}//end of xml check
@@ -565,10 +565,10 @@ For the latest usage, please visit the wiki.
 				case "db" :
 				{
 					if( not propertyExists('rulesDSN') ){
-						$throw(message="Missing setting for DB source: rulesDSN ", type="Security.settingUndefinedException");
+						throw(message="Missing setting for DB source: rulesDSN ", type="Security.settingUndefinedException");
 					}
 					if( not propertyExists('rulesTable') ){
-						$throw(message="Missing setting for DB source: rulesTable ", type="Security.settingUndefinedException");
+						throw(message="Missing setting for DB source: rulesTable ", type="Security.settingUndefinedException");
 					}
 					/* Optional DB settings are checked when loading rules. */
 					break;
@@ -577,10 +577,10 @@ For the latest usage, please visit the wiki.
 				case "ioc" :
 				{
 					if( not propertyExists('rulesBean') ){
-						$throw(message="Missing setting for ioc source: rulesBean ", type="Security.settingUndefinedException");
+						throw(message="Missing setting for ioc source: rulesBean ", type="Security.settingUndefinedException");
 					}
 					if( not propertyExists('rulesBeanMethod') ){
-						$throw(message="Missing setting for ioc source: rulesBeanMethod ", type="Security.settingUndefinedException");
+						throw(message="Missing setting for ioc source: rulesBeanMethod ", type="Security.settingUndefinedException");
 					}
 
 					break;
@@ -589,10 +589,10 @@ For the latest usage, please visit the wiki.
 				case "model" :
 				{
 					if( not propertyExists('rulesModel') ){
-						$throw(message="Missing setting for model source: rulesModel ", type="Security.settingUndefinedException");
+						throw(message="Missing setting for model source: rulesModel ", type="Security.settingUndefinedException");
 					}
 					if( not propertyExists('rulesModelMethod') ){
-						$throw(message="Missing setting for model source: rulesModelMethod ", type="Security.settingUndefinedException");
+						throw(message="Missing setting for model source: rulesModelMethod ", type="Security.settingUndefinedException");
 					}
 
 					break;
@@ -601,7 +601,7 @@ For the latest usage, please visit the wiki.
 				case "ocm" :
 				{
 					if( not propertyExists('rulesOCMkey') ){
-						$throw(message="Missing setting for ioc source: rulesOCMkey ", type="Security.settingUndefinedException");
+						throw(message="Missing setting for ioc source: rulesOCMkey ", type="Security.settingUndefinedException");
 					}
 					break;
 				}//end of OCM check
