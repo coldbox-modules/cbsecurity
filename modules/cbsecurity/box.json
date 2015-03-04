@@ -1,7 +1,7 @@
 {
 	"name" 		: "ColdBox Security",
 	"author" 	: "Luis Majano <lmajano@ortussolutions.com",
-	"version"	: "1.0.1",
+	"version"	: "1.0.2",
 	"slug"		: "cbsecurity",
 	"type"		: "modules",
 	"homepage"	: "http://www.coldbox.org",
@@ -16,6 +16,7 @@
 	],
 	"engines"	: [
 		{ "type" : "railo", "version" : ">4.1" },
+		{ "type" : "lucee", "version" : ">4.5" },
 		{ "type" : "adobe", "version" : ">9.02" }
 	]
 }

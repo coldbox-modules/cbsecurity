@@ -121,13 +121,13 @@ For the latest usage, please visit the wiki.
 					instance.validator = oValidator;
 				}
 				catch(Any e){
-					throw("Error creating validator",e.message & e.detail, "Security.validatorCreationException");
+					throw("Error creating validator",e.message & e.detail, "Security.validatorCreationException" );
 				}
 			}
 			// See if using validator from ioc
 			else if( propertyExists('validatorIOC') ){
 				try{
-					instance.validator = getPlugin("IOC").getBean(getProperty('validatorIOC'));
+					instance.validator = getInstance( dsl="ioc:" & getProperty( 'validatorIOC' ) );
 				}
 				catch(Any e){
 					throw("Error creating validatorIOC",e.message & e.detail, "Security.validatorCreationException");
@@ -136,7 +136,7 @@ For the latest usage, please visit the wiki.
 			// See if using validator from Model Integration
 			else if( propertyExists('validatorModel') ){
 				try{
-					instance.validator = getModel(getProperty('validatorModel') );
+					instance.validator = getInstance( getProperty( 'validatorModel' ) );
 				}
 				catch(Any e){
 					throw("Error creating validatorModel: #getProperty('validatorModel')#",e.message & e.detail & e.tagContext.toString(), "interceptors.Security.validatorCreationException");
@@ -229,7 +229,7 @@ For the latest usage, please visit the wiki.
 						//Redirect
 						if( arguments.event.isSES() ){
 							// Save the secured URL
-							rc._securedURL = arguments.event.buildLink( linkTo=reReplace( cgi.path_info, "^/", "" ) );
+							rc._securedURL = arguments.event.buildLink( URI=reReplace( cgi.path_info, "^/", "" ) );
 						}
 						else{
 							// Save the secured URL
@@ -437,7 +437,7 @@ For the latest usage, please visit the wiki.
 		<cfset var bean = "">
 
 		<!--- Get rules from IOC Container --->
-		<cfset bean = getPlugin("IOC").getBean(getproperty('rulesBean'))>
+		<cfset bean = getInstance( dsl="ioc:" & getproperty('rulesBean') )>
 
 		<cfif propertyExists('rulesBeanArgs') and len(getProperty('rulesBeanArgs'))>
 			<cfset qRules = evaluate("bean.#getproperty('rulesBeanMethod')#( #getProperty('rulesBeanArgs')# )")>
@@ -477,23 +477,21 @@ For the latest usage, please visit the wiki.
 		<cfset setProperty('rulesLoaded',true)>
 	</cffunction>
 
-	<!--- Load XML Rules --->
-	<cffunction name="loadOCMRules" access="private" returntype="void" output="false" hint="Load rules from the OCM">
-		<cfset var qRules = "">
+	<!--- Load OCM Rules --->
+	<cffunction name="loadOCMRules" access="private" returntype="void" output="false" hint="Load rules from the default cache manager">
+		<cfscript>
+			var qRules = getCache().get( getProperty( "rulesOCMKey" ) );
 
-		<!--- Get Rules From OCM --->
-		<cfif not getColdboxOCM().lookup(getProperty('rulesOCMkey'))>
-			<cfthrow message="No key #getProperty('rulesOCMKey')# in the OCM." type="Security.invalidOCMKey">
-		<cfelse>
-			<cfset qRules = getColdboxOCM().get(getProperty('rulesOCMKey'))>
-		</cfif>
+			if( isNull( qRules ) ){
+				throw( message="No key #getProperty('rulesOCMKey')# in the Default Cache.", type="Security.invalidOCMKey" );
+			} 
 
-		<!--- validate query --->
-		<cfset validateRulesQuery(qRules)>
+			validateRulesQuery( qRules );
 
-		<!--- let's setup the array of struct Rules now --->
-		<cfset setProperty('rules', queryToArray(qRules))>
-		<cfset setProperty('rulesLoaded',true)>
+			// let's setup the array of struct Rules now --->
+			setProperty( 'rules', queryToArray( qRules ) );
+			setProperty( 'rulesLoaded',true);
+		</cfscript>
 	</cffunction>
 
 	<!--- ValidateRules Query --->
