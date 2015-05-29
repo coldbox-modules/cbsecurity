@@ -7,3 +7,5 @@ test/results/*.html
 test/results/*.log
 tests/results
 modules/javaloader
+testbox
+coldbox

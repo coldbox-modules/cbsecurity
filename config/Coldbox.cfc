@@ -80,6 +80,12 @@
 			}
 		];
 
+		// CB Security
+		cbSecurity = {
+			rulesSource = "json",
+			rulesFile 	= "config/security.json.cfm"
+		};
+
 	}
 </cfscript>
 </cfcomponent>
