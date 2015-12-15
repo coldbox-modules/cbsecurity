@@ -75,16 +75,19 @@
 		  <fileset dir="${dir.build}" />
 		</replaceregexp>
 		
-		<!-- Execute APIDocs -->
-        <get dest="${dir.build}/colddoc.html" src="${url.api}${project.version}&amp;path=${dir.api}" verbose="true"/>
-        <delete file="${dir.build}/colddoc.html" />
+		<!-- Api Docs -->
+		<antcall target="build.apidocs" />
         
         <!-- Zip it -->
-		<zip destfile="${dir.exports}/${project.name}-apidocs-${project.version}.zip" basedir="${dir.build}/apidocs"></zip>
 		<zip destfile="${dir.exports}/${project.name}-${project.version}.zip" basedir="${dir.build}"></zip>
 		
 		<!-- Build Checksum -->
 		<checksum forceoverwrite="true" fileext=".md5">
+			<fileset dir="${dir.exports}">
+				<include name="*.zip" />
+			</fileset>
+		</checksum>
+		<checksum forceoverwrite="true" algorithm="SHA-512" fileext=".sha512">
 			<fileset dir="${dir.exports}">
 				<include name="*.zip" />
 			</fileset>
@@ -102,6 +105,33 @@
 		<delete dir="${dir.build}" />
 	</target>
 	
+	<!-- Build API Docs -->
+ 	<target name="build.apidocs" description="Builds the api docs" depends="init">
+ 		<!-- Create API apidocs dir -->
+ 		<mkdir dir="${dir.api}"/>
+ 		<!-- Install dependencies for docs -->
+		<exec executable="box" dir="${dir.apidocs}">
+			<arg line="install --force" />
+		</exec>
+		<!-- Startup the apidocs server, wait for a few seconds for server to start -->
+		<exec executable="box" dir="${dir.apidocs}">
+			<arg line="server start openbrowser=false --force port=${apidocs.port}" />
+		</exec>
+		<sleep seconds="5"/>
+		<!-- Get the apidocs now -->
+		<get dest="${dir.build}/docbox.html" 
+			 src="${url.apidocs}?version=${project.version}&amp;path=${dir.api}" 
+			 verbose="true"
+			 retries="5"/>
+		<!-- stop server -->
+		<exec executable="box" dir="${dir.apidocs}">
+			<arg line="server stop" />
+		</exec>
+		<delete file="${dir.build}/docbox.html" />
+		<!-- Zip API Docs -->
+		<zip destfile="${dir.exports}/${project.name}-apidocs-${project.version}.zip" basedir="${dir.api}"></zip>
+ 	</target>
+	
 	<!-- Run Tests For Platform -->
     <target name="run-tests" description="Run TestBox Tests" depends="init">
     	<echo>Running Tests for ${project.name}</echo>
@@ -114,14 +144,10 @@
     
     <!-- Get Dependencies -->
 	<target name="getDependencies" description="Get all the necessary dependencies for the build process using: box.repo.url">
-		<!-- Download Dependency via box task
- 		<box-dependency artifactID="javaloader" 
- 						groupID="ortussolutions/coldbox-modules" 
- 						version="${javaloader.version}"
- 						extension="zip"
- 						destination="modules/javaloader"
- 						unzip="true"
- 						removeZip="true"/>-->
+		<!-- Install dependencies for project -->
+		<exec executable="box" dir="${basedir}">
+			<arg line="install" />
+		</exec>
 	</target>
 
 </project>
