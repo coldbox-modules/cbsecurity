@@ -1,4 +1,8 @@
 {
+    "name":"CBSecurity Builder",
+    "version":"1.0.0",
+    "slug" : "cbsecurity-shell",
+    "private":false,
     "dependencies":{
         "coldbox":"4.1.0+00002"
     },
@@ -7,6 +11,6 @@
         "testbox":"testbox"
     },
     "devDependencies":{
-        "testbox":"2.0.0"
+        "testbox":"2.2.0"
     }
 }

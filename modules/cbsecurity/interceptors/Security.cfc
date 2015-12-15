@@ -1,13 +1,8 @@
 ﻿<!-----------------------------------------------------------------------
 ********************************************************************************
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
-www.coldbox.org | www.luismajano.com | www.ortussolutions.com
+www.ortussolutions.com
 ********************************************************************************
-
-Author     :	Luis Majano
-Date        :	02/29/2008
-Description :
-
 This interceptor provides security to an application. It is very flexible
 and customizable. It bases off on the ability to secure events by creating
 rules. This interceptor will then try to match a rule to the incoming event

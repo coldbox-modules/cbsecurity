@@ -1,6 +1,6 @@
 #WELCOME TO THE COLDBOX SECURITY MODULE
 
-This module will provide your application with a security rule engine. For more information visit the documentation here: http://wiki.coldbox.org/wiki/Security.cfm
+This module will provide your application with a security rule engine. For more information visit the documentation here: https://github.com/ColdBox/cbox-security/wiki
 
 ##LICENSE
 Apache License, Version 2.0.
@@ -8,7 +8,7 @@ Apache License, Version 2.0.
 ##IMPORTANT LINKS
 - https://github.com/ColdBox/cbox-security
 - http://www.coldbox.org/forgebox/view/cbsecurity
-- http://wiki.coldbox.org/wiki/Security.cfm
+- https://github.com/ColdBox/cbox-security/wiki
 
 ##SYSTEM REQUIREMENTS
 - Lucee 4.5+
@@ -23,7 +23,7 @@ Just drop into your **modules** folder or use CommandBox to install
 
 You will then need to configure the interceptor via the `cbsecurity` settings in your main `ColdBox.cfc` or you can also declare the interceptor manually by leveraging the class: `cbsecurity.interceptors.Security`.  If you define the `cbsecurity` settings, then the module will load the interceptor automatically for you with those settings.
 
-You can find all the documentation here: http://wiki.coldbox.org/wiki/Security.cfm
+You can find all the documentation here: https://github.com/ColdBox/cbox-security/wiki
 
 ## Security Rules
 Security rules can come from xml, json, query, memory or custom locations.  You will find some examples in this module's `config` folder.

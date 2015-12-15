@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+##1.2.0 
+* Updated documentation
+* Updated doc references
+* New docs build process
+* Update root builder dependencies
+
 ##1.1.0
 * Updated documentation
 * Ability for interceptor to auto-register via new `cbsecurity` settings in master config.

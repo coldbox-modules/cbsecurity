@@ -1,14 +1,13 @@
 <cfparam name="url.version" default="0">
-<cfparam name="url.path" 	default="#expandPath( "./CBSecurity-APIDocs" )#">
+<cfparam name="url.path" 	default="#expandPath( "./cbsecurity-APIDocs" )#">
 <cfscript>
-	docName = "CBSecurity-APIDocs";
-	base = expandPath( "/cbsecurity" );
-
-	colddoc 	= new ColdDoc();
-	strategy 	= new colddoc.strategy.api.HTMLAPIStrategy( url.path, "CBSecurity v#url.version#" );
-	colddoc.setStrategy( strategy );
-
-	colddoc.generate( inputSource=base, outputDir=url.path, inputMapping="cbsecurity" );
+	docName = "cbsecurity-APIDocs";
+	base 	= expandPath( "/cbsecurity" );
+	docbox 	= new docbox.DocBox( properties = {
+		projectTitle 	= "cbsecurity v#url.version#",
+		outputDir 		= url.path
+	} );
+	docbox.generate( source=base, mapping="cbsecurity" );
 </cfscript>
 
 <!---

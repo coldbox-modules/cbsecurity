@@ -42,7 +42,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root"{
 			it( "should protect the index", function(){
 				var event = execute( event="admin.index", renderResults=true );
 				// should have protected it
-				debug( event.getCollection() );
+				//debug( event.getCollection() );
 				expect(	"main.index" ).toBe( event.getValue( "setNextEvent_event" ) );
 			});
 

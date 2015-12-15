@@ -1,11 +1,11 @@
 {
 	"name" 		: "ColdBox Security",
-	"author" 	: "Luis Majano <lmajano@ortussolutions.com",
-	"version"	: "1.1.0",
+	"author" 	: "Luis Majano <lmajano@ortussolutions.com>",
+	"version"	: "1.2.0",
 	"slug"		: "cbsecurity",
 	"type"		: "modules",
 	"homepage"	: "https://github.com/ColdBox/cbox-security",
-	"documentation"		: "http://wiki.coldbox.org/wiki/Security.cfm",
+	"documentation"		: "https://github.com/ColdBox/cbox-security/wiki",
 	"repository"		: { "type" : "git", "url" : "https://github.com/ColdBox/cbox-security" },
 	"shortDescription"	: "This module provides a security rule engine for ColdBox Apps",
 	"license"			: [ 
