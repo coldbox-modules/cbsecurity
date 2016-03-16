@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ColdBox/cbox-security.svg?branch=development)](https://travis-ci.org/ColdBox/cbox-security)
+
 #WELCOME TO THE COLDBOX SECURITY MODULE
 
 This module will provide your application with a security rule engine. For more information visit the documentation here: https://github.com/ColdBox/cbox-security/wiki
