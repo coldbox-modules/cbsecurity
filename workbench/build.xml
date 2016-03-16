@@ -3,7 +3,7 @@
 	<!-- Version: UPDATE ON EACH RELEASE AS NEEDED -->
 	<property name="project.name" 		value="cbsecurity" />
 	<property name="module.name" 		value="cbsecurity" />
-	<property name="project.version" 	value="1.2.0"/>
+	<property name="project.version" 	value="1.3.0"/>
 	<property name="groupID" 			value="ortussolutions" />
 	
 	<!-- Build Labels -->
@@ -70,7 +70,10 @@
         <!-- Copy readme -->
         <copy todir="${dir.build}" encoding="UTF-8" file="readme.md" overwrite="true" />
         
-        <!-- Replace Build Numbers -->
+        <!-- Replace Version + Build Numbers -->
+		<replaceregexp match='@version.number@' replace="${project.version}" flags="ig" byline="true" encoding="UTF-8">
+		  <fileset dir="${dir.build}" />
+		</replaceregexp>
 		<replaceregexp match='@build.number@' replace="${build.number}" flags="ig" byline="true" encoding="UTF-8">
 		  <fileset dir="${dir.build}" />
 		</replaceregexp>
@@ -100,6 +103,9 @@
 				  groupID="${groupID}"
 				  latest="${project.version}"
 				  classifiers="apidocs"/>
+		
+		<!-- Copy over box.json to root for convenience -->
+		<copy todir="${dir.exports}" file="${dir.build}/box.json" overwrite="true" encoding="UTF-8" />
 				  
 		<!-- Cleanup -->
 		<delete dir="${dir.build}" />
@@ -123,11 +129,11 @@
 			 src="${url.apidocs}?version=${project.version}&amp;path=${dir.api}" 
 			 verbose="true"
 			 retries="5"/>
+		<delete file="${dir.build}/docbox.html" />
 		<!-- stop server -->
 		<exec executable="box" dir="${dir.apidocs}">
 			<arg line="server stop" />
 		</exec>
-		<delete file="${dir.build}/docbox.html" />
 		<!-- Zip API Docs -->
 		<zip destfile="${dir.exports}/${project.name}-apidocs-${project.version}.zip" basedir="${dir.api}"></zip>
  	</target>
@@ -135,15 +141,25 @@
 	<!-- Run Tests For Platform -->
     <target name="run-tests" description="Run TestBox Tests" depends="init">
     	<echo>Running Tests for ${project.name}</echo>
+    	<!-- Determine Test target: Are we jenkins or local or travis -->
+        <if>
+			<not><equals arg1="${environment}" arg2="auto" /></not>
+			<then>
+				<property name="test.target" value="run" />
+			</then>
+			<else>
+				<property name="test.target" value="run-junit" />
+			</else>
+		</if>
     	<!-- Run for Core -->
-    	<subant target="run-junit">
+    	<subant target="${test.target}">
           	<fileset dir="tests" includes="test.xml"/>
     		<property name="environment" value="${environment}" />
         </subant>
     </target>
     
     <!-- Get Dependencies -->
-	<target name="getDependencies" description="Get all the necessary dependencies for the build process using: box.repo.url">
+	<target name="getDependencies" description="Get all the necessary dependencies for the build process">
 		<!-- Install dependencies for project -->
 		<exec executable="box" dir="${basedir}">
 			<arg line="install" />

@@ -1,13 +1,13 @@
 <cfparam name="url.version" default="0">
-<cfparam name="url.path" 	default="#expandPath( "./cbsecurity-APIDocs" )#">
+<cfparam name="url.path" 	default="#expandPath( "./#request.moduleName#-APIDocs" )#">
 <cfscript>
-	docName = "cbsecurity-APIDocs";
-	base 	= expandPath( "/cbsecurity" );
+	docName = "#request.moduleName#-APIDocs";
+	base 	= expandPath( "/#request.moduleName#" );
 	docbox 	= new docbox.DocBox( properties = {
-		projectTitle 	= "cbsecurity v#url.version#",
+		projectTitle 	= "#request.moduleName# v#url.version#",
 		outputDir 		= url.path
 	} );
-	docbox.generate( source=base, mapping="cbsecurity" );
+	docbox.generate( source=base, mapping=request.moduleName );
 </cfscript>
 
 <!---

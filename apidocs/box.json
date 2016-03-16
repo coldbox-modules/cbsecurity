@@ -1,9 +1,45 @@
 {
     "name":"API Docs",
     "version":"1.0.0",
+    "author":"",
+    "location":"",
+    "directory":"",
+    "createPackageDirectory":true,
+    "packageDirectory":"",
+    "homepage":"",
+    "documentation":"",
+    "repository":{
+        "type":"",
+        "URL":""
+    },
+    "bugs":"",
     "slug":"module-apidocs",
+    "shortDescription":"",
+    "description":"",
+    "instructions":"",
+    "changelog":"",
+    "type":"",
+    "keywords":[
+        
+    ],
     "private":true,
-    "defaultPort":8511,
+    "engines":[
+        {
+            "type":"",
+            "version":""
+        }
+    ],
+    "defaultEngine":"",
+    "projectURL":"",
+    "license":[
+        {
+            "type":"",
+            "URL":""
+        }
+    ],
+    "contributors":[
+        
+    ],
     "dependencies":{
         "docbox":"https://github.com/Ortus-Solutions/DocBox/archive/v2.0.4.zip"
     },
@@ -16,5 +52,34 @@
     "ignore":[
         "**/.*",
         "tests"
-    ]
+    ],
+    "testbox":{
+        "runner":[
+            {
+                "default":""
+            }
+        ],
+        "labels":[
+            
+        ],
+        "reporter":"",
+        "reporterResults":"",
+        "bundles":[
+            ""
+        ],
+        "directory":{
+            "mapping":"",
+            "recurse":true
+        },
+        "watchers":[
+            
+        ],
+        "notify":{
+            "emails":[
+                
+            ],
+            "growl":"",
+            "URL":""
+        }
+    }
 }

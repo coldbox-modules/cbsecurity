@@ -1,16 +1,17 @@
 {
-    "name":"CBSecurity Builder",
+    "name":"cbsecurity Builder",
     "version":"1.0.0",
-    "slug" : "cbsecurity-shell",
+    "slug":"cbsecurity-shell",
     "private":false,
+    "defaultPort":0,
     "dependencies":{
         "coldbox":"4.1.0+00002"
+    },
+    "devDependencies":{
+        "testbox":"2.3.0+00044"
     },
     "installPaths":{
         "coldbox":"coldbox",
         "testbox":"testbox"
-    },
-    "devDependencies":{
-        "testbox":"2.2.0"
     }
 }
