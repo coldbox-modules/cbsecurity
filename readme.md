@@ -35,7 +35,7 @@ Below are the security settings you can use for this module. Remember you must c
 
 ```js
 cbsecurity = {
-    // By default all rules are evaluated as regular expressions
+    // By default all rules are evulated as regular expressions
     useRegex = true,
     // Verify queries that they have all required columns, by default it is relaxed
     queryChecks = false,
