@@ -1,18 +1,18 @@
 [![Build Status](https://travis-ci.org/ColdBox/cbox-security.svg?branch=development)](https://travis-ci.org/ColdBox/cbox-security)
 
-#WELCOME TO THE COLDBOX SECURITY MODULE
+# WELCOME TO THE COLDBOX SECURITY MODULE
 
 This module will provide your application with a security rule engine. For more information visit the documentation here: https://github.com/ColdBox/cbox-security/wiki
 
-##LICENSE
+## LICENSE
 Apache License, Version 2.0.
 
-##IMPORTANT LINKS
+## IMPORTANT LINKS
 - https://github.com/ColdBox/cbox-security
 - http://www.coldbox.org/forgebox/view/cbsecurity
 - https://github.com/ColdBox/cbox-security/wiki
 
-##SYSTEM REQUIREMENTS
+## SYSTEM REQUIREMENTS
 - Lucee 4.5+
 - ColdFusion 9+
 
@@ -89,7 +89,7 @@ interceptors = [
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
 www.coldbox.org | www.luismajano.com | www.ortussolutions.com
 ********************************************************************************
-####HONOR GOES TO GOD ABOVE ALL
+#### HONOR GOES TO GOD ABOVE ALL
 Because of His grace, this project exists. If you don't like this, then don't read it, its not for you.
 
 >"Therefore being justified by faith, we have peace with God through our Lord Jesus Christ:
@@ -99,5 +99,5 @@ And patience, experience; and experience, hope:
 And hope maketh not ashamed; because the love of God is shed abroad in our hearts by the 
 Holy Ghost which is given unto us. ." Romans 5:5
 
-###THE DAILY BREAD
+### THE DAILY BREAD
  > "I am the way, and the truth, and the life; no one comes to the Father, but by me (JESUS)" Jn 14:1-12
