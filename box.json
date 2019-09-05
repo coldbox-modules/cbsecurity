@@ -1,17 +1,26 @@
 {
-    "name":"cbsecurity Builder",
-    "version":"1.0.0",
-    "slug":"cbsecurity-shell",
-    "private":false,
-    "defaultPort":0,
-    "dependencies":{
-        "coldbox":"^4.1.0+00002"
-    },
-    "devDependencies":{
-        "testbox":"^2.3.0+00044"
-    },
-    "installPaths":{
-        "coldbox":"coldbox",
-        "testbox":"testbox"
+	"name" 		: "ColdBox Security",
+	"version"	: "2.0.0",
+	"location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbsecurity/@build.version@/cbsecurity-@build.version@.zip",
+	"author" 	: "Ortus Solutions.com <info@ortussolutions.com",
+	"slug"		: "cbsecurity",
+	"type"		: "modules",
+	"homepage"	: "https://github.com/ColdBox/cbsecurity",
+	"documentation"		: "https://coldbox-security.ortusbooks.com/",
+	"repository"		: { "type" : "git", "url" : "https://github.com/ColdBox/cbsecurity" },
+	"shortDescription"	: "This module provides a robust security engine for ColdBox applications.",
+	"license"			: [
+		{ "type" : "Apache2", "url" : "http://www.apache.org/licenses/LICENSE-2.0.html" }
+	],
+	"contributors"		: [
+		"Brad Wood <bdw429s@gmail.com>", "Curt Gratz <gratz@computerknowhow.com>"
+	],
+	"ignore":[
+        "**/.*",
+        "tests",
+        "*/.md"
+    ],
+    "scripts":{
+        "toMaster":"recipe build/toMaster.boxr"
     }
 }

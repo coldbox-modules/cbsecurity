@@ -1,0 +1,22 @@
+{
+    "name":"Tester",
+    "version":"0.0.0",
+    "slug":"tester",
+    "private":true,
+    "description":"",
+    "dependencies":{
+        "swagger-sdk":"be",
+        "coldbox":"^5.0.0"
+    },
+    "devDependencies":{
+        "testbox":"^3.0.0"
+    },
+    "installPaths":{
+        "swagger-sdk":"modules/swagger-sdk/",
+        "coldbox":"coldbox/",
+        "testbox":"testbox/"
+    },
+    "testbox":{
+        "runner":"http://localhost:60299/tests/runner.cfm"
+    }
+}

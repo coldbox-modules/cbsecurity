@@ -1,11 +1,11 @@
 [
     {
         "whitelist": "",
-        "securelist": "",
+        "securelist": "admin",
         "match": "event",
         "roles": "admin",
         "permissions": "",
-        "redirect": "user.login",
+        "redirect": "main.index",
         "useSSL": false
     }
 ]
