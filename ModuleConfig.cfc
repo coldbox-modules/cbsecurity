@@ -21,7 +21,28 @@ component {
 	function configure(){
 
 		settings = {
-
+			// Where are the rules, valid options: json,xml,db,model
+			"rulesSource" 		: "",
+			// The location of the rules file, applies to json|xml ruleSource
+			"rulesFile"			: "",
+			// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
+			"validator"			: "",
+			// If source is model, the wirebox Id to use for retrieving the rules
+			"rulesModel"		: "",
+			// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
+			"rulesModelMethod"	: "getSecurityRules",
+			// If source is db then the datasource name to use
+			"rulesDSN"			: "",
+			// If source is db then the table to get the rules from
+			"rulesTable"		: "",
+			// If source is db then the ordering of the select
+			"rulesOrderBy"		: "",
+			// If source is db then you can have your custom select SQL
+			"rulesSql" 			: "",
+			// Use regular expression matching on the rules
+			"useRegex" 			: true,
+			// Force SSL for all relocations
+			"useSSL"			: false
 		};
 
 	}
@@ -30,8 +51,8 @@ component {
 	 * Fired when the module is registered and activated.
 	 */
 	function onLoad(){
-		// Verify we have settings, else ignore loading automatically
-		if( structCount( settings ) ){
+		// If we have a source, try to load it
+		if( len( settings.rulesSource ) ){
 			controller.getInterceptorService()
 				.registerInterceptor(
 					interceptorClass		= "cbsecurity.interceptors.Security",

@@ -7,12 +7,20 @@
 * Adobe 2016,2018 Support
 * New Module Layout
 * Settings transferred to ColdBox 4/5 `moduleSettings` approach instead of root approach.
+* The `rulesModelMethod` now defaults to `getSecurityRules()`
+
+## Improvements
+
+* Migration to script and code modernization
 
 ### Compat
 
 * Adobe 11 Dropped
 * Lucee 4.5 Dropped
 * Migrate your root `cbSecurity` settings in your `config/ColdBox.cfc` to inside the `moduleSettings`
+* IOC rules support dropped
+* OCM rules support dropped
+* `validatorModel` dropped in favor of just `validator`
 
 ### Bugs
 

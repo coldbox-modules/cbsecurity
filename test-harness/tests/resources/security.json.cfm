@@ -5,8 +5,7 @@
         "match": "event",
         "roles": "admin",
         "permissions": "",
-        "redirect": "user.login",
-        "useSSL": false
+        "redirect": "user.login"
     },
     {
         "whitelist": "",

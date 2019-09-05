@@ -1,23 +1,11 @@
-﻿<cfcomponent output="false" cache="true" cachetimeout="5" cacheLastAccessTimeout="1">
-	<!--- Some Autowire stuff --->
-	<cfproperty name="myMailSettings" type="ioc">
-	<cfproperty name="myDatasource" type="ioc" scope="instance">
-	<cfproperty name="loggerPlugin" type="ioc" scope="this">
+﻿component{
 
-	<!--- Setter INjection Test. --->
-	<cffunction name="setMyDatasource" access="public" output="false" returntype="void" hint="Set MyDatasource">
-		<cfargument name="MyDatasource" type="any" required="true"/>
-		<cfset variables.setterInjection.MyDatasource = arguments.MyDatasource/>
-	</cffunction>
-
-	<cffunction name="init" access="public" returntype="security" hint="" output="false">
-		<cfscript>
+	function init(){
 		return this;
-		</cfscript>
-	</cffunction>
+	}
 
-	<cffunction name="getRules" access="public" returntype="query" hint="" output="false">
-		<cfscript>
+	function getSecurityRules(){
+
 		var qRules = queryNew( "rule_id,securelist,whitelist,roles,permissions,redirect" );
 
 		queryAddRow( qRules, 1 );
@@ -29,11 +17,17 @@
 		querySetCell( qrules, "redirect", "user.login" );
 
 		return qRules;
-		</cfscript>
-	</cffunction>
+	}
 
-	<cffunction name="userValidator" access="public" returntype="boolean" hint="Validate a user" output="false">
-		<cfargument name="rule" required="true" type="struct" hint="">
-		<cfreturn true>
-	</cffunction>
-</cfcomponent>
+	/**
+	 * This function is called once an incoming event matches a security rule.
+	 * You will receive the security rule that matched and an instance of the
+	 * ColdBox controller.
+	 *
+	 * @return True, user can continue access, false, relocation will occur.
+	 */
+	boolean function userValidator( required rule, required controller ){
+		return true;
+	}
+
+}

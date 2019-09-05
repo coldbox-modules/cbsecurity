@@ -1,91 +1,193 @@
-component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbsecurity.interceptors.Security" {
+component
+	extends="coldbox.system.testing.BaseInterceptorTest"
+	interceptor="cbsecurity.interceptors.Security"
+{
 
-	function setup(){
-		// setup properties
-		super.setup();
-		mockController.$( "getAppHash", hash( "appHash" ) ).$( "getAppRootPath", expandPath( "/root" ) );
+	/*********************************** BDD SUITES ***********************************/
 
-		security = interceptor;
+	function run( testResults, testBox ){
+		// all your suites go here.
+		describe( "Security Interceptor Unit Tests", function(){
+
+			beforeEach(function( currentSpec ){
+				// setup properties
+				setup();
+				mockController
+					.$( "getAppHash", hash( "appHash" ) )
+					.$( "getAppRootPath", expandPath( "/root" ) );
+				security = interceptor;
+
+				settings = {
+					// Where are the rules, valid options: json,xml,db,model
+					"rulesSource" 		: "",
+					// The location of the rules file, applies to json|xml ruleSource
+					"rulesFile"			: "",
+					// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
+					"validator"			: "",
+					// If source is model, the wirebox Id to use for retrieving the rules
+					"rulesModel"		: "",
+					// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
+					"rulesModelMethod"	: "getSecurityRules",
+					// If source is db then the datasource name to use
+					"rulesDSN"			: "",
+					// If source is db then the table to get the rules from
+					"rulesTable"		: "",
+					// If source is db then the ordering of the select
+					"rulesOrderBy"		: "",
+					// If source is db then you can have your custom select SQL
+					"rulesSql" 			: "",
+					// Use regular expression matching on the rules
+					"useRegex" 			: true,
+					// Force SSL for all relocations
+					"useSSL"			: false,
+					"preEventSecurity"	: false
+				};
+			});
+
+
+			it( "can configure with invalid settings", function(){
+				security.setProperties( settings );
+				expect( function(){
+					security.configure();
+				}).toThrow( "Security.NoRuleSourceDefined" );
+
+				settings.rulessource = "json";
+				expect( function(){
+					security.configure();
+				}).toThrow( "Security.RulesFileNotDefined" );
+
+				settings.rulessource = "hello";
+				expect( function(){
+					security.configure();
+				}).toThrow( "Security.InvalidRuleSource" );
+
+				settings.rulessource = "db";
+				expect( function(){
+					security.configure();
+				}).toThrow( "Security.RuleDSNNotDefined" );
+
+				settings.rulesDSN = "test";
+				expect( function(){
+					security.configure();
+				}).toThrow( "Security.RulesTableNotDefined" );
+
+				settings.rulesSource = "model";
+				expect( function(){
+					security.configure();
+				}).toThrow( "Security.RulesModelNotDefined" );
+			});
+
+			it( "can configure with valid settings", function(){
+				settings.rulesSource = "json";
+				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
+				security.setProperties( settings );
+				security.configure();
+
+				expect( security.getProperty( "rules", [] ) ).toBeEmpty();
+			});
+
+			it( "can unregister the pre event security if configured on load", function(){
+				// pre event security check
+				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
+				security
+					.$( "unregister", true )
+					.$( "getInstance", mockRuleLoader )
+					.setProperties( settings )
+					.setProperty( "preEventSecurity", false );
+				security.afterAspectsLoad( getMockRequestContext(), {} );
+				expect( security.$once( "unregister" ) ).toBeTrue();
+				expect( security.getInitialized() ).toBeTrue();
+			});
+
+			describe( "It can load many types of rules", function(){
+
+				beforeEach(function( currentSpec ){
+					// pre event security check
+					ruleLoader = createRuleLoader();
+					security.$( "getInstance", ruleLoader );
+				});
+
+				it( "can load JSON Rules", function(){
+					settings.rulesSource 		= "json";
+					settings.rulesFile 			= expandPath( "/tests/resources/security.json.cfm" );
+					settings.preEventSecurity 	= true;
+					mockController.$( "locateFilePath", settings.rulesFile );
+					security.setProperties( settings );
+
+					security.afterAspectsLoad( getMockRequestContext(), {} );
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 2 );
+					expect( security.getInitialized() ).toBeTrue();
+				});
+
+				it( "can load XML Rules", function(){
+					settings.rulesSource 		= "xml";
+					settings.rulesFile 			= expandPath( "/tests/resources/security.xml.cfm" );
+					settings.preEventSecurity 	= true;
+					mockController.$( "locateFilePath", settings.rulesFile );
+					security.setProperties( settings );
+
+					security.afterAspectsLoad( getMockRequestContext(), {} );
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 3 );
+					expect( security.getInitialized() ).toBeTrue();
+				});
+
+				it( "can load model Rules", function(){
+					settings.rulesSource 		= "model";
+					settings.rulesModel			= "tests.resources.security";
+					settings.preEventSecurity 	= true;
+					security.setProperties( settings );
+
+					security.afterAspectsLoad( getMockRequestContext(), {} );
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
+					expect( security.getInitialized() ).toBeTrue();
+				});
+
+			});
+
+			it( "can load a validator", function(){
+				settings.rulesSource = "json";
+				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
+				settings.validator = "tests.resources.security";
+				settings.preEventSecurity = true;
+				wirebox = new coldbox.system.ioc.Injector();
+				security
+					.setProperties( settings )
+					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( createRuleLoader() )
+					.$( "getInstance" ).$args( settings.validator ).$results(
+						wirebox.getInstance( settings.validator )
+					 );
+
+				security.afterAspectsLoad( getMockRequestContext(), {} );
+				expect( security.getValidator() ).toBeComponent();
+			});
+
+			it( "can detect an invalid validator", function(){
+				settings.rulesSource = "json";
+				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
+				settings.validator = "invalid.path";
+				settings.preEventSecurity = true;
+				security
+					.setProperties( settings )
+					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( createRuleLoader() )
+					.$( "getInstance" ).$args( settings.validator ).$results( createStub() );
+
+				expect( function(){
+					security.afterAspectsLoad( getMockRequestContext(), {} );
+				}).toThrow( "Security.ValidatorMethodException" );
+
+			});
+
+		});
 	}
 
-	function testConfigure(){
-		props = { useRegex : true, rulesSource : "xml" };
-		security.setProperties( props );
-		security.$( "rulesSourceChecks" );
-		security.configure();
-
-		assertEquals( false, security.getProperty( "rulesLoaded" ) );
-		assertEquals( [], security.getProperty( "rules" ) );
-	}
-
-	function testAfterAspectsLoad(){
-		// pre event security check
-		security.$( "unregister", true ).setProperty( "preEventSecurity", false );
-		security.setProperty( "rulesSource", "" );
-		security.afterAspectsLoad( getMockRequestContext(), {} );
-		assertTrue( security.$once( "unregister" ) );
-
-		// load xml
-		security.$( "loadXMLRules" ).setProperty( "rulesSource", "xml" );
-		security.afterAspectsLoad( getMockRequestContext(), {} );
-		assertTrue( security.$once( "loadXMLRules" ) );
-
-		// load db
-		security.$( "loadDBRules" ).setProperty( "rulesSource", "db" );
-		security.afterAspectsLoad( getMockRequestContext(), {} );
-		assertTrue( security.$once( "loadDBRules" ) );
-
-		// load ioc
-		security.$( "loadIOCRules" ).setProperty( "rulesSource", "ioc" );
-		security.afterAspectsLoad( getMockRequestContext(), {} );
-		assertTrue( security.$once( "loadIOCRules" ) );
-
-		// load model
-		security.$( "loadModelRules" ).setProperty( "rulesSource", "model" );
-		security.afterAspectsLoad( getMockRequestContext(), {} );
-		assertTrue( security.$once( "loadModelRules" ) );
-	}
-
-	function testRegisterValidator(){
-		var validator = createObject( "component", "tests.resources.security" );
-
-		/* Register */
-		security.registerValidator( validator );
-		assertEquals( validator, security.getValidator() );
-	}
-
-	function testLoadRules(){
-		interceptor
-			.$( "loadXMLRules" )
-			.$( "loadJSONRules" )
-			.$( "loadDBRules" )
-			.$( "loadIOCRules" )
-			.$( "loadModelRules" );
-
-		interceptor.$( "getProperty", "xml" ).loadRules();
-		assertTrue( interceptor.$once( "loadXMLRules" ) );
-
-		interceptor.$( "getProperty", "json" ).loadRules();
-		assertTrue( interceptor.$once( "loadJSONRules" ) );
-
-		interceptor.$( "getProperty", "db" ).loadRules();
-		assertTrue( interceptor.$once( "loadDBRules" ) );
-
-		interceptor.$( "getProperty", "ioc" ).loadRules();
-		assertTrue( interceptor.$once( "loadIOCRules" ) );
-
-		interceptor.$( "getProperty", "model" ).loadRules();
-		assertTrue( interceptor.$once( "loadModelRules" ) );
-	}
-
-	function testLoadJSONRules(){
-		interceptor.getProperties().rulesFile = expandPath( "/tests/resources/security.json.cfm" );
-		interceptor.getProperties().rules = [];
-		mockController.$( "locateFilePath", interceptor.getProperties().rulesFile );
-		makePublic( interceptor, "loadJSONRules" );
-		interceptor.loadJSONRules();
-
-		assert( arrayLen( interceptor.getProperty( "rules" ) ) eq 2 );
+	private function createRuleLoader(){
+		return createMock( "cbsecurity.models.RulesLoader" )
+			.init()
+			.setController( variables.mockController )
+			.setWireBox( new coldbox.system.ioc.Injector() );
 	}
 
 }
