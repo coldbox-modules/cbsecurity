@@ -147,15 +147,18 @@ component
 
 			});
 
-			it( "can load a validator", function(){
+			it( "can load a valid validator", function(){
 				settings.rulesSource = "json";
 				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
 				settings.validator = "tests.resources.security";
 				settings.preEventSecurity = true;
 				wirebox = new coldbox.system.ioc.Injector();
+
+				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
+
 				security
 					.setProperties( settings )
-					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( createRuleLoader() )
+					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( mockRuleLoader )
 					.$( "getInstance" ).$args( settings.validator ).$results(
 						wirebox.getInstance( settings.validator )
 					 );
@@ -169,9 +172,10 @@ component
 				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
 				settings.validator = "invalid.path";
 				settings.preEventSecurity = true;
+				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
 				security
 					.setProperties( settings )
-					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( createRuleLoader() )
+					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( mockRuleLoader )
 					.$( "getInstance" ).$args( settings.validator ).$results( createStub() );
 
 				expect( function(){

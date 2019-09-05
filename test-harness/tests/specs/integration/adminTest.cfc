@@ -14,7 +14,7 @@
  *	* eventArguments : The struct of args to pass to the event
  *	* renderResults : Render back the results of the event
  *******************************************************************************/
-component 
+component
 	extends="coldbox.system.testing.BaseTestCase"
 	appMapping="/root"
 {
@@ -22,6 +22,7 @@ component
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
+		structDelete( application, "cbController" );
 		super.beforeAll();
 		// do your own stuff here
 	}
@@ -43,8 +44,7 @@ component
 			it( "should protect the index", function() {
 				var event = execute( event = "admin.index", renderResults = true );
 				// should have protected it
-				// debug( event.getCollection() );
-				expect( "main.index" ).toBe( event.getValue( "setNextEvent_event" ) );
+				expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
 			} );
 		} );
 	}

@@ -66,7 +66,7 @@
 			// CB Security
 			cbSecurity : {
 				rulesSource : "json",
-				rulesFile : "config/security.json.cfm"
+				rulesFile 	: "config/security.json.cfm"
 			}
 		};
 	}

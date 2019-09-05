@@ -51,9 +51,7 @@ component accessors="true" singleton{
 		var thisElement = "";
 
 		// Try to locate the file path
-		if( !fileExists( arguments.settings.rulesFile ) ){
-			arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
-		}
+		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
 
 		// Validate Location
 		if ( !len( arguments.settings.rulesFile ) ) {
@@ -86,9 +84,7 @@ component accessors="true" singleton{
 		var node = "";
 
 		// Try to locate the file path
-		if( !fileExists( arguments.settings.rulesFile ) ){
-			arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
-		}
+		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
 
 		// Validate Location
 		if ( !len( arguments.settings.rulesFile ) ) {
