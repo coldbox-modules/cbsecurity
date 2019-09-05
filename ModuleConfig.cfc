@@ -26,7 +26,8 @@ component {
 			// The location of the rules file, applies to json|xml ruleSource
 			"rulesFile"			: "",
 			// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
-			"validator"			: "",
+			// By default we use the CFSecurity validator
+			"validator"			: "CFValidator@cbsecurity",
 			// If source is model, the wirebox Id to use for retrieving the rules
 			"rulesModel"		: "",
 			// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`

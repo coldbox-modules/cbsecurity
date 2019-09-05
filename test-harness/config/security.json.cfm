@@ -5,7 +5,6 @@
         "match": "event",
         "roles": "admin",
         "permissions": "",
-        "redirect": "main.index",
-        "useSSL": false
+        "redirect": "main.index"
     }
 ]

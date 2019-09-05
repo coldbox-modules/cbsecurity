@@ -1,4 +1,7 @@
 /**
+ * Copyright since 2016 by Ortus Solutions, Corp
+ * www.ortussolutions.com
+ * ---
  * All security validators must implement
  */
 interface{

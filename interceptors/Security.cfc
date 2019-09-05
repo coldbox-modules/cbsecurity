@@ -80,18 +80,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		);
 
 		// Load up the validator
-		if ( getProperty( "validator" ).len() ) {
-			registerValidator(
-				getInstance( getProperty( "validator" ) )
-			);
-		}
+		registerValidator(
+			getInstance( getProperty( "validator" ) )
+		);
 
 		// We can now rule!
 		variables.initialized = true;
 	}
 
 	/**
-	 * Listen to event preProcessing
+	 * Our firewall kicks in at preProcess
 	 *
 	 * @event
 	 * @interceptData
@@ -112,7 +110,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		// Execute Rule processing
-		processRules( arguments.event, arguments.interceptData, arguments.event.getCurrentEvent() );
+		processRules(
+			arguments.event,
+			arguments.interceptData,
+			arguments.event.getCurrentEvent()
+		);
 	}
 
 	/**
@@ -132,7 +134,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		buffer
 	){
 		if ( getProperty( "preEventSecurity" ) ) {
-			processRules( arguments.event, arguments.interceptData, arguments.interceptData.processedEvent );
+			processRules(
+				arguments.event,
+				arguments.interceptData,
+				arguments.interceptData.processedEvent
+			);
 		}
 	}
 
@@ -148,88 +154,74 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required interceptData,
 		required currentEvent
 	){
-		var x = 1;
-		var rules = getProperty( "rules" );
-		var rulesLen = arrayLen( rules );
-		var rc = event.getCollection();
+		var rc 	= event.getCollection();
 		var ssl = getProperty( "useSSL" );
-		var matchType = "event";
-		var matchTarget = "";
 
-		// Loop through Rules
-		for ( x = 1; x lte rulesLen; x = x + 1 ) {
-			// Determine match type and if event or url, the valid types
-			if ( structKeyExists( rules[ x ], "match" ) AND reFindNoCase( "^(event|url)$", rules[ x ].match ) ) {
-				matchType = rules[ x ].match;
-			}
-			// According to type get the matchTarget
-			if ( matchType eq "event" ) {
-				matchTarget = arguments.currentEvent;
-			} else{
-				matchTarget = arguments.event.getCurrentRoutedURL();
-			}
+		// Verify all rules
+		for( var thisRule in getProperty( "rules" ) ){
+			// Determine Match Target by event or url
+			var matchTarget = ( thisRule.match == "url" ? arguments.event.getCurrentRoutedURL() : arguments.currentEvent );
 
-			// is current matchTarget in this whitelist pattern? then continue to next rule
-			if ( isInPattern( matchTarget, rules[ x ].whitelist ) ) {
+			// Are we in a whitelist?
+			if ( isInPattern( matchTarget, thisRule.whitelist ) ) {
 				if ( log.canDebug() ) {
-					log.debug( "'#matchTarget#' found in whitelist: #rules[ x ].whitelist#" );
+					log.debug( "'#matchTarget#' found in whitelist: #thisRule.whitelist#, skipping..." );
 				}
 				continue;
 			}
 
-			// is match in the secure list and is user in role
-			if ( isInPattern( matchTarget, rules[ x ].securelist ) ) {
+			// Are we in the secured list?
+			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
+
 				// Verify if user is logged in and in a secure state
-				if ( _isUserInValidState( rules[ x ] ) eq false ) {
+				if ( !_isUserInValidState( thisRule ) ) {
+
 					// Log if Necessary
 					if ( log.canDebug() ) {
 						log.debug(
-							"User did not validate security for secured match target=#matchTarget#. Rule: #rules[ x ].toString()#"
+							"User blocked access to target=#matchTarget#. Rule: #thisRule.toString()#"
 						);
 					}
 
-					// Redirect
+					// Save secured incoming URL according to type
 					if ( arguments.event.isSES() ) {
-						// Save the secured URL
 						rc._securedURL = arguments.event.buildLink( event.getCurrentRoutedURL() );
 					} else{
-						// Save the secured URL
 						rc._securedURL = "#cgi.script_name#";
 					}
 
-					// Check query string for secure URL
+					// Verify query string as well
 					if ( cgi.query_string neq "" ) {
 						rc._securedURL = rc._securedURL & "?#cgi.query_string#";
 					}
 
-					// SSL?
-					if ( structKeyExists( rules[ x ], "useSSL" ) ) {
-						ssl = rules[ x ].useSSL;
-					}
-
 					// Route to redirect event
-					setNextEvent( event = rules[ x ].redirect, persist = "_securedURL", ssl = ssl );
+					relocate(
+						event 	= thisRule.redirect,
+						persist = "_securedURL",
+						ssl 	= ( thisRule.useSSL || arguments.event.isSSL() )
+					);
 
 					break;
 				}
-				// end user in roles
+				// end if valid state
 				else{
 					if ( log.canDebug() ) {
 						log.debug(
-							"Secure target=#matchTarget# matched and user validated for rule: #rules[ x ].toString()#."
+							"Secure target=#matchTarget# matched and user validated for rule: #thisRule.toString()#."
 						);
 					}
 					break;
 				}
 			}
-			// end if current event did not match a secure event.
+			// No match, continue to next rule
 			else{
 				if ( log.canDebug() ) {
-					log.debug( "Incoming '#matchTarget#' did not match this rule: #rules[ x ].toString()#" );
+					log.debug( "Incoming '#matchTarget#' did not match this rule: #thisRule.toString()#" );
 				}
 			}
-		}
-		// end of rules checks
+
+		} // end rule iterations
 	}
 
 	/**
@@ -248,25 +240,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 	}
 
+	/********************************* PRIVATE ******************************/
+
 	/**
-	 * Verifies that the user is in any role
+	 * Verifies that the user is in any role using the validator
 	 *
-	 * @validatorObject
+	 * @rule The rule to validate
 	 */
-	function _isUserInValidState( required struct rule ){
-		var thisRole = "";
-		//  Verify if using validator
-		if ( isValidatorUsed() ) {
-			//  Validate via Validator
-			return variables.validator.userValidator( arguments.rule, controller );
-		}
-		//  Loop Over CF Roles
-		for ( thisRole in arguments.rule.roles ) {
-			if ( isUserInRole( thisRole ) ) {
-				return true;
-			}
-		}
-		return false;
+	private function _isUserInValidState( required struct rule ){
+		//  Validate via Validator
+		return variables.validator.userValidator( arguments.rule, variables.controller );
 	}
 
 	/**
@@ -275,10 +258,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @currentEvent The current event
 	 * @patternList The list pattern to test
 	 */
-	function isInPattern( required currentEvent, required patternList ){
-		var pattern = "";
+	private function isInPattern( required currentEvent, required patternList ){
+
 		//  Loop Over Patterns
-		for ( pattern in arguments.patternList ) {
+		for ( var pattern in arguments.patternList ) {
 			//  Using Regex
 			if ( getProperty( "useRegex" ) ) {
 				if ( reFindNoCase( trim( pattern ), arguments.currentEvent ) ) {
@@ -288,17 +271,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				return true;
 			}
 		}
+
 		return false;
 	}
-
-	/**
-	 * Check to see if using the validator
-	 */
-	boolean function isValidatorUsed(){
-		return !isNull( variables.validator );
-	}
-
-	/********************************* PRIVATE ******************************/
 
 	/**
 	 * Validate the rules source property

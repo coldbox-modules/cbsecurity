@@ -8,6 +8,8 @@
 * New Module Layout
 * Settings transferred to ColdBox 4/5 `moduleSettings` approach instead of root approach.
 * The `rulesModelMethod` now defaults to `getSecurityRules()`
+* ColdFusion security validator has identity now `CFValidator@cbsecurity` instead of always being inline. 
+* Interfaces documented for easier extension `models.interfaces.*`
 
 ## Improvements
 

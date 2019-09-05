@@ -161,7 +161,7 @@ component
 					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( mockRuleLoader )
 					.$( "getInstance" ).$args( settings.validator ).$results(
 						wirebox.getInstance( settings.validator )
-					 );
+					);
 
 				security.afterAspectsLoad( getMockRequestContext(), {} );
 				expect( security.getValidator() ).toBeComponent();
