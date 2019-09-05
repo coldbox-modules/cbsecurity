@@ -185,14 +185,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 					// Save secured incoming URL according to type
 					if ( arguments.event.isSES() ) {
-						rc._securedURL = arguments.event.buildLink( event.getCurrentRoutedURL() );
+						rc._securedURL = arguments.event.buildLink(
+							to 			= event.getCurrentRoutedURL(),
+							queryString = CGI.QUERY_STRING,
+							translate 	= false
+						);
 					} else{
-						rc._securedURL = "#cgi.script_name#";
-					}
-
-					// Verify query string as well
-					if ( cgi.query_string neq "" ) {
-						rc._securedURL = rc._securedURL & "?#cgi.query_string#";
+						rc._securedURL = arguments.event.getFullUrl();
 					}
 
 					// Route to redirect event

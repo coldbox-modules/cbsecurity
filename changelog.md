@@ -5,15 +5,15 @@
 ### Features
 
 * Adobe 2016,2018 Support
-* New Module Layout
-* Settings transferred to ColdBox 4/5 `moduleSettings` approach instead of root approach.
+* Settings transferred to ColdBox 4/5 `moduleSettings` approach instead of root approach (See compat section)
 * The `rulesModelMethod` now defaults to `getSecurityRules()`
-* ColdFusion security validator has identity now `CFValidator@cbsecurity` instead of always being inline. 
-* Interfaces documented for easier extension `models.interfaces.*`
+* ColdFusion security validator has an identity now `CFValidator@cbsecurity` instead of always being inline.
 
 ## Improvements
 
+* Interfaces documented for easier extension `models.interfaces.*`
 * Migration to script and code modernization
+* New Module Layout
 
 ### Compat
 
@@ -22,7 +22,7 @@
 * Migrate your root `cbSecurity` settings in your `config/ColdBox.cfc` to inside the `moduleSettings`
 * IOC rules support dropped
 * OCM rules support dropped
-* `validatorModel` dropped in favor of just `validator`
+* `validatorModel` dropped in favor of just `validator` to be a WireBox Id
 
 ### Bugs
 
