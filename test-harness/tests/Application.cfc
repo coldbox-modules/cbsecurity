@@ -28,4 +28,14 @@ component {
 	this.mappings[ "/moduleroot" ] = moduleRootPath;
 	this.mappings[ "/#request.MODULE_NAME#" ] = moduleRootPath & "#request.MODULE_NAME#";
 
+	// request start
+	public boolean function onRequestStart( String targetPage ){
+		return true;
+	}
+
+	function onRequestEnd(){
+		structDelete( application, "wirebox" );
+		structDelete( application, "cbController" );
+	}
+
 }

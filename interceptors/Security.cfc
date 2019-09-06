@@ -176,14 +176,14 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				// Verify if user is logged in and in a secure state
 				if ( !_isUserInValidState( thisRule ) ) {
 
-					// Log if Necessary
+					// Log Block
 					if ( log.canWarn() ) {
 						log.warn(
 							"User (#getRealIp()#) blocked access to target=#matchTarget#. Rule: #thisRule.toString()#"
 						);
 					}
 
-					// Save secured incoming URL according to type
+					// Flash secured incoming URL for next request
 					saveSecuredUrl( arguments.event );
 
 					// Relocate or Override?
@@ -204,7 +204,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				else{
 					if ( log.canDebug() ) {
 						log.debug(
-							"Secure target=#matchTarget# matched and user validated for rule: #thisRule.toString()#."
+							"Secure target=#matchTarget# matched and user authorized for rule: #thisRule.toString()#."
 						);
 					}
 					break;

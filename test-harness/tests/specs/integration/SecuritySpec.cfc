@@ -22,7 +22,6 @@ component
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
-		structDelete( application, "cbController" );
 		super.beforeAll();
 		// do your own stuff here
 	}
@@ -41,11 +40,19 @@ component
 				setup();
 			} );
 
-			it( "should protect the index", function() {
+			it( "should protect the admin and relocate", function() {
 				var event = execute( event = "admin.index", renderResults = true );
 				// should have protected it
 				expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
 			} );
+
+
+			it( "should protect the admin and override", function(){
+				var event = execute( route = "/override", renderResults = true );
+				// should have protected it
+				expect( event.getCurrentEvent() ).toBe( "main.index" );
+				expect( event.valueExists( "relocate_event" ) ).toBeFalse();
+			});
 		} );
 	}
 
