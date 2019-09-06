@@ -18,6 +18,19 @@ component accessors="true" singleton{
 	}
 
 	/**
+	 * Utility function to normalize an array of rules to our standards
+	 *
+	 * @rules The rules to normalize
+	 */
+	array function normalizeRules( required array rules ){
+		return arguments.rules
+			.map( function( item ){
+				structAppend( item, getRuleTemplate(), false );
+				return item;
+			} );
+	}
+
+	/**
 	 * Load the appropriate rules from the source and return them in consumable focus.
 	 *
 	 * @settings The interceptor config settings

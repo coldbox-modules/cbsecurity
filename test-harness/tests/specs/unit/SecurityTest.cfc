@@ -21,8 +21,8 @@ component
 					.$( "getAppHash", hash( "appHash" ) )
 					.$( "getAppRootPath", expandPath( "/root" ) );
 				security = interceptor;
-
 				settings = {
+					"rules"				: [],
 					// Where are the rules, valid options: json,xml,db,model
 					"rulesSource" 		: "",
 					// The location of the rules file, applies to json|xml ruleSource
@@ -52,9 +52,6 @@ component
 
 			it( "can configure with invalid settings", function(){
 				security.setProperties( settings );
-				expect( function(){
-					security.configure();
-				}).toThrow( "Security.NoRuleSourceDefined" );
 
 				settings.rulessource = "json";
 				expect( function(){
@@ -62,6 +59,7 @@ component
 				}).toThrow( "Security.RulesFileNotDefined" );
 
 				settings.rulessource = "hello";
+				security.setProperties( settings );
 				expect( function(){
 					security.configure();
 				}).toThrow( "Security.InvalidRuleSource" );
@@ -187,6 +185,7 @@ component
 				settings.validator = "invalid.path";
 				settings.preEventSecurity = true;
 				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
+
 				security
 					.setProperties( settings )
 					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( mockRuleLoader )

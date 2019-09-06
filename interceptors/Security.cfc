@@ -26,13 +26,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		variables.initialized = false;
 
 		// Rule Source Checks
-		if ( !getProperty( "rulesSource" ).len() ) {
-			throw(
-				message = "The <code>ruleSource</code> property has not been set.",
-				type 	= "Security.NoRuleSourceDefined"
-			);
-		}
-		if ( !reFindNoCase( "^(xml|db|model|json)$", getProperty( "rulesSource" ) ) ) {
+		if ( getProperty( "rulesSource" ).len() && !reFindNoCase( "^(xml|db|model|json)$", getProperty( "rulesSource" ) ) ) {
 			throw(
 				message = "The rules source you set is invalid: #getProperty( "rulesSource" )#.",
 				detail 	= "The valid sources are xml, db, model, or json",
@@ -47,9 +41,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Verify rule configurations
 		rulesSourceChecks();
-
-		// Setup the rules to empty
-		setProperty( "rules", [] );
 	}
 
 	/**
@@ -68,16 +59,22 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		prc,
 		buffer
 	){
+		var rulesLoader = getInstance( "RulesLoader@cbSecurity" );
+
 		// if no preEvent, then unregister yourself.
 		if ( !getProperty( "preEventSecurity" ) ) {
 			unregister( "preEvent" );
 		}
 
-		// Load Rules
-		setProperty(
-			"rules",
-			getInstance( "RulesLoader@cbSecurity" ).loadRules( getProperties() )
-		);
+		// If we added our own rules, then normalize them.
+		if( arrayLen( getProperty( "rules" ) ) ){
+			setProperty( "rules", rulesLoader.normalizeRules( getProperty( "rules" ) ) );
+		}
+
+		// Load Rules if we have a ruleSource
+		if( getProperty( "rulesSource" ).len() ){
+			setProperty( "rules", rulesLoader.loadRules( getProperties() ) );
+		}
 
 		// Load up the validator
 		registerValidator(

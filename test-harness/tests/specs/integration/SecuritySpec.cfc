@@ -46,7 +46,6 @@ component
 				expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
 			} );
 
-
 			it( "should protect the admin and override", function(){
 				var event = execute( route = "/override", renderResults = true );
 				// should have protected it

@@ -54,8 +54,8 @@ component {
 	 * Fired when the module is registered and activated.
 	 */
 	function onLoad(){
-		// If we have a source on the settings, try to auto load the interceptor
-		if( len( settings.rulesSource ) ){
+		// Check the global settings for rules or a rules source
+		if( len( settings.rulesSource ) || arrayLen( settings.rules ) ){
 			controller.getInterceptorService()
 				.registerInterceptor(
 					interceptorClass		= "cbsecurity.interceptors.Security",
