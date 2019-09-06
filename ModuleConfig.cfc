@@ -21,6 +21,8 @@ component {
 	function configure(){
 
 		settings = {
+			// You can define your security rules here or externally via a source
+			"rules"				: [],
 			// Where are the rules, valid options: json,xml,db,model
 			"rulesSource" 		: "",
 			// The location of the rules file, applies to json|xml ruleSource

@@ -154,9 +154,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required interceptData,
 		required currentEvent
 	){
-		var rc 	= event.getCollection();
-		var ssl = getProperty( "useSSL" );
-
 		// Verify all rules
 		for( var thisRule in getProperty( "rules" ) ){
 			// Determine Match Target by event or url
@@ -191,7 +188,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						relocate(
 							event 	= thisRule.redirect,
 							persist = "_securedURL",
-							ssl 	= ( thisRule.useSSL || arguments.event.isSSL() )
+							// Chain SSL: Global, rule, request
+							ssl 	= ( getProperty( "useSSL" ) || thisRule.useSSL || arguments.event.isSSL() )
 						);
 					} else {
 						// Override event
