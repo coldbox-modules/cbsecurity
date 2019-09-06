@@ -165,7 +165,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			// Are we in a whitelist?
 			if ( isInPattern( matchTarget, thisRule.whitelist ) ) {
 				if ( log.canDebug() ) {
-					log.debug( "'#matchTarget#' found in whitelist: #thisRule.whitelist#, skipping..." );
+					log.debug( "#matchTarget# found in whitelist: #thisRule.whitelist#, allowing access." );
 				}
 				continue;
 			}
@@ -177,9 +177,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				if ( !_isUserInValidState( thisRule ) ) {
 
 					// Log if Necessary
-					if ( log.canDebug() ) {
-						log.debug(
-							"User blocked access to target=#matchTarget#. Rule: #thisRule.toString()#"
+					if ( log.canWarn() ) {
+						log.warn(
+							"User (#getRealIp()#) blocked access to target=#matchTarget#. Rule: #thisRule.toString()#"
 						);
 					}
 
@@ -319,6 +319,23 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			}
 		}
 		// end of switch statement
+	}
+
+	/**
+	 * Get Real IP, by looking at clustered, proxy headers and locally.
+	 */
+	private function getRealIP(){
+		var headers = getHttpRequestData().headers;
+
+		// Very balanced headers
+		if( structKeyExists( headers, 'x-cluster-client-ip' ) ){
+			return headers[ 'x-cluster-client-ip' ];
+		}
+		if( structKeyExists( headers, 'X-Forwarded-For' ) ){
+			return headers[ 'X-Forwarded-For' ];
+		}
+
+		return len( CGI.REMOTE_ADDR ) ? CGI.REMOTE_ADDR : '127.0.0.1';
 	}
 
 }

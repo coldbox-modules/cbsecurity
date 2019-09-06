@@ -14,6 +14,7 @@
 * Interfaces documented for easier extension `models.interfaces.*`
 * Migration to script and code modernization
 * New Module Layout
+* Secured rules are now logged as `warn()` with the offending Ip address.
 
 ### Compat
 
