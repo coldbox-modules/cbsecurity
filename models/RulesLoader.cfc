@@ -168,13 +168,14 @@ component accessors="true" singleton{
 	 */
 	struct function getRuleTemplate(){
 		return {
-			"whitelist" 	: "",
-			"securelist"	: "",
-			"match"			: "event",
-			"roles"			: "",
-			"permissions"	: "",
-			"redirect" 		: "",
-			"useSSL"		: false
+			"whitelist" 	: "", // A list of white list events or Uri's
+			"securelist"	: "", // A list of secured list events or Uri's
+			"match"			: "event", // Match the event or a url
+			"roles"			: "", // Attach a list of roles to the rule
+			"permissions"	: "", // Attach a list of permissions to the rule
+			"redirect" 		: "", // If rule breaks, and you have a redirect it will redirect here
+			"overrideEvent"	: "", // If rule breaks, and you have an event, it will override it
+			"useSSL"		: false // Force SSL
 		};
 	}
 

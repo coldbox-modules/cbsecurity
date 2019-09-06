@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-Declare as many rule elements as you want, order is important 
+<!--
+Declare as many rule elements as you want, order is important
 Remember that the securelist can contain a list of regular
 expression if you want
 
@@ -21,7 +21,8 @@ that can be found in an event.
 		<match>event</match>
         <roles>admin</roles>
 		<permissions></permissions>
-        <redirect>user.login</redirect>
+		<redirect>user.login</redirect>
+		<overrideEvent>user.login</overrideEvent>
 		<useSSL>false</useSSL>
     </rule>
 </rules>

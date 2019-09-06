@@ -8,6 +8,7 @@
 * Settings transferred to ColdBox 4/5 `moduleSettings` approach instead of root approach (See compat section)
 * The `rulesModelMethod` now defaults to `getSecurityRules()`
 * ColdFusion security validator has an identity now `CFValidator@cbsecurity` instead of always being inline.
+* You can now add an `overrideEvent` element to a rule. If that is set, then we will override the incoming event via `event.overrideEvent()` instead of a relocation.
 
 ## Improvements
 
@@ -15,6 +16,7 @@
 * Migration to script and code modernization
 * New Module Layout
 * Secured rules are now logged as `warn()` with the offending Ip address.
+* If the main ColdBox application has settings defined to load cbSecurity the interceptor will auto load and be registered as `cbsecurity@global` in WireBox.
 
 ### Compat
 

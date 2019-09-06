@@ -184,22 +184,19 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					}
 
 					// Save secured incoming URL according to type
-					if ( arguments.event.isSES() ) {
-						rc._securedURL = arguments.event.buildLink(
-							to 			= event.getCurrentRoutedURL(),
-							queryString = CGI.QUERY_STRING,
-							translate 	= false
-						);
-					} else{
-						rc._securedURL = arguments.event.getFullUrl();
-					}
+					saveSecuredUrl( arguments.event );
 
-					// Route to redirect event
-					relocate(
-						event 	= thisRule.redirect,
-						persist = "_securedURL",
-						ssl 	= ( thisRule.useSSL || arguments.event.isSSL() )
-					);
+					// Relocate or Override?
+					if( thisRule.redirect.len() ){
+						relocate(
+							event 	= thisRule.redirect,
+							persist = "_securedURL",
+							ssl 	= ( thisRule.useSSL || arguments.event.isSSL() )
+						);
+					} else {
+						// Override event
+						arguments.event.overrideEvent( event=thisRule.overrideEvent );
+					}
 
 					break;
 				}
@@ -240,6 +237,28 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	}
 
 	/********************************* PRIVATE ******************************/
+
+	/**
+	 * Flash the incoming secured Url so we can redirect to it or use it in the next request.
+	 *
+	 * @event The event object
+	 */
+	private function saveSecuredUrl( required event ){
+		var securedUrl = arguments.event.getFullUrl();
+
+		if ( arguments.event.isSES() ) {
+			securedURL = arguments.event.buildLink(
+				to 			= event.getCurrentRoutedURL(),
+				queryString = CGI.QUERY_STRING,
+				translate 	= false
+			);
+		}
+
+		// Flash it and place it in RC as well
+		flash.put( "_securedUrl", securedUrl );
+		arguments.event.setValue( "_securedUrl", securedUrl );
+	}
+
 
 	/**
 	 * Verifies that the user is in any role using the validator

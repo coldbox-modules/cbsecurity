@@ -40,7 +40,7 @@ component {
 			"rulesOrderBy"		: "",
 			// If source is db then you can have your custom select SQL
 			"rulesSql" 			: "",
-			// Use regular expression matching on the rules
+			// Use regular expression matching on the rule match types
 			"useRegex" 			: true,
 			// Force SSL for all relocations
 			"useSSL"			: false
@@ -52,13 +52,13 @@ component {
 	 * Fired when the module is registered and activated.
 	 */
 	function onLoad(){
-		// If we have a source, try to load it
+		// If we have a source on the settings, try to auto load the interceptor
 		if( len( settings.rulesSource ) ){
 			controller.getInterceptorService()
 				.registerInterceptor(
 					interceptorClass		= "cbsecurity.interceptors.Security",
 					interceptorProperties	= settings,
-					interceptorName			= "CBSecurity"
+					interceptorName			= "cbsecurity@global"
 				);
 		}
 	}

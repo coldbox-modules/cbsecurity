@@ -3,6 +3,10 @@ component
 	interceptor="cbsecurity.interceptors.Security"
 {
 
+	function beforeAll(){
+		super.beforeAll();
+	}
+
 	/*********************************** BDD SUITES ***********************************/
 
 	function run( testResults, testBox ){
@@ -12,6 +16,7 @@ component
 			beforeEach(function( currentSpec ){
 				// setup properties
 				setup();
+				variables.wirebox = new coldbox.system.ioc.Injector();
 				mockController
 					.$( "getAppHash", hash( "appHash" ) )
 					.$( "getAppRootPath", expandPath( "/root" ) );
@@ -23,7 +28,7 @@ component
 					// The location of the rules file, applies to json|xml ruleSource
 					"rulesFile"			: "",
 					// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
-					"validator"			: "",
+					"validator"			: "CFValidator@cbsecurity",
 					// If source is model, the wirebox Id to use for retrieving the rules
 					"rulesModel"		: "",
 					// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
@@ -88,12 +93,18 @@ component
 
 			it( "can unregister the pre event security if configured on load", function(){
 				// pre event security check
+				settings.validator = "tests.resources.security";
 				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
+
 				security
 					.$( "unregister", true )
-					.$( "getInstance", mockRuleLoader )
+					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( mockRuleLoader )
+					.$( "getInstance" ).$args( settings.validator ).$results(
+						wirebox.getInstance( settings.validator )
+					)
 					.setProperties( settings )
 					.setProperty( "preEventSecurity", false );
+
 				security.afterAspectsLoad( getMockRequestContext(), {} );
 				expect( security.$once( "unregister" ) ).toBeTrue();
 				expect( security.getInitialized() ).toBeTrue();
@@ -104,7 +115,12 @@ component
 				beforeEach(function( currentSpec ){
 					// pre event security check
 					ruleLoader = createRuleLoader();
-					security.$( "getInstance", ruleLoader );
+					settings.validator = "tests.resources.security";
+					security
+						.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( ruleLoader )
+						.$( "getInstance" ).$args( settings.validator ).$results(
+							wirebox.getInstance( settings.validator )
+						);
 				});
 
 				it( "can load JSON Rules", function(){
@@ -152,8 +168,6 @@ component
 				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
 				settings.validator = "tests.resources.security";
 				settings.preEventSecurity = true;
-				wirebox = new coldbox.system.ioc.Injector();
-
 				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
 
 				security
@@ -191,7 +205,7 @@ component
 		return createMock( "cbsecurity.models.RulesLoader" )
 			.init()
 			.setController( variables.mockController )
-			.setWireBox( new coldbox.system.ioc.Injector() );
+			.setWireBox( variables.wirebox );
 	}
 
 }
