@@ -12,6 +12,7 @@
 
 ## Improvements
 
+* SSL Enforcement now cascades according to the following lookup: Global, rule, request
 * Interfaces documented for easier extension `models.interfaces.*`
 * Migration to script and code modernization
 * New Module Layout
