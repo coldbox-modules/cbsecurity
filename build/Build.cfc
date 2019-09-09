@@ -177,10 +177,11 @@ component{
 
         command( 'docbox generate' )
             .params(
-                "source"               =  "models",
-                "mapping"              =  "models",
+				"mappings:interceptors"	= "interceptors",
+				"mappings:interfaces"	= "interfaces",
+				"mappings:models"       = "models",
                 "strategy-projectTitle" = "#arguments.projectName# v#arguments.version#",
-                "strategy-outputDir"   = arguments.outputDir
+                "strategy-outputDir"   	= arguments.outputDir
             )
             .run();
 
