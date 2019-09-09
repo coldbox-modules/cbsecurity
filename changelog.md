@@ -9,7 +9,7 @@
 * The `rulesModelMethod` now defaults to `getSecurityRules()`
 * ColdFusion security validator has an identity now `CFValidator@cbsecurity` instead of always being inline.
 * You can now add an `overrideEvent` element to a rule. If that is set, then we will override the incoming event via `event.overrideEvent()` instead of doing a relocation.
-* You can now declare your rules inline in the configuration settings using the `rules` key or via the traditional sources
+* You can now declare your rules inline in the configuration settings using the `rules` key. This will allow you to build the rules in your config instead of a rule source.
 
 ## Improvements
 

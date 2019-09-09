@@ -68,7 +68,7 @@
 		moduleSettings = {
 			// CB Security
 			cbSecurity : {
-				// The rules to secure globally
+				// The global security rules
 				rules : [
 					{
 						"whitelist": "",

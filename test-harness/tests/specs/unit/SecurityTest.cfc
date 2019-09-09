@@ -47,7 +47,7 @@ component
 					"useSSL"			: false,
 					"preEventSecurity"	: false
 				};
-			});
+			} );
 
 
 			it( "can configure with invalid settings", function(){

@@ -40,6 +40,12 @@ component
 				setup();
 			} );
 
+			it( "should load the rules from inline declaration", function(){
+				var rules = getWireBox().getInstance( "interceptor-cbsecurity@global" )
+					.getProperty( "rules" );
+				expect( rules ).toHaveLength( 2 );
+			});
+
 			it( "should protect the admin and relocate", function() {
 				var event = execute( event = "admin.index", renderResults = true );
 				// should have protected it
