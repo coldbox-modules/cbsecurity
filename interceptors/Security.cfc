@@ -145,18 +145,32 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					// Flash secured incoming URL for next request
 					saveSecuredUrl( arguments.event );
 
-					// Relocate or Override?
-					if( thisRule.redirect.len() ){
-						relocate(
-							event 	= thisRule.redirect,
-							persist = "_securedURL",
-							// Chain SSL: Global, rule, request
-							ssl 	= ( getProperty( "useSSL" ) || thisRule.useSSL || arguments.event.isSSL() )
-						);
-					} else {
-						// Override event
-						arguments.event.overrideEvent( event=thisRule.overrideEvent );
-					}
+					// Announce the block event
+					var iData = {
+						"ip" 				: getRealIp(), // The offending IP
+						"rule" 				: thisRule, // The broken rule
+						"settings"			: getProperties(), // All the config settings, just in case
+						"processActions" 	: true // Boolean indicator if the invalid actions should process or not
+					};
+					announceInterception( state="cbSecurity_onInvalidAccess", interceptData=iData );
+
+					// Are we processing the invalid actions?
+					if( iData.processActions ){
+
+						// Relocate or Override?
+						if( thisRule.redirect.len() ){
+							relocate(
+								event 	= thisRule.redirect,
+								persist = "_securedURL",
+								// Chain SSL: Global, rule, request
+								ssl 	= ( getProperty( "useSSL" ) || thisRule.useSSL || arguments.event.isSSL() )
+							);
+						} else {
+							// Override event
+							arguments.event.overrideEvent( event=thisRule.overrideEvent );
+						}
+
+					} // end invalid actions processing
 
 					break;
 				}

@@ -10,6 +10,13 @@
 * ColdFusion security validator has an identity now `CFValidator@cbsecurity` instead of always being inline.
 * You can now add an `overrideEvent` element to a rule. If that is set, then we will override the incoming event via `event.overrideEvent()` instead of doing a relocation.
 * You can now declare your rules inline in the configuration settings using the `rules` key. This will allow you to build the rules in your config instead of a rule source.
+* Once a rule is blocked a `cbSecurity_onInvalidAccess` event is announced so you can determine what invalid actions to do.  You can even bypass the default actions of relocations/overrides if needed.
+
+The following are the keys received in this event:
+- `ip` 					// The offending IP
+- `rule` 				// The broken rule
+- `settings`			// All the config settings, just in case
+- `processActions:true` // Boolean indicator if the invalid actions should process or not, default is to process actions (true). Turn off to do your thing!
 
 ## Improvements
 

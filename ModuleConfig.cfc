@@ -48,6 +48,12 @@ component {
 			"useSSL"			: false
 		};
 
+		interceptorSettings = {
+			customInterceptionPoints = [
+				"cbSecurity_onInvalidAccess" // Fires when a security rule matches and the user validator reports a false invalid access
+			]
+		};
+
 	}
 
 	/**
