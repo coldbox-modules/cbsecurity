@@ -28,6 +28,7 @@
 * IOC rules support dropped
 * OCM rules support dropped
 * `validatorModel` dropped in favor of just `validator` to be a WireBox Id
+* Removed `preEventSecurity` it was too chatty and almost never used
 
 ### Bugs
 

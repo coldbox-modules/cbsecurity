@@ -39,8 +39,6 @@ cbsecurity = {
     useRegex = true,
     // Verify queries that they have all required columns, by default it is relaxed
     queryChecks = false,
-    // Will verify rules of execute before ANY event. Be careful, can be intensive, usually the preProcess is enough.
-    preEventSecurity = false,
     // The class path of a CFC that will validate rules, optional
     validator = "class.path",
     // The WireBox ID of the object to validate rules, optional

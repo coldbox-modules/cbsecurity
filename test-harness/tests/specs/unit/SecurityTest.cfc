@@ -44,8 +44,7 @@ component
 					// Use regular expression matching on the rules
 					"useRegex" 			: true,
 					// Force SSL for all relocations
-					"useSSL"			: false,
-					"preEventSecurity"	: false
+					"useSSL"			: false
 				};
 			} );
 
@@ -89,25 +88,6 @@ component
 				expect( security.getProperty( "rules", [] ) ).toBeEmpty();
 			});
 
-			it( "can unregister the pre event security if configured on load", function(){
-				// pre event security check
-				settings.validator = "tests.resources.security";
-				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
-
-				security
-					.$( "unregister", true )
-					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( mockRuleLoader )
-					.$( "getInstance" ).$args( settings.validator ).$results(
-						wirebox.getInstance( settings.validator )
-					)
-					.setProperties( settings )
-					.setProperty( "preEventSecurity", false );
-
-				security.afterAspectsLoad( getMockRequestContext(), {} );
-				expect( security.$once( "unregister" ) ).toBeTrue();
-				expect( security.getInitialized() ).toBeTrue();
-			});
-
 			describe( "It can load many types of rules", function(){
 
 				beforeEach(function( currentSpec ){
@@ -124,7 +104,6 @@ component
 				it( "can load JSON Rules", function(){
 					settings.rulesSource 		= "json";
 					settings.rulesFile 			= expandPath( "/tests/resources/security.json.cfm" );
-					settings.preEventSecurity 	= true;
 					mockController.$( "locateFilePath", settings.rulesFile );
 					security.setProperties( settings );
 
@@ -137,7 +116,6 @@ component
 				it( "can load XML Rules", function(){
 					settings.rulesSource 		= "xml";
 					settings.rulesFile 			= expandPath( "/tests/resources/security.xml.cfm" );
-					settings.preEventSecurity 	= true;
 					mockController.$( "locateFilePath", settings.rulesFile );
 					security.setProperties( settings );
 
@@ -150,7 +128,6 @@ component
 				it( "can load model Rules", function(){
 					settings.rulesSource 		= "model";
 					settings.rulesModel			= "tests.resources.security";
-					settings.preEventSecurity 	= true;
 					security.setProperties( settings );
 
 					security.afterAspectsLoad( getMockRequestContext(), {} );
@@ -165,7 +142,6 @@ component
 				settings.rulesSource = "json";
 				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
 				settings.validator = "tests.resources.security";
-				settings.preEventSecurity = true;
 				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
 
 				security
@@ -183,7 +159,6 @@ component
 				settings.rulesSource = "json";
 				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
 				settings.validator = "invalid.path";
-				settings.preEventSecurity = true;
 				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
 
 				security

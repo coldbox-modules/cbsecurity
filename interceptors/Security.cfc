@@ -34,11 +34,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			);
 		}
 
-		// PreEvent Security
-		if ( not propertyExists( "preEventSecurity" ) or not isBoolean( getProperty( "preEventSecurity" ) ) ) {
-			setProperty( "preEventSecurity", false );
-		}
-
 		// Verify rule configurations
 		rulesSourceChecks();
 	}
@@ -60,11 +55,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		buffer
 	){
 		var rulesLoader = getInstance( "RulesLoader@cbSecurity" );
-
-		// if no preEvent, then unregister yourself.
-		if ( !getProperty( "preEventSecurity" ) ) {
-			unregister( "preEvent" );
-		}
 
 		// If we added our own rules, then normalize them.
 		if( arrayLen( getProperty( "rules" ) ) ){
@@ -112,31 +102,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			arguments.interceptData,
 			arguments.event.getCurrentEvent()
 		);
-	}
-
-	/**
-	 * Listen to before any runEvent()'s
-	 *
-	 * @event
-	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
-	 */
-	function preEvent(
-		event,
-		interceptData,
-		rc,
-		prc,
-		buffer
-	){
-		if ( getProperty( "preEventSecurity" ) ) {
-			processRules(
-				arguments.event,
-				arguments.interceptData,
-				arguments.interceptData.processedEvent
-			);
-		}
 	}
 
 	/**
