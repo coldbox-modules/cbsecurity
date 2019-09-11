@@ -22,13 +22,19 @@ component
 					.$( "getAppRootPath", expandPath( "/root" ) );
 				security = interceptor;
 				settings = {
+					// Global Relocation when an invalid access is detected, instead of each rule declaring one.
+					"invalidAccessRedirect" 		: "",
+					// Global override event when an invalid access is detected, instead of each rule declaring one.
+					"invalidAccessOverrideEvent"	: "",
+					// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
+					"defaultInvalidAction"			: "redirect",
 					"rules"				: [],
 					// Where are the rules, valid options: json,xml,db,model
 					"rulesSource" 		: "",
 					// The location of the rules file, applies to json|xml ruleSource
 					"rulesFile"			: "",
 					// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
-					"validator"			: "CFValidator@cbsecurity",
+					"validator"			: "tests.resources.security",
 					// If source is model, the wirebox Id to use for retrieving the rules
 					"rulesModel"		: "",
 					// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
@@ -46,8 +52,9 @@ component
 					// Force SSL for all relocations
 					"useSSL"			: false
 				};
-			} );
 
+				ruleLoader = createRuleLoader();
+			} );
 
 			it( "can configure with invalid settings", function(){
 				security.setProperties( settings );
@@ -79,63 +86,15 @@ component
 				}).toThrow( "Security.RulesModelNotDefined" );
 			});
 
-			it( "can configure with valid settings", function(){
-				settings.rulesSource = "json";
-				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
+			it( "can configure with default settings", function(){
 				security.setProperties( settings );
+				security
+				.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( ruleLoader )
+				.$( "getInstance" ).$args( settings.validator ).$results(
+					wirebox.getInstance( settings.validator )
+				);
 				security.configure();
-
 				expect( security.getProperty( "rules", [] ) ).toBeEmpty();
-			});
-
-			describe( "It can load many types of rules", function(){
-
-				beforeEach(function( currentSpec ){
-					// pre event security check
-					ruleLoader = createRuleLoader();
-					settings.validator = "tests.resources.security";
-					security
-						.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( ruleLoader )
-						.$( "getInstance" ).$args( settings.validator ).$results(
-							wirebox.getInstance( settings.validator )
-						);
-				});
-
-				it( "can load JSON Rules", function(){
-					settings.rulesSource 		= "json";
-					settings.rulesFile 			= expandPath( "/tests/resources/security.json.cfm" );
-					mockController.$( "locateFilePath", settings.rulesFile );
-					security.setProperties( settings );
-
-					security.afterAspectsLoad( getMockRequestContext(), {} );
-
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 2 );
-					expect( security.getInitialized() ).toBeTrue();
-				});
-
-				it( "can load XML Rules", function(){
-					settings.rulesSource 		= "xml";
-					settings.rulesFile 			= expandPath( "/tests/resources/security.xml.cfm" );
-					mockController.$( "locateFilePath", settings.rulesFile );
-					security.setProperties( settings );
-
-					security.afterAspectsLoad( getMockRequestContext(), {} );
-
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 3 );
-					expect( security.getInitialized() ).toBeTrue();
-				});
-
-				it( "can load model Rules", function(){
-					settings.rulesSource 		= "model";
-					settings.rulesModel			= "tests.resources.security";
-					security.setProperties( settings );
-
-					security.afterAspectsLoad( getMockRequestContext(), {} );
-
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
-					expect( security.getInitialized() ).toBeTrue();
-				});
-
 			});
 
 			it( "can load a valid validator", function(){
@@ -151,7 +110,7 @@ component
 						wirebox.getInstance( settings.validator )
 					);
 
-				security.afterAspectsLoad( getMockRequestContext(), {} );
+				security.configure();
 				expect( security.getValidator() ).toBeComponent();
 			});
 
@@ -167,8 +126,53 @@ component
 					.$( "getInstance" ).$args( settings.validator ).$results( createStub() );
 
 				expect( function(){
-					security.afterAspectsLoad( getMockRequestContext(), {} );
+					security.configure();
 				}).toThrow( "Security.ValidatorMethodException" );
+
+			});
+
+			describe( "It can load many types of rules", function(){
+
+				beforeEach(function( currentSpec ){
+					settings.validator = "tests.resources.security";
+					security
+						.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( ruleLoader )
+						.$( "getInstance" ).$args( settings.validator ).$results(
+							wirebox.getInstance( settings.validator )
+						);
+				});
+
+				it( "can load JSON Rules", function(){
+					settings.rulesSource 		= "json";
+					settings.rulesFile 			= expandPath( "/tests/resources/security.json.cfm" );
+					mockController.$( "locateFilePath", settings.rulesFile );
+					security.setProperties( settings );
+
+					security.configure();
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 2 );
+				});
+
+				it( "can load XML Rules", function(){
+					settings.rulesSource 		= "xml";
+					settings.rulesFile 			= expandPath( "/tests/resources/security.xml.cfm" );
+					mockController.$( "locateFilePath", settings.rulesFile );
+					security.setProperties( settings );
+
+					security.configure();
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 3 );
+				});
+
+				it( "can load model Rules", function(){
+					settings.rulesSource 		= "model";
+					settings.rulesModel			= "tests.resources.security";
+					security.setProperties( settings );
+
+					security.configure();
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
+				});
 
 			});
 

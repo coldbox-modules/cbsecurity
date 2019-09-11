@@ -19,12 +19,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	property name="validator";
 
 	/**
-	 * Configure the interception
+	 * Configure the security firewall
 	 */
 	function configure(){
-		// default to false
-		variables.initialized = false;
-
 		// Rule Source Checks
 		if ( getProperty( "rulesSource" ).len() && !reFindNoCase( "^(xml|db|model|json)$", getProperty( "rulesSource" ) ) ) {
 			throw(
@@ -36,24 +33,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Verify rule configurations
 		rulesSourceChecks();
-	}
 
-	/**
-	 * Once the application has loaded, we then proceed to setup the rule engine
-	 *
-	 * @event
-	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
-	 */
-	function afterAspectsLoad(
-		event,
-		interceptData,
-		rc,
-		prc,
-		buffer
-	){
+		// Load up the rules if needed
 		var rulesLoader = getInstance( "RulesLoader@cbSecurity" );
 
 		// If we added our own rules, then normalize them.
@@ -70,9 +51,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		registerValidator(
 			getInstance( getProperty( "validator" ) )
 		);
-
-		// We can now rule!
-		variables.initialized = true;
 	}
 
 	/**
@@ -91,9 +69,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		prc,
 		buffer
 	){
-		// Check if inited already
-		if ( NOT variables.initialized ) {
-			afterAspectsLoad( arguments.event, arguments.interceptData );
+		// If an HTTP Verb is OPTIONS then bail, no need to secure.
+		if ( event.getHTTPMethod() == "OPTIONS" ) {
+            return;
 		}
 
 		// Execute Rule processing
@@ -182,6 +160,24 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	}
 
 	/**
+	 * Register a validator object with this interceptor
+	 *
+	 * @validator The validator object to register
+	 */
+	function registerValidator( required validator ){
+		if ( structKeyExists( arguments.validator, "userValidator" ) ) {
+			variables.validator = arguments.validator;
+		} else{
+			throw(
+				message = "Validator object does not have a 'userValidator' method, I can only register objects with this interface method.",
+				type 	= "Security.ValidatorMethodException"
+			);
+		}
+	}
+
+	/********************************* PRIVATE ******************************/
+
+	/**
 	 * Process invalid actions on a rule
 	 *
 	 * @rule The offending rule
@@ -242,24 +238,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			}
 		}
 	}
-
-	/**
-	 * Register a validator object with this interceptor
-	 *
-	 * @validator The validator object to register
-	 */
-	function registerValidator( required validator ){
-		if ( structKeyExists( arguments.validator, "userValidator" ) ) {
-			variables.validator = arguments.validator;
-		} else{
-			throw(
-				message = "Validator object does not have a 'userValidator' method, I can only register objects with this interface method.",
-				type 	= "Security.ValidatorMethodException"
-			);
-		}
-	}
-
-	/********************************* PRIVATE ******************************/
 
 	/**
 	 * Flash the incoming secured Url so we can redirect to it or use it in the next request.

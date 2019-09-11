@@ -15,6 +15,9 @@ component {
 	// CF Mapping
 	this.cfmapping			= "cbsecurity";
 
+	// The map of modules contributing security rules
+	variables.securedModules = {};
+
 	/**
 	 * Module Config
 	 */
@@ -81,6 +84,23 @@ component {
 	 * Fired when the module is unregistered and unloaded
 	 */
 	function onUnload(){
+	}
+
+	/**
+	 * Listen when modules are activated to load their cbSecurity capabilities
+	 */
+	function afterAspectsLoad( event, interceptData ){
+		var modules 			= controller.getSetting( "modules" );
+		var moduleService 		= controller.getModuleService();
+		var moduleConfigCache 	= moduleService.getModuleConfigCache();
+
+		for( var thisModule in modules ){
+			// get module config object
+			//var oConfig = moduleConfigCache[ thisModule ];
+			// Get i18n Settings
+			//var i18nSettings = oConfig.getPropertyMixin( "i18n", "variables", {} );
+		}
+
 	}
 
 }
