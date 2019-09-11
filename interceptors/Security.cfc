@@ -69,11 +69,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		prc,
 		buffer
 	){
-		// If an HTTP Verb is OPTIONS then bail, no need to secure.
-		if ( event.getHTTPMethod() == "OPTIONS" ) {
-            return;
-		}
-
 		// Execute Rule processing
 		processRules(
 			arguments.event,
