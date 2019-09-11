@@ -156,20 +156,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 					// Are we processing the invalid actions?
 					if( iData.processActions ){
-
-						// Relocate or Override?
-						if( thisRule.redirect.len() ){
-							relocate(
-								event 	= thisRule.redirect,
-								persist = "_securedURL",
-								// Chain SSL: Global, rule, request
-								ssl 	= ( getProperty( "useSSL" ) || thisRule.useSSL || arguments.event.isSSL() )
-							);
-						} else {
-							// Override event
-							arguments.event.overrideEvent( event=thisRule.overrideEvent );
-						}
-
+						processInvalidActions( thisRule, arguments.event );
 					} // end invalid actions processing
 
 					break;
@@ -192,6 +179,68 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			}
 
 		} // end rule iterations
+	}
+
+	/**
+	 * Process invalid actions on a rule
+	 *
+	 * @rule The offending rule
+	 * @event The request context
+	 */
+	private function processInvalidActions( required rule, required event ){
+		// Discover relocation, from specific (rule) to global setting
+		var redirectEvent = ( arguments.rule.redirect.len() ? arguments.rule.redirect : getProperty( "invalidAccessRedirect" ) );
+		// Discover override, from specific (rule) to global setting
+		var overrideEvent = ( arguments.rule.overrideEvent.len() ? arguments.rule.overrideEvent : getProperty( "invalidAccessOverrideEvent" ) );
+		// Discover action, from specific (rule) to global setting
+		var defaultAction = ( arguments.rule.action.len() ? arguments.rule.action : getProperty( "defaultInvalidAction" ) );
+
+		// Now let's check if a rule has individual redirect or overrideEvent elements
+		if( arguments.rule.overrideEvent.len() ){
+			defaultAction = "override";
+		}
+		if( arguments.rule.redirect.len() ){
+			defaultAction = "redirect";
+		}
+
+		// Determine actions from rules
+		switch( defaultAction ){
+			case "redirect" : {
+				// Double check for length else give warning
+				if( !redirectEvent.len() ){
+					throw(
+						message = "The redirect action is empty, either add a redirect to the rule or a global InvalidAccessRedirect setting",
+						type 	= "InvalidAccessAction"
+					);
+				}
+				// Relocate now
+				relocate(
+					event 	= redirectEvent,
+					persist = "_securedURL",
+					// Chain SSL: Global, rule, request
+					ssl 	= ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
+				);
+				break;
+			}
+			case "override" : {
+				// Double check for length else give warning
+				if( !overrideEvent.len() ){
+					throw(
+						message = "The override event action is empty, either add a redirect to the rule or a global invalidAccessOverrideEvent setting",
+						type 	= "InvalidAccessAction"
+					);
+				}
+				// Override event
+				arguments.event.overrideEvent( event=overrideEvent );
+				break;
+			}
+			default : {
+				throw(
+					message = "The type [#defaultAction#] is not a valid rule action.  Valid types are [ 'redirect', 'override' ].",
+					type 	= "InvalidRuleActionType"
+				);
+			}
+		}
 	}
 
 	/**

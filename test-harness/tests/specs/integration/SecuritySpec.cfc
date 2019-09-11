@@ -22,6 +22,7 @@ component
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
+		structDelete( application, "cbController" );
 		super.beforeAll();
 		// do your own stuff here
 	}
@@ -43,21 +44,52 @@ component
 			it( "should load the rules from inline declaration", function(){
 				var rules = getWireBox().getInstance( "interceptor-cbsecurity@global" )
 					.getProperty( "rules" );
-				expect( rules ).toHaveLength( 2 );
+				expect( rules ).notToBeEmpty();
 			});
 
-			it( "should protect the admin and relocate", function() {
-				var event = execute( event = "admin.index", renderResults = true );
-				// should have protected it
-				expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
-			} );
-
-			it( "should protect the admin and override", function(){
-				var event = execute( route = "/override", renderResults = true );
-				// should have protected it
-				expect( event.getCurrentEvent() ).toBe( "main.index" );
-				expect( event.valueExists( "relocate_event" ) ).toBeFalse();
+			// direct action, use global redirect
+			given( "a direct action of redirect with no explicit rule actions", function(){
+				then( "it should do a global redirect using the global setting", function(){
+					var event = execute( event = "admin.index", renderResults = true );
+					// should have protected it
+					expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
+				});
 			});
+
+			// no action, use global default action
+			given( "no direct action and no explicit rule actions", function(){
+				then( "it should default to a redirect action to the global setting", function(){
+					var event = execute( route = "/noAction", renderResults = true );
+					expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
+				});
+			});
+
+			// direct override action, use global override
+			given( "a direct override action with no explicit rule actions", function(){
+				then( "it should override using the global setting", function(){
+					var event = execute( route = "/override", renderResults = true );
+					expect( event.getCurrentEvent() ).toBe( "main.index" );
+					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
+				});
+			});
+
+			// Using overrideEvent only, so use an explicit override
+			given( "no direct action but using an overrideEvent rule action", function(){
+				then( "it should override using the overrideEvent element", function(){
+					var event = execute( route = "/ruleActionOverride", renderResults = true );
+					expect( event.getCurrentEvent() ).toBe( "main.login" );
+					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
+				});
+			});
+
+			// Using redirect only, so use an explicit redirect
+			given( "no direct action but using a redirect rule action", function(){
+				then( "it should redirect using the redirect element", function(){
+					var event = execute( route = "/ruleActionRedirect", renderResults = true );
+					expect( "main.login" ).toBe( event.getValue( "relocate_event" ) );
+				});
+			});
+
 		} );
 	}
 

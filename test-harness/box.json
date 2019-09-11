@@ -6,11 +6,10 @@
     "description":"",
     "dependencies":{
         "swagger-sdk":"be",
-        "coldbox":"^5.0.0"
-    },
-    "devDependencies":{
+        "coldbox":"^5.0.0",
         "testbox":"be"
     },
+    "devDependencies":{},
     "installPaths":{
         "swagger-sdk":"modules/swagger-sdk/",
         "coldbox":"coldbox/",

@@ -188,7 +188,8 @@ component accessors="true" singleton{
 			"permissions"	: "", // Attach a list of permissions to the rule
 			"redirect" 		: "", // If rule breaks, and you have a redirect it will redirect here
 			"overrideEvent"	: "", // If rule breaks, and you have an event, it will override it
-			"useSSL"		: false // Force SSL
+			"useSSL"		: false, // Force SSL,
+			"action"		: "" // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
 		};
 	}
 

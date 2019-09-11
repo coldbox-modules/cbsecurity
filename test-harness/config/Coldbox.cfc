@@ -68,23 +68,51 @@
 		moduleSettings = {
 			// CB Security
 			cbSecurity : {
+				// Global Relocation when an invalid access is detected, instead of each rule declaring one.
+				"invalidAccessRedirect" 		: "main.index",
+				// Global override event when an invalid access is detected, instead of each rule declaring one.
+				"invalidAccessOverrideEvent"	: "main.index",
+				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
+				"defaultInvalidAction"			: "redirect",
 				// The global security rules
-				rules : [
+				"rules" 						: [
+					// should use direct action and do a global redirect
 					{
 						"whitelist": "",
 						"securelist": "admin",
 						"match": "event",
 						"roles": "admin",
 						"permissions": "",
-						"redirect": "main.index"
+						"action" : "redirect"
 					},
+					// no action, use global default action
+					{
+						"whitelist": "",
+						"securelist": "noAction",
+						"match": "url",
+						"roles": "admin",
+						"permissions": ""
+					},
+					// Using overrideEvent only, so use an explicit override
+					{
+						"securelist": "ruleActionOverride",
+						"match": "url",
+						"overrideEvent": "main.login"
+					},
+					// direct action, use global override
 					{
 						"whitelist": "",
 						"securelist": "override",
 						"match": "url",
 						"roles": "",
 						"permissions": "",
-						"overrideEvent": "main.index"
+						"action" : "override"
+					},
+					// Using redirect only, so use an explicit redirect
+					{
+						"securelist": "ruleActionRedirect",
+						"match": "url",
+						"redirect": "main.login"
 					}
 				]
 			}

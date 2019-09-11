@@ -21,36 +21,42 @@ component {
 	function configure(){
 
 		settings = {
+			// Global Relocation when an invalid access is detected, instead of each rule declaring one.
+			"invalidAccessRedirect" 		: "",
+			// Global override event when an invalid access is detected, instead of each rule declaring one.
+			"invalidAccessOverrideEvent"	: "",
+			// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
+			"defaultInvalidAction"			: "redirect",
 			// You can define your security rules here or externally via a source
-			"rules"				: [],
+			"rules"							: [],
 			// Where are the rules, valid options: json,xml,db,model
-			"rulesSource" 		: "",
+			"rulesSource" 					: "",
 			// The location of the rules file, applies to json|xml ruleSource
-			"rulesFile"			: "",
-			// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
+			"rulesFile"						: "",
+			// The rule validator model, this must have a method like this `userValidator( rule, controller )			:boolean`
 			// By default we use the CFSecurity validator
-			"validator"			: "CFValidator@cbsecurity",
+			"validator"						: "CFValidator@cbsecurity",
 			// If source is model, the wirebox Id to use for retrieving the rules
-			"rulesModel"		: "",
+			"rulesModel"					: "",
 			// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
-			"rulesModelMethod"	: "getSecurityRules",
+			"rulesModelMethod"				: "getSecurityRules",
 			// If source is db then the datasource name to use
-			"rulesDSN"			: "",
+			"rulesDSN"						: "",
 			// If source is db then the table to get the rules from
-			"rulesTable"		: "",
+			"rulesTable"					: "",
 			// If source is db then the ordering of the select
-			"rulesOrderBy"		: "",
+			"rulesOrderBy"					: "",
 			// If source is db then you can have your custom select SQL
-			"rulesSql" 			: "",
+			"rulesSql" 						: "",
 			// Use regular expression matching on the rule match types
-			"useRegex" 			: true,
+			"useRegex" 						: true,
 			// Force SSL for all relocations
-			"useSSL"			: false
+			"useSSL"						: false
 		};
 
 		interceptorSettings = {
 			customInterceptionPoints = [
-				"cbSecurity_onInvalidAccess" // Fires when a security rule matches and the user validator reports a false invalid access
+				"cbSecurity_onInvalidAccess" // Fires when a security rule matches and the user validator reports an invalid access
 			]
 		};
 
