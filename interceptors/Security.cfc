@@ -112,6 +112,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Log it
 		log.info( "+ Registered module (#arguments.module#) with cbSecurity" );
+
+		return this;
 	}
 
 	/**
