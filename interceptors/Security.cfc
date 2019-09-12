@@ -38,20 +38,17 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			);
 		}
 
-		// Verify rule configurations
-		rulesSourceChecks();
-
-		// Load up the rules if needed
-		var rulesLoader = getInstance( "RulesLoader@cbSecurity" );
+		// Verify setting configurations
+		variables.rulesLoader.rulesSourceChecks( getProperties() );
 
 		// If we added our own rules, then normalize them.
 		if( arrayLen( getProperty( "rules" ) ) ){
-			setProperty( "rules", rulesLoader.normalizeRules( getProperty( "rules" ) ) );
+			setProperty( "rules", variables.rulesLoader.normalizeRules( getProperty( "rules" ) ) );
 		}
 
 		// Load Rules if we have a ruleSource
 		if( getProperty( "rulesSource" ).len() ){
-			setProperty( "rules", rulesLoader.loadRules( getProperties() ) );
+			setProperty( "rules", variables.rulesLoader.loadRules( getProperties() ) );
 		}
 
 		// Load up the validator
@@ -105,7 +102,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		variables.securityModules[ arguments.module ] = arguments.settings;
 
 		// Process Module Rules
-		arguments.settings.rules = rulesLoader.normalizeRules( arguments.settings.rules, module );
+		arguments.settings.rules = variables.rulesLoader.normalizeRules( arguments.settings.rules, module );
 
 		// Append them
 		arrayAppend( getProperty( "rules" ), arguments.settings.rules, true );
@@ -431,7 +428,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		arguments.event.setValue( "_securedUrl", securedUrl );
 	}
 
-
 	/**
 	 * Verifies that the user is in any role using the validator
 	 *
@@ -463,53 +459,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Validate the rules source property
-	 */
-	private function rulesSourceChecks(){
-		switch ( getProperty( "rulesSource" ) ) {
-			case "xml":
-			case "json": {
-				// Check if file property exists
-				if ( !getProperty( "rulesFile" ).len() ) {
-					throw(
-						message = "Please enter a valid rulesFile setting",
-						type 	= "Security.RulesFileNotDefined"
-					);
-				}
-				break;
-			}
-
-			case "db": {
-				if ( !getProperty( "rulesDSN" ).len() ) {
-					throw(
-						message = "Missing setting for DB source: rulesDSN ",
-						type 	= "Security.RuleDSNNotDefined"
-					);
-				}
-				if ( !getProperty( "rulesTable" ).len() ) {
-					throw(
-						message = "Missing setting for DB source: rulesTable ",
-						type 	= "Security.RulesTableNotDefined"
-					);
-				}
-				break;
-			}
-
-			case "model": {
-				if ( !getProperty( "rulesModel" ).len() ) {
-					throw(
-						message = "Missing setting for model source: rulesModel ",
-						type 	= "Security.RulesModelNotDefined"
-					);
-				}
-
-				break;
-			}
-		}
-		// end of switch statement
 	}
 
 	/**

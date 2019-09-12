@@ -52,8 +52,8 @@ component
 					// Force SSL for all relocations
 					"useSSL"			: false
 				};
-
-				ruleLoader = createRuleLoader();
+				// Set Rule Loader
+				security.setRulesLoader( createRuleLoader() );
 			} );
 
 			it( "can configure with invalid settings", function(){
@@ -89,7 +89,6 @@ component
 			it( "can configure with default settings", function(){
 				security.setProperties( settings );
 				security
-				.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( ruleLoader )
 				.$( "getInstance" ).$args( settings.validator ).$results(
 					wirebox.getInstance( settings.validator )
 				);
@@ -101,11 +100,10 @@ component
 				settings.rulesSource = "json";
 				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
 				settings.validator = "tests.resources.security";
-				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
+				security.getRulesLoader().$( "loadRules", [] );
 
 				security
 					.setProperties( settings )
-					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( mockRuleLoader )
 					.$( "getInstance" ).$args( settings.validator ).$results(
 						wirebox.getInstance( settings.validator )
 					);
@@ -118,17 +116,15 @@ component
 				settings.rulesSource = "json";
 				settings.rulesFile = expandPath( "/tests/resources/security.json.cfm" );
 				settings.validator = "invalid.path";
-				mockRuleLoader = createRuleLoader().$( "loadRules", [] );
+				security.getRulesLoader().$( "loadRules", [] );
 
 				security
 					.setProperties( settings )
-					.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( mockRuleLoader )
 					.$( "getInstance" ).$args( settings.validator ).$results( createStub() );
 
 				expect( function(){
 					security.configure();
 				}).toThrow( "Security.ValidatorMethodException" );
-
 			});
 
 			describe( "It can load many types of rules", function(){
@@ -136,7 +132,6 @@ component
 				beforeEach(function( currentSpec ){
 					settings.validator = "tests.resources.security";
 					security
-						.$( "getInstance" ).$args( "RulesLoader@cbSecurity" ).$results( ruleLoader )
 						.$( "getInstance" ).$args( settings.validator ).$results(
 							wirebox.getInstance( settings.validator )
 						);

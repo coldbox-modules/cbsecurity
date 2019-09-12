@@ -58,6 +58,55 @@ component accessors="true" singleton{
 	}
 
 	/**
+	 * Validate the rules source property
+	 *
+	 * @settings The settings to check
+	 */
+	function rulesSourceChecks( required settings ){
+		switch ( arguments.settings[ "rulesSource" ] ) {
+			case "xml":
+			case "json": {
+				// Check if file property exists
+				if ( !arguments.settings[ "rulesFile" ].len() ) {
+					throw(
+						message = "Please enter a valid rulesFile setting",
+						type 	= "Security.RulesFileNotDefined"
+					);
+				}
+				break;
+			}
+
+			case "db": {
+				if ( !arguments.settings[ "rulesDSN" ].len() ) {
+					throw(
+						message = "Missing setting for DB source: rulesDSN ",
+						type 	= "Security.RuleDSNNotDefined"
+					);
+				}
+				if ( !arguments.settings[ "rulesTable" ].len() ) {
+					throw(
+						message = "Missing setting for DB source: rulesTable ",
+						type 	= "Security.RulesTableNotDefined"
+					);
+				}
+				break;
+			}
+
+			case "model": {
+				if ( !arguments.settings[ "rulesModel" ].len() ) {
+					throw(
+						message = "Missing setting for model source: rulesModel ",
+						type 	= "Security.RulesModelNotDefined"
+					);
+				}
+
+				break;
+			}
+		}
+		// end of switch statement
+	}
+
+	/**
 	 * Load rules from an XML file
 	 *
 	 * @settings The loaded settings
