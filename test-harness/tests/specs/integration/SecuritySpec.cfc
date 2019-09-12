@@ -35,17 +35,18 @@ component
 	/*********************************** BDD SUITES ***********************************/
 
 	function run(){
-		describe( "Security module", function() {
-			beforeEach( function(currentSpec) {
+		describe( "Security module", function(){
+			beforeEach( function(currentSpec){
 				// Setup as a new ColdBox request for this suite, VERY IMPORTANT. ELSE EVERYTHING LOOKS LIKE THE SAME REQUEST.
 				setup();
 			} );
 
 			it( "should load the rules from inline declaration", function(){
-				var rules = getWireBox().getInstance( "interceptor-cbsecurity@global" )
+				var rules = getWireBox()
+					.getInstance( "interceptor-cbsecurity@global" )
 					.getProperty( "rules" );
 				expect( rules ).notToBeEmpty();
-			});
+			} );
 
 			// direct action, use global redirect
 			given( "a direct action of redirect with no explicit rule actions", function(){
@@ -53,16 +54,16 @@ component
 					var event = execute( event = "admin.index", renderResults = true );
 					// should have protected it
 					expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
-				});
-			});
+				} );
+			} );
 
 			// no action, use global default action
 			given( "no direct action and no explicit rule actions", function(){
 				then( "it should default to a redirect action to the global setting", function(){
 					var event = execute( route = "/noAction", renderResults = true );
 					expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
-				});
-			});
+				} );
+			} );
 
 			// direct override action, use global override
 			given( "a direct override action with no explicit rule actions", function(){
@@ -70,8 +71,8 @@ component
 					var event = execute( route = "/override", renderResults = true );
 					expect( event.getCurrentEvent() ).toBe( "main.index" );
 					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
-				});
-			});
+				} );
+			} );
 
 			// Using overrideEvent only, so use an explicit override
 			given( "no direct action but using an overrideEvent rule action", function(){
@@ -79,19 +80,18 @@ component
 					var event = execute( route = "/ruleActionOverride", renderResults = true );
 					expect( event.getCurrentEvent() ).toBe( "main.login" );
 					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
-				});
-			});
+				} );
+			} );
 
 			// Using redirect only, so use an explicit redirect
 			given( "no direct action but using a redirect rule action", function(){
 				then( "it should redirect using the redirect element", function(){
 					var event = execute( route = "/ruleActionRedirect", renderResults = true );
 					expect( "main.login" ).toBe( event.getValue( "relocate_event" ) );
-				});
-			});
+				} );
+			} );
 
 			describe( "Module cbsecurity integrations", function(){
-
 				given( "a module secured event", function(){
 					then( "it should redirect to the modules invalid access redirect setting", function(){
 						var event = execute( event = "mod1:home", renderResults = true );
@@ -99,16 +99,16 @@ component
 						debug( event.getPrivateCollection() );
 
 						expect( "mod1/secure" ).toBe( event.getValue( "relocate_event" ) );
-					});
-				});
+					} );
+				} );
 
 				given( "a module secured event with an override action", function(){
 					then( "it should override to the modules invalid override event setting", function(){
 						var event = execute( route = "/mod1/modOverride", renderResults = true );
 						expect( event.getCurrentEvent() ).toBe( "mod1:secure.index" );
 						expect( event.valueExists( "relocate_event" ) ).toBeFalse();
-					});
-				});
+					} );
+				} );
 
 				given( "a module unload call", function(){
 					then( "it should unload module rules if the module is unloaded", function(){
@@ -121,10 +121,9 @@ component
 						// Verify
 						expect( security.getSecurityModules() ).notToHaveKey( "mod1" );
 						expect( security.getProperty( "rules" ).len() ).toBeLT( oldRules.len() );
-					});
-				});
-			});
-
+					} );
+				} );
+			} );
 		} );
 	}
 

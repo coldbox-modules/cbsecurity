@@ -14,13 +14,35 @@ component singleton{
 	 *
 	 * @return True, user can continue access, false, relocation will occur.
 	 */
-	boolean function userValidator( required rule, required controller ){
+	boolean function ruleValidator( required rule, required controller ){
 		// Are we logged in?
 		if( isUserLoggedIn() ){
 
 			// Do we have any roles?
 			if( listLen( arguments.rule.roles ) ){
 				return 	isUserInAnyRole( arguments.rule.roles );
+			}
+
+			// We are satisfied!
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * This function is called once access to a handler/action is detected.
+	 * You will receive the secured annotation value and an instance of the ColdBox Controller
+	 *
+	 * @return True, user can continue access, false, invalid access actions will ensue
+	 */
+	boolean function annotationValidator( required securedValue, required controller ){
+		// Are we logged in?
+		if( isUserLoggedIn() ){
+
+			// Do we have any roles?
+			if( listLen( arguments.securedValue ) ){
+				return isUserInAnyRole( arguments.securedValue );
 			}
 
 			// We are satisfied!

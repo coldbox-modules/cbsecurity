@@ -9,7 +9,8 @@
 component accessors="true" extends="coldbox.system.Interceptor" {
 
 	// DI
-	property name="rulesLoader" inject="rulesLoader@cbSecurity";
+	property name="rulesLoader" 	inject="rulesLoader@cbSecurity";
+	property name="handlerService" 	inject="coldbox:handlerService";
 
 	/**
 	 * The reference to the security validator for this interceptor
@@ -197,10 +198,105 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			arguments.interceptData,
 			arguments.event.getCurrentEvent()
 		);
+
+		// Are we doing annotation based security?
+		if( getProperty( "handlerAnnotationSecurity" ) ){
+			processAnnotationRules(
+				arguments.event,
+				arguments.interceptData,
+				arguments.event.getCurrentEvent()
+			);
+		}
 	}
 
 	/**
-	 * Process security rules. This method is called from an interception point
+	 * Process handler annotation based security rules.
+	 *
+	 * @event
+	 * @interceptData
+	 * @currentEvent
+	 */
+	function processAnnotationRules(
+		required event,
+		required interceptData,
+		required currentEvent
+	){
+		// Get handler bean for the current event
+		var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
+        if ( handlerBean.getHandler() == "" ) {
+            return;
+		}
+
+		// If metadata is not loaded, load it
+        if ( ! handlerBean.isMetadataLoaded() ) {
+            handlerService.getHandler( handlerBean, arguments.event );
+        }
+
+		// Verify Access
+		var isAuthorized = (
+			// Verify we can access Handler
+			verifySecuredAnnotation(
+				handlerBean.getHandlerMetadata( "secured", false ),
+				arguments.event
+			)
+			&&
+			// Verify we can access Action
+			verifySecuredAnnotation(
+				handlerBean.getActionMetadata( "secured", false ),
+				arguments.event
+			)
+		);
+
+		// If not authorized, block them
+		if( !isAuthorized ){
+			// Log Block
+			if ( log.canWarn() ) {
+				log.warn(
+					"User (#getRealIp()#) blocked access to event=#arguments.event.getCurrentEvent()# via handler annotation security"
+				);
+			}
+			// Flash secured incoming URL for next request
+			saveSecuredUrl( arguments.event );
+
+			// Announce the block event
+			var iData = {
+				"ip" 				: getRealIp(), // The offending IP
+				"rule" 				: {}, // An empty rule, since it is by annotation security
+				"settings"			: getProperties(), // All the config settings, just in case
+				"processActions" 	: true // Boolean indicator if the invalid actions should process or not
+			};
+			announceInterception( state="cbSecurity_onInvalidAccess", interceptData=iData );
+
+			// Are we processing the invalid actions?
+			if( iData.processActions ){
+				processInvalidActions( rulesLoader.getRuleTemplate(), arguments.event );
+			} // end invalid actions processing
+
+			break;
+		}
+	}
+
+	/**
+	 * Verifies if a user is authorized according to the incoming secured value annotation.
+	 * If we return true, it means that the user has validated, false means they are not authorized
+	 *
+	 * @securedValue The secured value annotation
+	 */
+	private boolean function verifySecuredAnnotation( required securedValue ){
+		// If no value, then default it to true
+		if( !len( arguments.securedValue ) ){ arguments.securedValue = true; }
+
+		// Are we securing?
+		if( isBoolean( arguments.securedValue ) && !arguments.securedValue ){
+			return true; // we can access
+		}
+
+		// Now call the user validator and pass in the secured value
+		return getValidator().annotationValidator( arguments.securedValue, variables.controller );
+	}
+
+	/**
+	 * Process global and module security rules
 	 *
 	 * @event Event object
 	 * @interceptData Interception info
@@ -228,12 +324,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
 
 				// Verify if user is logged in and in a secure state
-				if ( !_isUserInValidState( thisRule ) ) {
+				if ( ! getValidator().ruleValidator( thisRule, variables.controller ) ) {
 
 					// Log Block
 					if ( log.canWarn() ) {
 						log.warn(
-							"User (#getRealIp()#) blocked access to target=#matchTarget#. Rule: #thisRule.toString()#"
+							"User (#getRealIp()#) blocked access to target=#matchTarget# using rule security: #thisRule.toString()#"
 						);
 					}
 
@@ -285,11 +381,15 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @validator The validator object to register
 	 */
 	function registerValidator( required validator ){
-		if ( structKeyExists( arguments.validator, "userValidator" ) ) {
+		if (
+			structKeyExists( arguments.validator, "ruleValidator" )
+			&&
+			structKeyExists( arguments.validator, "annotationValidator" )
+		) {
 			variables.validator = arguments.validator;
 		} else{
 			throw(
-				message = "Validator object does not have a 'userValidator' method, I can only register objects with this interface method.",
+				message = "Validator object does not have a 'userValidator,annotationValidator' method, I can only register objects with this interface method.",
 				type 	= "Security.ValidatorMethodException"
 			);
 		}
@@ -429,22 +529,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	}
 
 	/**
-	 * Verifies that the user is in any role using the validator
-	 *
-	 * @rule The rule to validate
-	 */
-	private function _isUserInValidState( required struct rule ){
-		//  Validate via Validator
-		return variables.validator.userValidator( arguments.rule, variables.controller );
-	}
-
-	/**
 	 * Verifies that the current event is in a given pattern list
 	 *
 	 * @currentEvent The current event
 	 * @patternList The list pattern to test
 	 */
-	private function isInPattern( required currentEvent, required patternList ){
+	private boolean function isInPattern( required currentEvent, required patternList ){
 
 		//  Loop Over Patterns
 		for ( var pattern in arguments.patternList ) {

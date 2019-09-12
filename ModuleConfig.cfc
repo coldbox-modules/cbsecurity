@@ -53,7 +53,9 @@ component {
 			// Force SSL for all relocations
 			"useSSL"						: false,
 			// Auto load the global security firewall
-			"autoLoadFirewall"				: true
+			"autoLoadFirewall"				: true,
+			// Activate handler/action based annotation security
+			"handlerAnnotationSecurity"		: true
 		};
 
 		interceptorSettings = {

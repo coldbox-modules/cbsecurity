@@ -50,6 +50,9 @@ settings = {
 };
 ```
 
+* Annotation based security for handlers and actions using the `secured` annotation.  Which can be boolean or a list of permissions, roles or whatever you like.
+* You can disable annotation based security by using the `handlerAnnotationSecurity` boolean setting.
+
 ## Improvements
 
 * SSL Enforcement now cascades according to the following lookup: Global, rule, request
@@ -68,6 +71,7 @@ settings = {
 * OCM rules support dropped
 * `validatorModel` dropped in favor of just `validator` to be a WireBox Id
 * Removed `preEventSecurity` it was too chatty and almost never used
+* The function `userValidator` has been renamed to `ruleValidator` and also added the `annotationValidator` as well.
 
 ### Bugs
 
