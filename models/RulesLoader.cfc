@@ -21,11 +21,15 @@ component accessors="true" singleton{
 	 * Utility function to normalize an array of rules to our standards
 	 *
 	 * @rules The rules to normalize
+	 * @module The module to incorporate if passed
 	 */
-	array function normalizeRules( required array rules ){
+	array function normalizeRules( required array rules, module="" ){
 		return arguments.rules
 			.map( function( item ){
+				// Append template
 				structAppend( item, getRuleTemplate(), false );
+				// Incorporate module if needed
+				item.module = module;
 				return item;
 			} );
 	}
@@ -189,7 +193,8 @@ component accessors="true" singleton{
 			"redirect" 		: "", // If rule breaks, and you have a redirect it will redirect here
 			"overrideEvent"	: "", // If rule breaks, and you have an event, it will override it
 			"useSSL"		: false, // Force SSL,
-			"action"		: "" // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
+			"action"		: "", // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
+			"module"		: "" // metadata we can add so mark rules that come from modules
 		};
 	}
 

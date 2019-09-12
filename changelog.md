@@ -21,7 +21,35 @@ The following are the keys received in this event:
 * You now have a `defaultInvalidAction` setting which defaults to `redirect`
 * You now have a `invalidAccessRedirect` setting which is a global redirect so you don't have to define the redirect in the rules anymore. If you do, then it uses the most explicit definition first.
 * You now have a `invalidAccessOverrideEvent` setting which is a global override so you don't have to define the override in the rules anymore. If you do, then it uses the most explicit definition first.
- 
+* If a rule is matched, we will store it in the `prc` as `cbSecurityMatchedRule` so you can see which security rule was used for processing invalid access actions.
+* Ability for modules to register cbSecurity rules and setting overrides by registering a `settings.cbSecurity` key.
+
+```json
+// module settings - stored in modules.name.settings
+settings = {
+	// CB Security Rules to append to global rules
+	cbsecurity = {
+		// Module Relocation when an invalid access is detected, instead of each rule declaring one.
+		"invalidAccessRedirect" 		: "mod1/secure",
+		// Module override event when an invalid access is detected, instead of each rule declaring one.
+		"invalidAccessOverrideEvent"	: "mod1:secure.index",
+		// Module override
+		"defaultInvalidAction:			: "redirect",
+		// You can define your security rules here or externally via a source
+		"rules"							: [
+			{
+				"secureList" 	: "mod1:home"
+			},
+			{
+				"secureList" 	: "mod1/modOverride",
+				"match"			: "url",
+				"action"		: "override"
+			}
+		]
+	}
+};
+```
+
 ## Improvements
 
 * SSL Enforcement now cascades according to the following lookup: Global, rule, request

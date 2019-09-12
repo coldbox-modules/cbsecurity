@@ -90,6 +90,28 @@ component
 				});
 			});
 
+			describe( "Module cbsecurity integrations", function(){
+
+				given( "a module secured event", function(){
+					then( "it should redirect to the modules invalid access redirect setting", function(){
+						var event = execute( event = "mod1:home", renderResults = true );
+
+						debug( event.getPrivateCollection() );
+
+						expect( "mod1/secure" ).toBe( event.getValue( "relocate_event" ) );
+					});
+				});
+
+				given( "a module secured event with an override action", function(){
+					then( "it should override to the modules invalid override event setting", function(){
+						var event = execute( route = "/mod1/modOverride", renderResults = true );
+						expect( event.getCurrentEvent() ).toBe( "mod1:secure.index" );
+						expect( event.valueExists( "relocate_event" ) ).toBeFalse();
+					});
+				});
+
+			});
+
 		} );
 	}
 

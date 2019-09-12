@@ -9,19 +9,23 @@
 component accessors="true" extends="coldbox.system.Interceptor" {
 
 	/**
-	 * Is the listener initialized
-	 */
-	property name="initialized" type="boolean";
-
-	/**
 	 * The reference to the security validator for this interceptor
 	 */
 	property name="validator";
 
 	/**
+	 * Security modules
+	 */
+	property name="securityModules" type="struct";
+
+	/**
 	 * Configure the security firewall
 	 */
 	function configure(){
+
+		// init the security modules dictionary
+		variables.securityModules = {};
+
 		// Rule Source Checks
 		if ( getProperty( "rulesSource" ).len() && !reFindNoCase( "^(xml|db|model|json)$", getProperty( "rulesSource" ) ) ) {
 			throw(
@@ -51,6 +55,38 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		registerValidator(
 			getInstance( getProperty( "validator" ) )
 		);
+	}
+
+	/**
+	 * Listen when modules are activated to load their cbSecurity capabilities
+	 */
+	function afterAspectsLoad( event, interceptData ){
+		var rulesLoader 	= getInstance( "RulesLoader@cbSecurity" );
+
+		// Register cbSecurity modules so we can incorporate them.
+		controller
+			.getSetting( "modules" )
+			// Discover cbSecurity modules
+			.filter( function( module, config ){
+				return ( arguments.config.settings.keyExists( "cbSecurity" ) );
+			} )
+			// Register module settings
+			.each( function( module, config ){
+				// Param settings
+				param arguments.config.settings.cbSecurity.rules 						= [];
+				param arguments.config.settings.cbSecurity.invalidAccessRedirect 		= "";
+				param arguments.config.settings.cbSecurity.invalidAccessOverrideEvent 	= "";
+				param arguments.config.settings.cbSecurity.defaultInvalidAction 		= "";
+
+				// Store configuration in this firewall
+				variables.securityModules[ arguments.module ] = arguments.config.settings.cbSecurity;
+
+				// Process Module Rules
+				arguments.config.settings.cbSecurity.rules = rulesLoader.normalizeRules( arguments.config.settings.cbSecurity.rules, module );
+
+				// Append them
+				arrayAppend( getProperty( "rules" ), arguments.config.settings.cbSecurity.rules, true );
+			} );
 	}
 
 	/**
@@ -118,6 +154,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					// Flash secured incoming URL for next request
 					saveSecuredUrl( arguments.event );
 
+					// Save the matched rule in the prc
+					arguments.event.setPrivateValue( "cbSecurityMatchedRule", thisRule );
+
 					// Announce the block event
 					var iData = {
 						"ip" 				: getRealIp(), // The offending IP
@@ -173,6 +212,47 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/********************************* PRIVATE ******************************/
 
 	/**
+	 * Discover the invalid access property from either module -> global order.
+	 *
+	 * @property The property to discover
+	 * @event The request context
+	 */
+	private function discoverInvalidProperty( required property, required event ){
+		// Check for module overrides
+		var currentModule = arguments.event.getCurrentModule();
+		if (
+			// Are we in a module call?
+			currentModule.len()
+			&&
+			// Does the module have cbSecurity overrides?
+			structKeyExists( variables.securityModules, currentModule )
+			&&
+			// Does the setting have value?
+			variables.securityModules[ currentModule ][ arguments.property ].len()
+		) {
+			// Debug
+			if ( log.canDebug() ) {
+				log.debug(
+					"#arguments.property# setting overriden by #currentModule# module",
+					variables.securityModules[ currentModule ][ arguments.property ]
+				);
+			}
+			return variables.securityModules[ currentModule ][ arguments.property ];
+		}
+
+		// Debug
+		if ( log.canDebug() ) {
+			log.debug(
+				"Using global #arguments.property# setting",
+				getProperty( arguments.property )
+			);
+		}
+
+		// Return global property
+		return getProperty( arguments.property );
+	}
+
+	/**
 	 * Process invalid actions on a rule
 	 *
 	 * @rule The offending rule
@@ -180,18 +260,25 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 */
 	private function processInvalidActions( required rule, required event ){
 		// Discover relocation, from specific (rule) to global setting
-		var redirectEvent = ( arguments.rule.redirect.len() ? arguments.rule.redirect : getProperty( "invalidAccessRedirect" ) );
+		var redirectEvent = ( arguments.rule.redirect.len() ? arguments.rule.redirect : discoverInvalidProperty( "invalidAccessRedirect", arguments.event ) );
 		// Discover override, from specific (rule) to global setting
-		var overrideEvent = ( arguments.rule.overrideEvent.len() ? arguments.rule.overrideEvent : getProperty( "invalidAccessOverrideEvent" ) );
+		var overrideEvent = ( arguments.rule.overrideEvent.len() ? arguments.rule.overrideEvent : discoverInvalidProperty( "invalidAccessOverrideEvent", arguments.event ) );
 		// Discover action, from specific (rule) to global setting
-		var defaultAction = ( arguments.rule.action.len() ? arguments.rule.action : getProperty( "defaultInvalidAction" ) );
+		var defaultAction = ( arguments.rule.action.len() ? arguments.rule.action : discoverInvalidProperty( "defaultInvalidAction", arguments.event ) );
 
 		// Now let's check if a rule has individual redirect or overrideEvent elements
-		if( arguments.rule.overrideEvent.len() ){
+		if ( arguments.rule.overrideEvent.len() ) {
 			defaultAction = "override";
 		}
-		if( arguments.rule.redirect.len() ){
+		if ( arguments.rule.redirect.len() ) {
 			defaultAction = "redirect";
+		}
+
+		// Debug
+		if ( log.canDebug() ) {
+			log.debug(
+				"Processing a #defaultAction# using redirect (#redirectEvent#) and override (#overrideEvent#)"
+			);
 		}
 
 		// Determine actions from rules

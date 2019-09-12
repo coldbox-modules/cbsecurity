@@ -15,9 +15,6 @@ component {
 	// CF Mapping
 	this.cfmapping			= "cbsecurity";
 
-	// The map of modules contributing security rules
-	variables.securedModules = {};
-
 	/**
 	 * Module Config
 	 */
@@ -54,7 +51,9 @@ component {
 			// Use regular expression matching on the rule match types
 			"useRegex" 						: true,
 			// Force SSL for all relocations
-			"useSSL"						: false
+			"useSSL"						: false,
+			// Auto load the global security firewall
+			"autoLoadFirewall"				: true
 		};
 
 		interceptorSettings = {
@@ -70,7 +69,7 @@ component {
 	 */
 	function onLoad(){
 		// Check the global settings for rules or a rules source
-		if( len( settings.rulesSource ) || arrayLen( settings.rules ) ){
+		if( settings.autoLoadFirewall ){
 			controller.getInterceptorService()
 				.registerInterceptor(
 					interceptorClass		= "cbsecurity.interceptors.Security",
@@ -84,23 +83,6 @@ component {
 	 * Fired when the module is unregistered and unloaded
 	 */
 	function onUnload(){
-	}
-
-	/**
-	 * Listen when modules are activated to load their cbSecurity capabilities
-	 */
-	function afterAspectsLoad( event, interceptData ){
-		var modules 			= controller.getSetting( "modules" );
-		var moduleService 		= controller.getModuleService();
-		var moduleConfigCache 	= moduleService.getModuleConfigCache();
-
-		for( var thisModule in modules ){
-			// get module config object
-			//var oConfig = moduleConfigCache[ thisModule ];
-			// Get i18n Settings
-			//var i18nSettings = oConfig.getPropertyMixin( "i18n", "variables", {} );
-		}
-
 	}
 
 }
