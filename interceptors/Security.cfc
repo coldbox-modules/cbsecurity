@@ -8,13 +8,16 @@
  */
 component accessors="true" extends="coldbox.system.Interceptor" {
 
+	// DI
+	property name="rulesLoader" inject="rulesLoader@cbSecurity";
+
 	/**
 	 * The reference to the security validator for this interceptor
 	 */
 	property name="validator";
 
 	/**
-	 * Security modules
+	 * A map of registered modules that leverage cbSecurity rules
 	 */
 	property name="securityModules" type="struct";
 
@@ -60,33 +63,117 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen when modules are activated to load their cbSecurity capabilities
 	 */
-	function afterAspectsLoad( event, interceptData ){
-		var rulesLoader 	= getInstance( "RulesLoader@cbSecurity" );
-
+	function afterAspectsLoad(
+		event,
+		interceptData,
+		rc,
+		prc,
+		buffer
+	){
 		// Register cbSecurity modules so we can incorporate them.
 		controller
 			.getSetting( "modules" )
 			// Discover cbSecurity modules
 			.filter( function( module, config ){
-				return ( arguments.config.settings.keyExists( "cbSecurity" ) );
+				return (
+					arguments.config.settings.keyExists( "cbSecurity" )
+					&&
+					!structKeyExists( variables.securityModules, arguments.module )
+				);
 			} )
 			// Register module settings
 			.each( function( module, config ){
-				// Param settings
-				param arguments.config.settings.cbSecurity.rules 						= [];
-				param arguments.config.settings.cbSecurity.invalidAccessRedirect 		= "";
-				param arguments.config.settings.cbSecurity.invalidAccessOverrideEvent 	= "";
-				param arguments.config.settings.cbSecurity.defaultInvalidAction 		= "";
-
-				// Store configuration in this firewall
-				variables.securityModules[ arguments.module ] = arguments.config.settings.cbSecurity;
-
-				// Process Module Rules
-				arguments.config.settings.cbSecurity.rules = rulesLoader.normalizeRules( arguments.config.settings.cbSecurity.rules, module );
-
-				// Append them
-				arrayAppend( getProperty( "rules" ), arguments.config.settings.cbSecurity.rules, true );
+				// Register Module
+				registerModule( arguments.module, arguments.config.settings.cbSecurity );
 			} );
+	}
+
+	/**
+	 * Register a module with cbSecurity by passing it's name and the cbSecurity settings struct
+	 *
+	 * @module The module to register
+	 * @settings The module cbSecurity settings
+	 */
+	Security function registerModule( required string module, required struct settings ){
+		// Param settings
+		param arguments.settings.rules 						= [];
+		param arguments.settings.invalidAccessRedirect 		= "";
+		param arguments.settings.invalidAccessOverrideEvent = "";
+		param arguments.settings.defaultInvalidAction 		= "";
+
+		// Store configuration in this firewall
+		variables.securityModules[ arguments.module ] = arguments.settings;
+
+		// Process Module Rules
+		arguments.settings.rules = rulesLoader.normalizeRules( arguments.settings.rules, module );
+
+		// Append them
+		arrayAppend( getProperty( "rules" ), arguments.settings.rules, true );
+
+		// Log it
+		log.info( "+ Registered module (#arguments.module#) with cbSecurity" );
+	}
+
+	/**
+	 * Listen to module loadings, so we can do module rule registrations
+	 *
+	 * @event
+	 * @interceptData
+	 * @rc
+	 * @prc
+	 * @buffer
+	 */
+	function postModuleLoad(
+		event,
+		interceptData,
+		rc,
+		prc,
+		buffer
+	){
+		// Is this a cbSecurity Module & not registered
+		if(
+			structKeyExists( arguments.interceptData.moduleConfig.settings, "cbSecurity" )
+			&&
+			!structKeyExists( variables.securityModules, arguments.interceptData.moduleName )
+		){
+			registerModule(
+				arguments.interceptData.moduleName,
+				arguments.interceptData.moduleConfig.settings.cbSecurity
+			);
+		}
+	}
+
+	/**
+	 * Listen to module unloadings, so we can do module rule cleanups
+	 *
+	 * @event
+	 * @interceptData
+	 * @rc
+	 * @prc
+	 * @buffer
+	 */
+	function postModuleUnload(
+		event,
+		interceptData,
+		rc,
+		prc,
+		buffer
+	){
+		// Is the module registered?
+		if( structKeyExists( variables.securityModules, arguments.interceptData.moduleName ) ){
+			// Delete registration
+			structDelete( variables.securityModules, arguments.interceptData.moduleName );
+			// Delete rules
+			setProperty(
+				"rules",
+				getProperty( "rules" )
+					.filter( function( item ){
+						return item.module != interceptData.moduleName;
+					} )
+			);
+			// Log it
+			log.info( "- Unregistered module (#arguments.interceptData.moduleName#) with cbSecurity" );
+		}
 	}
 
 	/**

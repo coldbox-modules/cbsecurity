@@ -110,6 +110,19 @@ component
 					});
 				});
 
+				given( "a module unload call", function(){
+					then( "it should unload module rules if the module is unloaded", function(){
+						var security = getWireBox().getInstance( "interceptor-cbsecurity@global" );
+						var oldRules = security.getProperty( "rules" );
+
+						// Issue unload
+						getController().getModuleService().unload( "mod1" );
+
+						// Verify
+						expect( security.getSecurityModules() ).notToHaveKey( "mod1" );
+						expect( security.getProperty( "rules" ).len() ).toBeLT( oldRules.len() );
+					});
+				});
 			});
 
 		} );
