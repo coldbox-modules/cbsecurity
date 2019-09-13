@@ -232,7 +232,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			arguments.event
 		);
 		if( ! handlerResults.allow ){
-			return processInvalidAccess( arguments.event, handlerResults, "handler" );
+			return processInvalidAnnotationAccess( arguments.event, handlerResults, "handler" );
 		}
 
 		// Verify we can access Action
@@ -241,7 +241,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			arguments.event
 		);
 		if( !actionResults.allow ){
-			return processInvalidAccess( arguments.event, actionResults, "action" );
+			return processInvalidAnnotationAccess( arguments.event, actionResults, "action" );
 		}
 
 		// Final Log
@@ -257,7 +257,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @validatorResults The validation results
 	 * @type The annotation type: handler|action
 	 */
-	private function processInvalidAccess( required event, required validatorResults, required type ){
+	private function processInvalidAnnotationAccess( required event, required validatorResults, required type ){
 
 		// Log Block
 		if ( log.canWarn() ) {

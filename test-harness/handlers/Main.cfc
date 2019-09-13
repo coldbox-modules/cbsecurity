@@ -5,7 +5,7 @@ component {
 
 	// Index
 	any function index( event, rc, prc ){
-		event.setView( "Main/index" );
+		event.setView( "main/index" );
 	}
 
 	// Index
@@ -17,7 +17,7 @@ component {
 	* login
 	*/
 	function login( event, rc, prc ){
-		event.setView( "Main/login" );
+		event.setView( "main/login" );
 	}
 
 	/**
