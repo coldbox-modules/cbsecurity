@@ -10,18 +10,14 @@
 * ColdFusion security validator has an identity now `CFValidator@cbsecurity` instead of always being inline.
 * You can now add an `overrideEvent` element to a rule. If that is set, then we will override the incoming event via `event.overrideEvent()` instead of doing a relocation using the `redirect` rule element.
 * You can now declare your rules inline in the configuration settings using the `rules` key. This will allow you to build the rules in your config instead of a rule source.
-* Once a rule is blocked a `cbSecurity_onInvalidAccess` event is announced so you can determine what invalid actions to do.  You can even bypass the default actions of relocations/overrides if needed.
-
-The following are the keys received in this event:
-- `ip` 					// The offending IP
-- `rule` 				// The broken rule
-- `settings`			// All the config settings, just in case
-- `processActions:true` // Boolean indicator if the invalid actions should process or not, default is to process actions (true). Turn off to do your thing!
-
-* You now have a `defaultInvalidAction` setting which defaults to `redirect`
-* You now have a `invalidAccessRedirect` setting which is a global redirect so you don't have to define the redirect in the rules anymore. If you do, then it uses the most explicit definition first.
-* You now have a `invalidAccessOverrideEvent` setting which is a global override so you don't have to define the override in the rules anymore. If you do, then it uses the most explicit definition first.
-* If a rule is matched, we will store it in the `prc` as `cbSecurityMatchedRule` so you can see which security rule was used for processing invalid access actions.
+* We now can distinguish between invalid auth and invalid authorizations
+* New interception block points `cbSecurity_onInvalidAuthentication`, `cbSecurity_onInvalidAuhtorization`
+* You now have a `defaultAuthorizationAction` setting which defaults to `redirect`
+* You now have a `invalidAuthenticationEvent` setting that can be used
+* You now have a `defaultAuthenticationAction` setting which defaults to `redirect`
+* You now have a `invalidAuthorizationEvent` setting that can be used
+* If a rule is matched, we will store it in the `prc` as `cbSecurity_matchedRule` so you can see which security rule was used for processing invalid access actions.
+* If a rule is matched we will store the validator results in `prc` as `cbSecurity_validatorResults`
 * Ability for modules to register cbSecurity rules and setting overrides by registering a `settings.cbSecurity` key.
 
 ```json
@@ -29,12 +25,14 @@ The following are the keys received in this event:
 settings = {
 	// CB Security Rules to append to global rules
 	cbsecurity = {
-		// Module Relocation when an invalid access is detected, instead of each rule declaring one.
-		"invalidAccessRedirect" 		: "mod1/secure",
-		// Module override event when an invalid access is detected, instead of each rule declaring one.
-		"invalidAccessOverrideEvent"	: "mod1:secure.index",
-		// Module override
-		"defaultInvalidAction:			: "redirect",
+		// The module invalid authentication event or URI or URL to go if an invalid authentication occurs
+		"invalidAuthenticationEvent"	: "",
+		// Default Auhtentication Action: override or redirect when a user has not logged in
+		"defaultAuthenticationAction"	: "redirect",
+		// The module invalid authorization event or URI or URL to go if an invalid authorization occurs
+		"invalidAuthorizationEvent"		: "",
+		// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
+		"defaultAuthorizationAction"	: "redirect",
 		// You can define your security rules here or externally via a source
 		"rules"							: [
 			{
@@ -56,11 +54,11 @@ settings = {
 ## Improvements
 
 * SSL Enforcement now cascades according to the following lookup: Global, rule, request
-* Interfaces documented for easier extension `models.interfaces.*`
+* Interfaces documented for easier extension `interfaces.*`
 * Migration to script and code modernization
 * New Module Layout
 * Secured rules are now logged as `warn()` with the offending Ip address.
-* If the main ColdBox application has settings defined to load cbSecurity the interceptor will auto load and be registered as `cbsecurity@global` in WireBox.
+* New setting to turn on/off the loading of the security firewall: `autoLoadFirewall`. The interceptor will auto load and be registered as `cbsecurity@global` in WireBox.
 
 ### Compat
 
@@ -72,6 +70,10 @@ settings = {
 * `validatorModel` dropped in favor of just `validator` to be a WireBox Id
 * Removed `preEventSecurity` it was too chatty and almost never used
 * The function `userValidator` has been renamed to `ruleValidator` and also added the `annotationValidator` as well.
+* `rulesSource` removed you can now use the `rules` setting
+  * The `rules` can be: `array, db, model, filepath`
+  * If the `filepath` has `json` or `xml` in it, we will use that as the source style
+* `rulesFile` removed you can now use the `rules` setting.
 
 ### Bugs
 

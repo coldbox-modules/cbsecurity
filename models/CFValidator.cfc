@@ -50,10 +50,10 @@ component singleton{
 			if( listLen( arguments.roles ) ){
 				results.allow 	= isUserInAnyRole( arguments.roles );
 				results.type 	= "authorization";
+			} else {
+				// We are satisfied!
+				results.allow.true;
 			}
-
-			// We are satisfied!
-			results.allow.true;
 		}
 
 		return results;

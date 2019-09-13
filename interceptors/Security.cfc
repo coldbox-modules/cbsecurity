@@ -232,6 +232,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			arguments.event
 		);
 		if( ! handlerResults.allow ){
+			arguments.event.setPrivateValue( "cbSecurity_validatorResults", handlerResults );
 			return processInvalidAnnotationAccess( arguments.event, handlerResults, "handler" );
 		}
 
@@ -241,6 +242,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			arguments.event
 		);
 		if( !actionResults.allow ){
+			arguments.event.setPrivateValue( "cbSecurity_validatorResults", actionResults );
 			return processInvalidAnnotationAccess( arguments.event, actionResults, "action" );
 		}
 
