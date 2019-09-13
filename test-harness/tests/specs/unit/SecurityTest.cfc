@@ -16,39 +16,41 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				mockController.$( "getAppHash", hash( "appHash" ) ).$( "getAppRootPath", expandPath( "/root" ) );
 				security = interceptor;
 				settings = {
-					// Global Relocation when an invalid access is detected, instead of each rule declaring one.
-					"invalidAccessRedirect"      : "",
-					// Global override event when an invalid access is detected, instead of each rule declaring one.
-					"invalidAccessOverrideEvent" : "",
+					// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
+					"invalidAuthenticationEvent"  : "",
+					// Default Auhtentication Action: override or redirect when a user has not logged in
+					"defaultAuthenticationAction" : "redirect",
+					// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
+					"invalidAuthorizationEvent"   : "",
 					// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
-					"defaultInvalidAction"       : "redirect",
-					"rules"                      : [],
+					"defaultAuthorizationAction"  : "redirect",
+					"rules"                       : [],
 					// Where are the rules, valid options: json,xml,db,model
-					"rulesSource"                : "",
+					"rulesSource"                 : "",
 					// The location of the rules file, applies to json|xml ruleSource
-					"rulesFile"                  : "",
+					"rulesFile"                   : "",
 					// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
-					"validator"                  : "tests.resources.security",
+					"validator"                   : "tests.resources.security",
 					// If source is model, the wirebox Id to use for retrieving the rules
-					"rulesModel"                 : "",
+					"rulesModel"                  : "",
 					// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
-					"rulesModelMethod"           : "getSecurityRules",
+					"rulesModelMethod"            : "getSecurityRules",
 					// If source is db then the datasource name to use
-					"rulesDSN"                   : "",
+					"rulesDSN"                    : "",
 					// If source is db then the table to get the rules from
-					"rulesTable"                 : "",
+					"rulesTable"                  : "",
 					// If source is db then the ordering of the select
-					"rulesOrderBy"               : "",
+					"rulesOrderBy"                : "",
 					// If source is db then you can have your custom select SQL
-					"rulesSql"                   : "",
+					"rulesSql"                    : "",
 					// Use regular expression matching on the rules
-					"useRegex"                   : true,
+					"useRegex"                    : true,
 					// Force SSL for all relocations
-					"useSSL"                     : false,
+					"useSSL"                      : false,
 					// Auto load the global security firewall
-					"autoLoadFirewall"           : true,
+					"autoLoadFirewall"            : true,
 					// Activate handler/action based annotation security
-					"handlerAnnotationSecurity"  : true
+					"handlerAnnotationSecurity"   : true
 				};
 				// Set Rule Loader
 				security.setRulesLoader( createRuleLoader() );

@@ -63,6 +63,44 @@ component accessors="true" singleton{
 	 * @settings The settings to check
 	 */
 	function rulesSourceChecks( required settings ){
+		param arguments.settings.rulesSource = "";
+
+		// Auto detect rules source
+		if( isSimpleValue( arguments.settings.rules ) ){
+			// Auto detect source
+			switch( arguments.settings.rules ){
+				case "db" : {
+					arguments.settings.rulesSource = "db";
+					break;
+				}
+				case "model" : {
+					arguments.settings.rulesSource = "model";
+					break;
+				}
+				default : {
+					arguments.settings.rulesFile = arguments.settings.rulesSource;
+					if( findNoCase( "json", arguments.settings.rulesSource ) ){
+						arguments.settings.rulesSource = "json";
+					}
+					if( findNoCase( "xml", arguments.settings.rulesSource ) ){
+						arguments.settings.rulesSource = "xml";
+					}
+				}
+			}
+
+			// Reset rules
+			arguments.settings.rules = [];
+		}
+
+		// Rule Source Checks
+		if ( arguments.settings[ "rulesSource" ].len() && !reFindNoCase( "^(xml|db|model|json)$", arguments.settings[ "rulesSource" ] ) ) {
+			throw(
+				message = "The rules source you set is invalid: #arguments.settings[ "rulesSource" ]#.",
+				detail 	= "The valid sources are xml, db, model, or json",
+				type 	= "Security.InvalidRuleSource"
+			);
+		}
+
 		switch ( arguments.settings[ "rulesSource" ] ) {
 			case "xml":
 			case "json": {

@@ -31,9 +31,9 @@ component {
 			// CB Security Rules to append to global rules
 			cbsecurity = {
 				// Module Relocation when an invalid access is detected, instead of each rule declaring one.
-				"invalidAccessRedirect" 		: "mod1/secure",
+				"invalidAuthenticationEvent" 	: "mod1:secure.index",
 				// Module override event when an invalid access is detected, instead of each rule declaring one.
-				"invalidAccessOverrideEvent"	: "mod1:secure.index",
+				"invalidAuthorizationEvent"		: "mod1:secure.auth",
 				// You can define your security rules here or externally via a source
 				"rules"							: [
 					{

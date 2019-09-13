@@ -10,4 +10,11 @@ component extends="coldbox.system.EventHandler"{
 		return "secured";
 	}
 
+	/**
+	* auth
+	*/
+	function auth( event, rc, prc ){
+		return "auth";
+	}
+
 }

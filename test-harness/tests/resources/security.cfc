@@ -26,8 +26,8 @@
 	 *
 	 * @return True, user can continue access, false, relocation will occur.
 	 */
-	boolean function ruleValidator( required rule, required controller ){
-		return true;
+	struct function ruleValidator( required rule, required controller ){
+		return { "allow" : true, type : "authentication" };
 	}
 
 	/**
@@ -36,8 +36,8 @@
 	 *
 	 * @return True, user can continue access, false, invalid access actions will ensue
 	 */
-	boolean function annotationValidator( required securedValue, required controller ){
-		return true;
+	struct function annotationValidator( required securedValue, required controller ){
+		return { "allow" : true, type : "authentication" };
 	}
 
 }

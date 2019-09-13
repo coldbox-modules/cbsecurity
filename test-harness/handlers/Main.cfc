@@ -8,6 +8,11 @@ component {
 		event.setView( "Main/index" );
 	}
 
+	// Index
+	any function auth( event, rc, prc ){
+		return "authorization";
+	}
+
 	/**
 	* login
 	*/

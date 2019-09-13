@@ -30,15 +30,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// init the security modules dictionary
 		variables.securityModules = {};
 
-		// Rule Source Checks
-		if ( getProperty( "rulesSource" ).len() && !reFindNoCase( "^(xml|db|model|json)$", getProperty( "rulesSource" ) ) ) {
-			throw(
-				message = "The rules source you set is invalid: #getProperty( "rulesSource" )#.",
-				detail 	= "The valid sources are xml, db, model, or json",
-				type 	= "Security.InvalidRuleSource"
-			);
-		}
-
 		// Verify setting configurations
 		variables.rulesLoader.rulesSourceChecks( getProperties() );
 
@@ -94,10 +85,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 */
 	Security function registerModule( required string module, required struct settings ){
 		// Param settings
-		param arguments.settings.rules 						= [];
-		param arguments.settings.invalidAccessRedirect 		= "";
-		param arguments.settings.invalidAccessOverrideEvent = "";
-		param arguments.settings.defaultInvalidAction 		= "";
+		param arguments.settings.rules 							= [];
+		param arguments.settings.invalidAuthenticationEvent 	= "";
+		param arguments.settings.defaultAuthenticationAction 	= "";
+		param arguments.settings.invalidAuthorizationEvent 		= "";
+		param arguments.settings.defaultAuthorizationAction 	= "";
 
 		// Store configuration in this firewall
 		variables.securityModules[ arguments.module ] = arguments.settings;
@@ -193,11 +185,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		buffer
 	){
 		// Execute Rule processing
-		processRules(
-			arguments.event,
-			arguments.interceptData,
-			arguments.event.getCurrentEvent()
-		);
+		if( getProperty( "rules" ).len() ){
+			processRules(
+				arguments.event,
+				arguments.interceptData,
+				arguments.event.getCurrentEvent()
+			);
+		}
 
 		// Are we doing annotation based security?
 		if( getProperty( "handlerAnnotationSecurity" ) ){
@@ -230,69 +224,71 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// If metadata is not loaded, load it
         if ( ! handlerBean.isMetadataLoaded() ) {
             handlerService.getHandler( handlerBean, arguments.event );
-        }
+		}
 
-		// Verify Access
-		var isAuthorized = (
-			// Verify we can access Handler
-			verifySecuredAnnotation(
-				handlerBean.getHandlerMetadata( "secured", false ),
-				arguments.event
-			)
-			&&
-			// Verify we can access Action
-			verifySecuredAnnotation(
-				handlerBean.getActionMetadata( "secured", false ),
-				arguments.event
-			)
+		// Verify we can access Handler
+		var handlerResults = verifySecuredAnnotation(
+			handlerBean.getHandlerMetadata( "secured", false ),
+			arguments.event
 		);
+		if( ! handlerResults.allow ){
+			return processInvalidAccess( arguments.event, handlerResults, "handler" );
+		}
 
-		// If not authorized, block them
-		if( !isAuthorized ){
-			// Log Block
-			if ( log.canWarn() ) {
-				log.warn(
-					"User (#getRealIp()#) blocked access to event=#arguments.event.getCurrentEvent()# via handler annotation security"
-				);
-			}
-			// Flash secured incoming URL for next request
-			saveSecuredUrl( arguments.event );
+		// Verify we can access Action
+		var actionResults = verifySecuredAnnotation(
+			handlerBean.getActionMetadata( "secured", false ),
+			arguments.event
+		);
+		if( !actionResults.allow ){
+			return processInvalidAccess( arguments.event, actionResults, "action" );
+		}
 
-			// Announce the block event
-			var iData = {
-				"ip" 				: getRealIp(), // The offending IP
-				"rule" 				: {}, // An empty rule, since it is by annotation security
-				"settings"			: getProperties(), // All the config settings, just in case
-				"processActions" 	: true // Boolean indicator if the invalid actions should process or not
-			};
-			announceInterception( state="cbSecurity_onInvalidAccess", interceptData=iData );
-
-			// Are we processing the invalid actions?
-			if( iData.processActions ){
-				processInvalidActions( rulesLoader.getRuleTemplate(), arguments.event );
-			} // end invalid actions processing
-
-			break;
+		// Final Log
+		if ( log.canDebug() ) {
+			log.debug( "User access granted, annotation security passed" );
 		}
 	}
 
 	/**
-	 * Verifies if a user is authorized according to the incoming secured value annotation.
-	 * If we return true, it means that the user has validated, false means they are not authorized
+	 * Process handler or action metadata invalid access
 	 *
-	 * @securedValue The secured value annotation
+	 * @event The request context
+	 * @validatorResults The validation results
+	 * @type The annotation type: handler|action
 	 */
-	private boolean function verifySecuredAnnotation( required securedValue ){
-		// If no value, then default it to true
-		if( !len( arguments.securedValue ) ){ arguments.securedValue = true; }
+	private function processInvalidAccess( required event, required validatorResults, required type ){
 
-		// Are we securing?
-		if( isBoolean( arguments.securedValue ) && !arguments.securedValue ){
-			return true; // we can access
+		// Log Block
+		if ( log.canWarn() ) {
+			log.warn(
+				"Invalid #arguments.validatorResults.type# by User (#getRealIp()#), blocked access to event=#arguments.event.getCurrentEvent()# via annotation security"
+			);
 		}
 
-		// Now call the user validator and pass in the secured value
-		return getValidator().annotationValidator( arguments.securedValue, variables.controller );
+		// Flash secured incoming URL for next request
+		saveSecuredUrl( arguments.event );
+
+		// Announce the block event
+		var iData = {
+			"ip" 				: getRealIp(), // The offending IP
+			"rule" 				: {}, // An empty rule, since it is by annotation security
+			"settings"			: getProperties(), // All the config settings, just in case
+			"validatorResults"	: arguments.validatorResults,
+			"annotationType"	: arguments.type,
+			"processActions" 	: true // Boolean indicator if the invalid actions should process or not
+		};
+		announceInterception( state="cbSecurity_onInvalid#arguments.validatorResults.type#", interceptData=iData );
+
+		// Are we processing the invalid actions?
+		if( iData.processActions ){
+			processInvalidActions(
+				rule	= rulesLoader.getRuleTemplate(),
+				event	= arguments.event,
+				type	= arguments.validatorResults.type
+			);
+		} // end invalid actions processing
+
 	}
 
 	/**
@@ -324,12 +320,19 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
 
 				// Verify if user is logged in and in a secure state
-				if ( ! getValidator().ruleValidator( thisRule, variables.controller ) ) {
+				var validatorResults = getValidator().ruleValidator( thisRule, variables.controller );
+				// Verify type, else default to "authentication"
+				if( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ){
+					validatorResults.type = "authentication";
+				}
+
+				// Do we allow or not?
+				if ( !validatorResults.allow  ) {
 
 					// Log Block
 					if ( log.canWarn() ) {
 						log.warn(
-							"User (#getRealIp()#) blocked access to target=#matchTarget# using rule security: #thisRule.toString()#"
+							"Invalid #validatorResults.type# by User (#getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#"
 						);
 					}
 
@@ -337,20 +340,24 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					saveSecuredUrl( arguments.event );
 
 					// Save the matched rule in the prc
-					arguments.event.setPrivateValue( "cbSecurityMatchedRule", thisRule );
+					arguments.event
+						.setPrivateValue( "cbSecurity_matchedRule", thisRule )
+						.setPrivateValue( "cbSecurity_validatorResults", validatorResults );
 
 					// Announce the block event
 					var iData = {
 						"ip" 				: getRealIp(), // The offending IP
 						"rule" 				: thisRule, // The broken rule
+						"validatorResults"	: validatorResults,
 						"settings"			: getProperties(), // All the config settings, just in case
+						"annotationType"	: "",
 						"processActions" 	: true // Boolean indicator if the invalid actions should process or not
 					};
-					announceInterception( state="cbSecurity_onInvalidAccess", interceptData=iData );
+					announceInterception( state="cbSecurity_onInvalid#validatorResults.type#", interceptData=iData );
 
 					// Are we processing the invalid actions?
 					if( iData.processActions ){
-						processInvalidActions( thisRule, arguments.event );
+						processInvalidActions( rule=thisRule, event=arguments.event, type=validatorResults.type );
 					} // end invalid actions processing
 
 					break;
@@ -383,13 +390,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	function registerValidator( required validator ){
 		if (
 			structKeyExists( arguments.validator, "ruleValidator" )
-			&&
+			||
 			structKeyExists( arguments.validator, "annotationValidator" )
 		) {
 			variables.validator = arguments.validator;
 		} else{
 			throw(
-				message = "Validator object does not have a 'userValidator,annotationValidator' method, I can only register objects with this interface method.",
+				message = "Validator object does not have a 'userValidator()' and `annotationValidator()' methods. I can only register objects with these interface methods.",
 				type 	= "Security.ValidatorMethodException"
 			);
 		}
@@ -439,18 +446,46 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	}
 
 	/**
+	 * Verifies if a user is authorized according to the incoming secured value annotation.
+	 * If we return true, it means that the user has validated, false means they are not authorized
+	 *
+	 * @securedValue The secured value annotation
+	 *
+	 * @return { allow:boolean, type:string(authentication|authorization)}
+	 */
+	private struct function verifySecuredAnnotation( required securedValue ){
+		// If no value, then default it to true
+		if( !len( arguments.securedValue ) ){ arguments.securedValue = true; }
+
+		// Are we securing?
+		if( isBoolean( arguments.securedValue ) && !arguments.securedValue ){
+			return { "allow" : true, "type" : "authentication" }; // we can access
+		}
+
+		// Now call the user validator and pass in the secured value
+		var validatorResults = getValidator().annotationValidator( arguments.securedValue, variables.controller );
+
+		// Verify type, else default to "authentication"
+		if( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ){
+			validatorResults.type = "authentication";
+		}
+		return validatorResults;
+	}
+
+	/**
 	 * Process invalid actions on a rule
 	 *
 	 * @rule The offending rule
 	 * @event The request context
+	 * @type The invalid type: authentication or authorization
 	 */
-	private function processInvalidActions( required rule, required event ){
-		// Discover relocation, from specific (rule) to global setting
-		var redirectEvent = ( arguments.rule.redirect.len() ? arguments.rule.redirect : discoverInvalidProperty( "invalidAccessRedirect", arguments.event ) );
-		// Discover override, from specific (rule) to global setting
-		var overrideEvent = ( arguments.rule.overrideEvent.len() ? arguments.rule.overrideEvent : discoverInvalidProperty( "invalidAccessOverrideEvent", arguments.event ) );
+	private function processInvalidActions( required rule, required event, required type ){
 		// Discover action, from specific (rule) to global setting
-		var defaultAction = ( arguments.rule.action.len() ? arguments.rule.action : discoverInvalidProperty( "defaultInvalidAction", arguments.event ) );
+		var defaultAction = ( arguments.rule.action.len() ? arguments.rule.action : discoverInvalidProperty( "default#arguments.type#Action", arguments.event ) );
+		// Discover relocation, from specific (rule) to global setting
+		var redirectEvent = ( arguments.rule.redirect.len() ? arguments.rule.redirect : discoverInvalidProperty( "invalid#arguments.type#Event", arguments.event ) );
+		// Discover override, from specific (rule) to global setting
+		var overrideEvent = ( arguments.rule.overrideEvent.len() ? arguments.rule.overrideEvent : discoverInvalidProperty( "invalid#arguments.type#Event", arguments.event ) );
 
 		// Now let's check if a rule has individual redirect or overrideEvent elements
 		if ( arguments.rule.overrideEvent.len() ) {
@@ -462,9 +497,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Debug
 		if ( log.canDebug() ) {
-			log.debug(
-				"Processing a #defaultAction# using redirect (#redirectEvent#) and override (#overrideEvent#)"
-			);
+			log.debug( "Processing a #defaultAction# due to an invalid #arguments.type#" );
 		}
 
 		// Determine actions from rules
@@ -473,24 +506,37 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				// Double check for length else give warning
 				if( !redirectEvent.len() ){
 					throw(
-						message = "The redirect action is empty, either add a redirect to the rule or a global InvalidAccessRedirect setting",
+						message = "The redirect action is empty, either add a redirect to the rule or a global Invalid#arguments.type#Event setting",
 						type 	= "InvalidAccessAction"
 					);
 				}
-				// Relocate now
-				relocate(
-					event 	= redirectEvent,
-					persist = "_securedURL",
-					// Chain SSL: Global, rule, request
-					ssl 	= ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
-				);
+				// Are we relocating to an event or to an http? location
+				if( reFindNoCase( "^http?:", redirectEvent ) ){
+					// Relocate now
+					relocate(
+						URL 	= redirectEvent,
+						persist = "_securedURL",
+						// Chain SSL: Global, rule, request
+						ssl 	= ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
+					);
+				} else {
+					// Relocate now
+					relocate(
+						event 	= redirectEvent,
+						persist = "_securedURL",
+						// Chain SSL: Global, rule, request
+						ssl 	= ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
+					);
+				}
+
 				break;
 			}
+
 			case "override" : {
 				// Double check for length else give warning
 				if( !overrideEvent.len() ){
 					throw(
-						message = "The override event action is empty, either add a redirect to the rule or a global invalidAccessOverrideEvent setting",
+						message = "The override event action is empty, either add a redirect to the rule or a global Invalid#arguments.type#Event setting",
 						type 	= "InvalidAccessAction"
 					);
 				}
@@ -498,6 +544,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				arguments.event.overrideEvent( event=overrideEvent );
 				break;
 			}
+
 			default : {
 				throw(
 					message = "The type [#defaultAction#] is not a valid rule action.  Valid types are [ 'redirect', 'override' ].",

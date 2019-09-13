@@ -12,44 +12,51 @@ component singleton{
 	 * You will receive the security rule that matched and an instance of the
 	 * ColdBox controller.
 	 *
-	 * @return True, user can continue access, false, relocation will occur.
+	 * allow : True, user can continue access, false, invalid access actions will ensue
+	 * type : Is the issue an authentication or an authorization issue.
+	 *
+	 * @return { allow:boolean, type:authentication|authorization }
 	 */
-	boolean function ruleValidator( required rule, required controller ){
-		// Are we logged in?
-		if( isUserLoggedIn() ){
-
-			// Do we have any roles?
-			if( listLen( arguments.rule.roles ) ){
-				return 	isUserInAnyRole( arguments.rule.roles );
-			}
-
-			// We are satisfied!
-			return true;
-		}
-
-		return false;
+	struct function ruleValidator( required rule, required controller ){
+		return validateSecurity( arguments.rule.roles );
 	}
 
 	/**
 	 * This function is called once access to a handler/action is detected.
 	 * You will receive the secured annotation value and an instance of the ColdBox Controller
 	 *
-	 * @return True, user can continue access, false, invalid access actions will ensue
+	 * You must return a struct with two keys:
+	 * - allow:boolean True, user can continue access, false, invalid access actions will ensue
+	 * - type:string(authentication|authorization) The type of block that ocurred.  Either an authentication or an authorization issue.
+	 *
+	 * @return { allow:boolean, type:string(authentication|authorization) }
 	 */
-	boolean function annotationValidator( required securedValue, required controller ){
+	struct function annotationValidator( required securedValue, required controller ){
+		return validateSecurity( arguments.securedValue );
+	}
+
+	/**
+	 * Validate Security
+	 *
+	 * @roles
+	 */
+	private function validateSecurity( required roles ){
+		var results = { "allow" : false, "type" : "authentication" };
+
 		// Are we logged in?
 		if( isUserLoggedIn() ){
 
 			// Do we have any roles?
-			if( listLen( arguments.securedValue ) ){
-				return isUserInAnyRole( arguments.securedValue );
+			if( listLen( arguments.roles ) ){
+				results.allow 	= isUserInAnyRole( arguments.roles );
+				results.type 	= "authorization";
 			}
 
 			// We are satisfied!
-			return true;
+			results.allow.true;
 		}
 
-		return false;
+		return results;
 	}
 
 }

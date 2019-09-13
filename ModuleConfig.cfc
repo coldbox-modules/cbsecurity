@@ -21,20 +21,17 @@ component {
 	function configure(){
 
 		settings = {
-			// Global Relocation when an invalid access is detected, instead of each rule declaring one.
-			"invalidAccessRedirect" 		: "",
-			// Global override event when an invalid access is detected, instead of each rule declaring one.
-			"invalidAccessOverrideEvent"	: "",
-			// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
-			"defaultInvalidAction"			: "redirect",
+			// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
+			"invalidAuthenticationEvent"	: "",
+			// Default Auhtentication Action: override or redirect when a user has not logged in
+			"defaultAuthenticationAction"	: "redirect",
+			// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
+			"invalidAuthorizationEvent"		: "",
+			// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
+			"defaultAuthorizationAction"	: "redirect",
 			// You can define your security rules here or externally via a source
 			"rules"							: [],
-			// Where are the rules, valid options: json,xml,db,model
-			"rulesSource" 					: "",
-			// The location of the rules file, applies to json|xml ruleSource
-			"rulesFile"						: "",
-			// The rule validator model, this must have a method like this `userValidator( rule, controller )			:boolean`
-			// By default we use the CFSecurity validator
+			// The validator is an object that will validate rules and annotations and provide feedback on either authentication or authorization issues.
 			"validator"						: "CFValidator@cbsecurity",
 			// If source is model, the wirebox Id to use for retrieving the rules
 			"rulesModel"					: "",
@@ -60,7 +57,8 @@ component {
 
 		interceptorSettings = {
 			customInterceptionPoints = [
-				"cbSecurity_onInvalidAccess" // Fires when a security rule matches and the user validator reports an invalid access
+				"cbSecurity_onInvalidAuthentication",
+				"cbSecurity_onInvalidAuhtorization"
 			]
 		};
 
