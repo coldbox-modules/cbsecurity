@@ -60,8 +60,7 @@ component {
 		};
 
 		router
-			.route( "/" ).to( "Home.index" )
-			.route( "/:handler/:action?" ).end();
+			.route( "/" ).to( "Home.index" );
 
 		interceptorSettings = {
 			customInterceptionPoints = [
