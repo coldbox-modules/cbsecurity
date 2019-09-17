@@ -75,7 +75,9 @@ cbsecurity = {
 	// false if you want to load the interceptor manually.
 	"autoLoadFirewall"				: true,
 	// Activate handler/action based annotation security
-	"handlerAnnotationSecurity"		: true
+	"handlerAnnotationSecurity"		: true,
+	// Activate security rule visualizer, defaults to false by default
+	"enableSecurityVisualizer"		: false
 }
 
 }
@@ -376,6 +378,16 @@ You will receive the following data in the `interceptData` struct:
 - `validatorResults` : The validator results
 - `annotationType` : The annotation type intercepted, `handler` or `action` or empty if rule driven
 - `processActions` : A boolean indicator that defaults to true.  If you change this to false, then the interceptor won't fire the invalid actions.  Usually this means, you manually will do them.
+
+
+## Security Visualizer
+
+This module also ships with a security visualizer that will document all your security rules and your settings in a nice panel.  In order to activate it you must add the `enableSecurityVisualizer` setting to your config and mark it as `true`.  Once enabled you can navigate to: `/cbsecurity` and you will be presentd with the visualizer.
+
+> **Important** The visualizer is disabled by default and if it detects an environment of production, it will disable itself.
+
+<img src="https://github.com/coldbox-modules/cbsecurity/blob/master/test-harness/visualizer.png?raw=true" class="img-responsive">
+
 
 ********************************************************************************
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp

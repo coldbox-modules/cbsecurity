@@ -14,6 +14,8 @@ component {
 	this.modelNamespace		= "cbsecurity";
 	// CF Mapping
 	this.cfmapping			= "cbsecurity";
+	// Entry Point
+	this.entryPoint 		= "cbsecurity";
 
 	/**
 	 * Module Config
@@ -52,8 +54,14 @@ component {
 			// Auto load the global security firewall
 			"autoLoadFirewall"				: true,
 			// Activate handler/action based annotation security
-			"handlerAnnotationSecurity"		: true
+			"handlerAnnotationSecurity"		: true,
+			// Activate security rule visualizer, defaults to false by default
+			"enableSecurityVisualizer"		: false
 		};
+
+		router
+			.route( "/" ).to( "Home.index" )
+			.route( "/:handler/:action?" ).end();
 
 		interceptorSettings = {
 			customInterceptionPoints = [

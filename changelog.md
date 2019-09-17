@@ -2,7 +2,7 @@
 
 ## 2.0.0
 
-### Features
+### New Features
 
 * Adobe 2016,2018 Support
 * Settings transferred to ColdBox 4/5 `moduleSettings` approach instead of root approach (See compat section)
@@ -19,6 +19,7 @@
 * If a rule is matched, we will store it in the `prc` as `cbSecurity_matchedRule` so you can see which security rule was used for processing invalid access actions.
 * If a rule is matched we will store the validator results in `prc` as `cbSecurity_validatorResults`
 * Ability for modules to register cbSecurity rules and setting overrides by registering a `settings.cbSecurity` key.
+* New security rule visualizer for graphically seeing you rules and configuration.  Can be locked down via the `enableSecurityVisualizer` setting. Disabled by default.
 
 ```json
 // module settings - stored in modules.name.settings
