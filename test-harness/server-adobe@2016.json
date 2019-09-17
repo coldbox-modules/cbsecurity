@@ -10,6 +10,9 @@
         },
         "rewrites":{
             "enable":"true"
+		},
+		"aliases":{
+            "/moduleroot/cbsecurity":"../"
         }
     },
     "openBrowser":"false"
