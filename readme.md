@@ -386,7 +386,7 @@ This module also ships with a security visualizer that will document all your se
 
 > **Important** The visualizer is disabled by default and if it detects an environment of production, it will disable itself.
 
-<img src="https://github.com/coldbox-modules/cbsecurity/blob/master/test-harness/visualizer.png?raw=true" class="img-responsive">
+<img src="https://raw.githubusercontent.com/coldbox-modules/cbsecurity/development/test-harness/visualizer.png" class="img-responsive">
 
 
 ********************************************************************************
