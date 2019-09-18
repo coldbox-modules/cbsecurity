@@ -76,10 +76,6 @@ settings = {
   * If the `filepath` has `json` or `xml` in it, we will use that as the source style
 * `rulesFile` removed you can now use the `rules` setting.
 
-### Bugs
-
-* Removed entry point for avoiding adding routes
-
 ## 1.3.0
 
 * Travis integration

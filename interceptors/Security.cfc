@@ -464,7 +464,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			return { "allow" : true, "type" : "authentication" }; // we can access
 		}
 
-		// Now call the user validator and pass in the secured value
+		// Now call the validator and pass in the secured value
 		var validatorResults = getValidator().annotationValidator( arguments.securedValue, variables.controller );
 
 		// Verify type, else default to "authentication"

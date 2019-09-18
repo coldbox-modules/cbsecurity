@@ -174,7 +174,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 	}
 
 	private function createRuleLoader(){
-		return createMock( "cbsecurity.models.RulesLoader" )
+		return createMock( "cbsecurity.models.util.RulesLoader" )
 			.init()
 			.setController( variables.mockController )
 			.setWireBox( variables.wirebox );

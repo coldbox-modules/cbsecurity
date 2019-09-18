@@ -97,7 +97,7 @@ The interceptor will intercept all calls to your application via the `preProcess
 
 How does the interceptor know a user doesn't have access? Well, here is where you register a Validator CFC (`validator` setting) with the interceptor that implements two validation functions: `ruleValidator() and annotationValidator()`.  
 
-> **Info** You can find an interface for these methods in `cbsecurity.interfaces.IUserValidator`
+> **Info** You can find an interface for these methods in `cbsecurity.interfaces.ISecurityValidator`
 
 The validator's job is to tell back to the firewall if they are allowed access and if they don't, what type of validation they broke: authentication or authorization.
 
@@ -278,7 +278,7 @@ component{
 
 ### Authorization Context
 
-You can also give the annotation some value, which can be anything you like: A list of roles, a role, a list of permissions, metadata, etc.  Whatever it is, this is the **authorization context** and the user validator must be able to not only authenticate but authorize the context or an invalid authorization will occurr.
+You can also give the annotation some value, which can be anything you like: A list of roles, a role, a list of permissions, metadata, etc.  Whatever it is, this is the **authorization context** and the security validator must be able to not only authenticate but authorize the context or an invalid authorization will occurr.
 
 ```js
 // Secure this handler
@@ -299,7 +299,7 @@ component secured="admin,users"{
 
 By having the ability to annotate the handler and also the action you create a cascading security model where they need to be able to access the handler first and only then will the action be evaluated for access as well.
 
-## User Validator
+## Security Validator
 
 Now that we have seen security rules and also security annotations let's see how to actually validate them.  Create a CFC or use any CFC in your `models` and add the following functions: `ruleValidator() and annotationValidator()`
 
