@@ -14,8 +14,6 @@ component accessors="true" singleton{
 	property name="interceptorService" 	inject="coldbox:interceptorService";
 	property name="requestService" 		inject="coldbox:requestService";
 
-	// Properties
-
 	/**
 	 * The auth service in use
 	 */
@@ -493,19 +491,25 @@ component accessors="true" singleton{
 
 
 	/**
-	 * Validate Security
+	 * Validate Security for the jwt token
 	 *
-	 * @roles
+	 * @permissions The permissions we want to validate in the scopes
 	 */
-	private function validateSecurity( required roles ){
+	private function validateSecurity( required permissions ){
 		var results = { "allow" : false, "type" : "authentication" };
+		var payload = getPayload();
 
 		// Are we logged in?
-		if( isUserLoggedIn() ){
+		if( getAuthService().isLoggedIn() ){
 
-			// Do we have any roles?
-			if( listLen( arguments.roles ) ){
-				results.allow 	= isUserInAnyRole( arguments.roles );
+			// Do we have any permissions to validate?
+			if( listLen( arguments.permissions ) ){
+				// Check if the user has the right permissions?
+				results.allow 	= (
+					tokenHasScopes( arguments.permissions, payload.scopes )
+					&&
+					getAuthService().getUser().hasPermission( arguments.permissions )
+				);
 				results.type 	= "authorization";
 			} else {
 				// We are satisfied!
@@ -514,6 +518,21 @@ component accessors="true" singleton{
 		}
 
 		return results;
+	}
+
+	/**
+	 * Verify if the jwt token has the appripriate scopes
+	 */
+	private function tokenHasScopes( required permission, required scopes ){
+		if( isSimpleValue( arguments.permission) ){
+			arguments.permission = listToArray( arguments.permission );
+		}
+
+		return arguments.permission
+			.filter( function( item ){
+				return ( scopes.findNoCase( item ) );
+			} )
+			.len();
 	}
 
 }
