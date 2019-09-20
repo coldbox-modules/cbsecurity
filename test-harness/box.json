@@ -5,15 +5,19 @@
     "private":true,
     "description":"",
     "dependencies":{
-        "swagger-sdk":"be",
         "coldbox":"^5.0.0",
-        "testbox":"be"
+        "testbox":"be",
+        "jwt":"^1.1.0",
+        "cbauth":"^3.0.0",
+        "BCrypt":"^2.5.0-snapshot"
     },
     "devDependencies":{},
     "installPaths":{
-        "swagger-sdk":"modules/swagger-sdk/",
         "coldbox":"coldbox/",
-        "testbox":"testbox/"
+        "testbox":"testbox/",
+        "jwt":"modules/jwt/",
+        "cbauth":"modules/cbauth/",
+        "BCrypt":"modules/BCrypt/"
     },
     "testbox":{
         "runner":"http://localhost:60299/tests/runner.cfm"

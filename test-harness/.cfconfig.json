@@ -4,5 +4,34 @@
     "disableInternalCFJavaComponents":false,
     "inspectTemplate":"always",
     "requestTimeout":"0,0,0,90",
-    "robustExceptionEnabled":true
+	"robustExceptionEnabled":true,
+	"whitespaceManagement":"white-space-pref",
+	"datasources":{
+        "cbsecurity":{
+            "allowAlter":true,
+            "allowCreate":true,
+            "allowDelete":true,
+            "allowDrop":true,
+            "allowGrant":true,
+            "allowInsert":true,
+            "allowRevoke":true,
+            "allowSelect":true,
+            "allowUpdate":true,
+            "blob":"false",
+            "class":"com.mysql.jdbc.Driver",
+            "clob":"false",
+            "connectionTimeout":"1",
+            "custom":"useUnicode=true&characterEncoding=UTF-8&useLegacyDatetimeCode=true&useSSL=false",
+            "database":"cbsecurity",
+            "dbdriver":"MySQL",
+            "dsn":"jdbc:mysql://{host}:{port}/{database}",
+            "host":"${DB_HOST}",
+            "metaCacheTimeout":"60000",
+            "password":"${DB_PASSWORD}",
+            "port":"3306",
+            "storage":"false",
+            "username":"${DB_USERNAME}",
+            "validate":"false"
+        }
+	},
 }

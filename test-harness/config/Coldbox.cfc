@@ -66,6 +66,10 @@
 
 		// Module Settings
 		moduleSettings = {
+			// CB Auth
+			cbAuth : {
+				userServiceClass : "UserService"
+			},
 			// CB Security
 			cbSecurity : {
 				// Global Relocation when an invalid access is detected, instead of each rule declaring one.
@@ -74,6 +78,10 @@
 				"invalidAuthorizationEvent"		: "main.index",
 				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
 				"defaultAuthorizationAction"	: "redirect",
+				// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
+				"authenticationService"  		: "authenticationService@cbauth",
+				// WireBox ID of the user service to use
+				"userService"             		: "UserService",
 				// The global security rules
 				"rules" 						: [
 					// should use direct action and do a global redirect
@@ -114,7 +122,37 @@
 						"match": "url",
 						"redirect": "main.login"
 					}
-				]
+				],
+				// JWT Settings
+				"jwt"                     		: {
+					// The jwt secret encoding key, defaults to getSystemEnv( "JWT_SECRET", "" )
+					"secretKey"               : "C3D4AF35-8FCD-49AB-943A39AEFFB584EE",
+					// by default it uses the authorization bearer header, but you can also pass a custom one as well.
+					"customAuthHeader"        : "x-auth-token",
+					// The expiration in minutes for the jwt tokens
+					"expiration"              : 60,
+					// If true, enables refresh tokens, longer lived tokens (not implemented yet)
+					"enableRefreshTokens"     : false,
+					// The default expiration for refresh tokens, defaults to 30 days
+					"refreshExpiration"       : 43200,
+					// encryption algorithm to use, valid algorithms are: HmacSHA256, HmacSHA384, and HmacSHA512
+					"algorithm"               : "HmacSHA512",
+					// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
+					"requiredClaims"          : [ "role" ],
+					// The token storage settings
+					"tokenStorage"            : {
+						// enable or not, default is true
+						"enabled"       : true,
+						// A cache key prefix to use when storing the tokens
+						"keyPrefix"     : "cbjwt_",
+						// The driver to use: db, cachebox or a WireBox ID
+						"driver"        : "cachebox",
+						// Driver specific properties
+						"properties"    : {
+							"cacheName" : "default"
+						}
+					}
+				}
 			}
 		};
 	}

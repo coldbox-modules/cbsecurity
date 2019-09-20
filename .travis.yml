@@ -22,11 +22,32 @@ dist: trusty
 
 sudo: required
 
+addons:
+  apt:
+    packages:
+    - mysql-server-5.6
+    - mysql-client-core-5.6
+    - mysql-client-5.6
+
 before_install:
   # CommandBox Keys
   - curl -fsSl https://downloads.ortussolutions.com/debs/gpg | sudo apt-key add -
   - sudo echo "deb https://downloads.ortussolutions.com/debs/noarch /" | sudo tee -a
     /etc/apt/sources.list.d/commandbox.list
+
+before_script:
+  # create database
+  - mysql -u root -e 'create database cbsecurity;'
+  # import database
+  - mysql -u root < test-harness/tests/resources/cbsecurity.sql
+  - echo "Database created and loaded with test data"
+  # Seed .env
+  - echo "Seeding database .env file at /test-harness/.env"
+  - touch test-harness/.env
+  - printf "DB_HOST=localhost\n" >> test-harness/.env
+  - printf "DB_DATABASE=cbsecurity\n" >> test-harness/.env
+  - printf "DB_USER=root\n" >> test-harness/.env
+  - printf "DB_PASSWORD=\n" >> test-harness/.env
 
 install:
   # Install Commandbox
