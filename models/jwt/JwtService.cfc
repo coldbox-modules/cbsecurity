@@ -152,12 +152,7 @@ component accessors="true" singleton{
 	 * @token The token to invalidate
 	 */
 	boolean function invalidate( required token ){
-		if( getTokenStorage().exists( arguments.token ) ){
-			getTokenStorage().clear( arguments.token );
-			return true;
-		}
-
-		return false;
+		return getTokenStorage().clear( arguments.token );
 	}
 
 	/************************************************************************************/

@@ -32,23 +32,25 @@ interface{
     boolean function exists( required key );
 
     /**
-     * Retrieve the token via the cache key, if the key doesn't exist a TokenNotFoundException will be thrown
+     * Retrieve the token record via the cache key, if the key doesn't exist a TokenNotFoundException will be thrown
      *
      * @key The cache key
      * @defaultValue If not found, return a default value
      *
      * @throws TokenNotFoundException
+	 *
+	 * @return { cacheKey, token, expiration, created }
      */
-    any function get( required key, defaultValue );
+    struct function get( required key, struct defaultValue );
 
     /**
      * Invalidate/delete one or more keys from the storage
      *
      * @key A cache key or an array of keys to clear
      *
-     * @return JWTStorage
+     * @return true, if deleted, else false
      */
-    any function clear( required any key );
+    boolean function clear( required any key );
 
     /**
      * Clear all the keys in the storage

@@ -11,9 +11,9 @@ component extends="coldbox.system.EventHandler"{
 	}
 
 	/**
-	* auth
+	* authenticated
 	*/
-	function auth( event, rc, prc ){
+	function authenticated( event, rc, prc ){
 		return "auth";
 	}
 

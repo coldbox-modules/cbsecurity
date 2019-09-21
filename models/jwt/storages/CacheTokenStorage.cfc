@@ -61,7 +61,11 @@ component accessors="true" singleton{
     any function set( required key, required token, required expiration ){
 		variables.cache.set(
 			buildKey( arguments.key ),
-			arguments.token,
+			{
+				token 		: arguments.token,
+				expiration 	: arguments.expiration,
+				created 	: now()
+			},
 			arguments.expiration
 		);
 		return this;
@@ -84,10 +88,11 @@ component accessors="true" singleton{
      *
      * @throws TokenNotFoundException
      */
-    any function get( required key, defaultValue ){
+    struct function get( required key, struct defaultValue ){
 		var results = variables.cache.get( buildKey( arguments.key ) );
 		// return results
 		if( !isNull( results ) ){
+			results[ "cacheKey" ] = buildKey( arguments.key );
 			return results;
 		}
 
@@ -102,12 +107,10 @@ component accessors="true" singleton{
      *
      * @key A cache key or an array of keys to clear
      *
-     * @return JWTStorage
+     * @return True, if deleted
      */
-    any function clear( required any key ){
-		variables.cache.clear( buildKey( arguments.key ) );
-
-		return this;
+    boolean function clear( required any key ){
+		return variables.cache.clear( buildKey( arguments.key ) );
 	}
 
     /**
