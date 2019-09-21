@@ -90,6 +90,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		param arguments.settings.defaultAuthenticationAction 	= "";
 		param arguments.settings.invalidAuthorizationEvent 		= "";
 		param arguments.settings.defaultAuthorizationAction 	= "";
+		param arguments.settings.validator 						= "";
 
 		// Store configuration in this firewall
 		variables.securityModules[ arguments.module ] = arguments.settings;
@@ -322,7 +323,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
 
 				// Verify if user is logged in and in a secure state
-				var validatorResults = getValidator().ruleValidator( thisRule, variables.controller );
+				var validatorResults = getValidator( arguments.event ).ruleValidator( thisRule, variables.controller );
 				// Verify type, else default to "authentication"
 				if( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ){
 					validatorResults.type = "authentication";
@@ -404,6 +405,37 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 	}
 
+	/**
+	 * Get the global validator or if a module overrides it, use the module's validator
+	 *
+	 * @event The request context
+	 */
+	any function getValidator( required event ){
+		// Check for module overrides
+		var currentModule = arguments.event.getCurrentModule();
+		if (
+			// Are we in a module call?
+			currentModule.len()
+			&&
+			// Does the module have cbSecurity overrides?
+			structKeyExists( variables.securityModules, currentModule )
+			&&
+			// Does the setting have value?
+			variables.securityModules[ currentModule ][ "validator" ].len()
+		) {
+			// Debug
+			if ( log.canDebug() ) {
+				log.debug(
+					"validator setting overriden by #currentModule# module",
+					variables.securityModules[ currentModule ][ "validator" ]
+				);
+			}
+			return variables.wirebox.getInstance( variables.securityModules[ currentModule ][ "validator" ] );
+		}
+
+		return variables.validator;
+	}
+
 	/********************************* PRIVATE ******************************/
 
 	/**
@@ -452,10 +484,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * If we return true, it means that the user has validated, false means they are not authorized
 	 *
 	 * @securedValue The secured value annotation
+	 * @event The request context
 	 *
 	 * @return { allow:boolean, type:string(authentication|authorization)}
 	 */
-	private struct function verifySecuredAnnotation( required securedValue ){
+	private struct function verifySecuredAnnotation( required securedValue, required event ){
 		// If no value, then default it to true
 		if( !len( arguments.securedValue ) ){ arguments.securedValue = true; }
 
@@ -465,7 +498,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		// Now call the validator and pass in the secured value
-		var validatorResults = getValidator().annotationValidator( arguments.securedValue, variables.controller );
+		var validatorResults = getValidator( arguments.event ).annotationValidator( arguments.securedValue, variables.controller );
 
 		// Verify type, else default to "authentication"
 		if( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ){

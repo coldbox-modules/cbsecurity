@@ -82,6 +82,7 @@
 				"authenticationService"  		: "authenticationService@cbauth",
 				// WireBox ID of the user service to use
 				"userService"             		: "UserService",
+				"enableSecurityVisualizer"		: true,
 				// The global security rules
 				"rules" 						: [
 					// should use direct action and do a global redirect

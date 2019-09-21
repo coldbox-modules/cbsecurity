@@ -338,6 +338,8 @@ component accessors="true" singleton{
 	 * @return { allow:boolean, type:authentication|authorization }
 	 */
 	struct function ruleValidator( required rule, required controller ){
+		writeDump( var=arguments.rule, label="jwtService" );
+		abort;
 		return validateSecurity( arguments.rule.roles );
 	}
 
@@ -395,7 +397,7 @@ component accessors="true" singleton{
 			case "cachebox" : {
 				variables.tokenStorage = variables.wirebox.getInstance( "CacheTokenStorage@cbsecurity" );
 				break;
-			},
+			}
 			case "db" : {
 				variables.tokenStorage = variables.wirebox.getInstance( "DBTokenStorage@cbsecurity" );
 				break;

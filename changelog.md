@@ -19,6 +19,7 @@
 * If a rule is matched, we will store it in the `prc` as `cbSecurity_matchedRule` so you can see which security rule was used for processing invalid access actions.
 * If a rule is matched we will store the validator results in `prc` as `cbSecurity_validatorResults`
 * Ability for modules to register cbSecurity rules and setting overrides by registering a `settings.cbSecurity` key.
+* Ability for modules to override the `validator` setting. So each module can have their own security validator schema. 
 * New security rule visualizer for graphically seeing you rules and configuration.  Can be locked down via the `enableSecurityVisualizer` setting. Disabled by default.
 
 ```json
