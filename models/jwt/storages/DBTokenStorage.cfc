@@ -67,7 +67,7 @@ component accessors="true" singleton{
 
 		// Setup Properties
 		if( isNull( variables.properties.table ) ){
-			throw( message="No table property defined", type="PropertyNotDefined" );
+			throw( message="No table property defined for DBTokenStorage", type="PropertyNotDefined" );
 		}
 		if( isNull( variables.properties.autoCreate ) ){
 			variables.properties.autoCreate = true;
@@ -110,8 +110,8 @@ component accessors="true" singleton{
 			{
 				uuid      	= { cfsqltype="varchar", 	value="#variables.uuid.randomUUID().toString()#" },
 				cacheKey  	= { cfsqltype="varchar", 	value=arguments.key },
-				token  		= { cfsqltype="varchar", 	value=arguments.token },
-				expiration 	= { cfsqltype="timestamp", 	value=arguments.expiration },
+				token  		= { cfsqltype="longvarchar",value=arguments.token },
+				expiration 	= { cfsqltype="varchar", 	value=arguments.expiration },
 				created     = { cfsqltype="timestamp", 	value=now() }
 			},
 			{
@@ -318,21 +318,30 @@ component accessors="true" singleton{
 			}
 			// create it
 			if( NOT tableFound ){
-				queryExecute(
-					"CREATE TABLE #getTable()# (
-						id VARCHAR(36) NOT NULL,
-						cacheKey VARCHAR(255) NOT NULL,
-						expiration VARCHAR(255) NOT NULL,
-						created #getDateTimeColumnType()# NOT NULL,
-						token #getTextColumnType()# NOT NULL,
-						PRIMARY KEY (id)
-						KEY 'idx_cachekey' (cacheKey)
-					)",
-					{},
-					{
-						datasource = variables.properties.dsn
-					}
-				);
+				transaction{
+					queryExecute(
+						"CREATE TABLE #getTable()# (
+							id VARCHAR(36) NOT NULL,
+							cacheKey VARCHAR(255) NOT NULL,
+							expiration VARCHAR(255) NOT NULL,
+							created #getDateTimeColumnType()# NOT NULL,
+							token #getTextColumnType()# NOT NULL,
+							PRIMARY KEY (id)
+						)",
+						{},
+						{
+							datasource = variables.properties.dsn
+						}
+					);
+
+					queryExecute(
+						"CREATE INDEX idx_cacheKey ON #getTable()# (cacheKey)",
+						{},
+						{
+							datasource = variables.properties.dsn
+						}
+					);
+				}
 			}
 		}
 	}
