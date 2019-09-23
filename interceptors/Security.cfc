@@ -237,6 +237,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			return processInvalidAnnotationAccess( arguments.event, handlerResults, "handler" );
 		}
 
+		if ( log.canDebug() ) {
+			log.debug( "User handler annotation access succeeded", handlerResults );
+		}
+
 		// Verify we can access Action
 		var actionResults = verifySecuredAnnotation(
 			handlerBean.getActionMetadata( "secured", false ),
@@ -249,7 +253,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Final Log
 		if ( log.canDebug() ) {
-			log.debug( "User access granted, annotation security passed" );
+			log.debug( "User action annotation access succeeded" );
 		}
 	}
 
@@ -265,7 +269,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// Log Block
 		if ( log.canWarn() ) {
 			log.warn(
-				"Invalid #arguments.validatorResults.type# by User (#getRealIp()#), blocked access to event=#arguments.event.getCurrentEvent()# via annotation security"
+				"Invalid #arguments.validatorResults.type# by User (#getRealIp()#), blocked access to event=#arguments.event.getCurrentEvent()# via annotation (#arguments.type#) security"
 			);
 		}
 
@@ -321,6 +325,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 			// Are we in the secured list?
 			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
+
+				if ( log.canDebug() ) {
+					log.debug( "---> Incoming '#matchTarget#' MATCHED this rule: #thisRule.toString()#" );
+				}
 
 				// Verify if user is logged in and in a secure state
 				var validatorResults = getValidator( arguments.event ).ruleValidator( thisRule, variables.controller );
@@ -410,7 +418,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 *
 	 * @event The request context
 	 */
-	any function getValidator( required event ){
+	any function getValidator( required event=variables.requestService.getContext() ){
 		// Check for module overrides
 		var currentModule = arguments.event.getCurrentModule();
 		if (
