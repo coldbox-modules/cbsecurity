@@ -16,6 +16,8 @@ component {
 	this.cfmapping			= "cbsecurity";
 	// Entry Point
 	this.entryPoint 		= "cbsecurity";
+	// Helpers
+	this.applicationHelpers = [ "/cbsecurity/helpers/mixins.cfm" ];
 
 	/**
 	 * Module Config
@@ -78,8 +80,8 @@ component {
 				"enableRefreshTokens"     : false,
 				// The default expiration for refresh tokens, defaults to 30 days
 				"refreshExpiration"       : 43200,
-				// encryption algorithm to use, valid algorithms are: HmacSHA256, HmacSHA384, and HmacSHA512
-				"algorithm"               : "HmacSHA512",
+				// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
+				"algorithm"               : "HS512",
 				// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
 				"requiredClaims"          : [] ,
 				// The token storage settings

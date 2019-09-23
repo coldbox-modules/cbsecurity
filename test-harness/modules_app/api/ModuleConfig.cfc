@@ -98,12 +98,12 @@ component {
 		};
 
 		// SES Routes
-		routes = [
-			// Module Entry Point
-			{ pattern="/", handler="home", action="index" },
-			// Convention Route
-			{ pattern="/:handler/:action?" }
-		];
+		router
+			.route( "/" ).to( "home.index" )
+			.post( "/register" ).to( "home.register" )
+			.post( "/login" ).to( "home.login" )
+			.post( "/logout" ).to( "home.logout" )
+			.route( "/:handler/:action?" ).end();
 
 		// SES Resources
 		resources = [
