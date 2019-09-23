@@ -82,6 +82,7 @@
 				"authenticationService"  		: "authenticationService@cbauth",
 				// WireBox ID of the user service to use
 				"userService"             		: "UserService",
+				// Enable Visualizer
 				"enableSecurityVisualizer"		: true,
 				// The global security rules
 				"rules" 						: [

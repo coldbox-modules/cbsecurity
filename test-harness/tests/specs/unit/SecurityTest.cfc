@@ -109,7 +109,10 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 					.$results( wirebox.getInstance( settings.validator ) );
 
 				security.configure();
-				expect( security.getValidator() ).toBeComponent();
+				expect( security.getValidator(
+					createMock( "coldbox.system.web.context.RequestContext" )
+						.$( "getCurrentModule", "" )
+				) ).toBeComponent();
 			} );
 
 			it( "can detect an invalid validator", function(){
