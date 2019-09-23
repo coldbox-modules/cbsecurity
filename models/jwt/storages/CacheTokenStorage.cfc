@@ -55,16 +55,23 @@ component accessors="true" singleton{
      * @key The cache key
      * @token The token to store
      * @expiration The token expiration
+	 * @payload The payload
      *
      * @return JWTStorage
      */
-    any function set( required key, required token, required expiration ){
+    any function set(
+		required key,
+		required token,
+		required expiration,
+		required payload
+	){
 		variables.cache.set(
 			buildKey( arguments.key ),
 			{
 				token 		: arguments.token,
 				expiration 	: arguments.expiration,
-				created 	: now()
+				created 	: now(),
+				payload		: arguments.payload
 			},
 			arguments.expiration
 		);

@@ -19,10 +19,16 @@ interface{
      * @key The cache key
      * @token The token to store
      * @expiration The token expiration
+	 * @payload The payload
      *
      * @return JWTStorage
      */
-    any function set( required key, required token, required expiration );
+    any function set(
+		required key,
+		required token,
+		required expiration,
+		required payload
+	);
 
     /**
      * Verify if the passed in token key exists

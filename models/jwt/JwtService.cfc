@@ -109,7 +109,12 @@ component accessors="true" singleton{
 
 		// Store it with the expiration as well if enabled
 		if( variables.settings.jwt.tokenStorage.enabled ){
-			getTokenStorage().set( payload.jti, jwtToken, variables.settings.jwt.expiration );
+			getTokenStorage().set(
+				key 		= payload.jti,
+				token 		= jwtToken,
+				expiration 	= variables.settings.jwt.expiration,
+				payload		= payload
+			);
 		}
 
 		// Return it

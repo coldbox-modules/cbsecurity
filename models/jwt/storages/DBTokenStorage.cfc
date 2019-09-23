@@ -16,6 +16,7 @@
  * - cacheKey : varchar 255
  * - token : text
  * - expiration : varchar 255 (unix timestamp)
+ * - subject : varchar 255
  *
  */
 component accessors="true" singleton{
@@ -40,7 +41,7 @@ component accessors="true" singleton{
 	 */
 	property name="keyPrefix";
 
-	variables.COLUMNS = "id,cacheKey,token,expiration,created";
+	variables.COLUMNS = "id,cacheKey,token,expiration,created,subject";
 
 	/**
 	 * Constructor
@@ -93,10 +94,16 @@ component accessors="true" singleton{
      * @key The cache key
      * @token The token to store
      * @expiration The token expiration
+	 * @payload The payload
      *
      * @return JWTStorage
      */
-    any function set( required key, required token, required expiration ){
+    any function set(
+		required key,
+		required token,
+		required expiration,
+		required payload
+	){
 		queryExecute(
 			"INSERT INTO #getTable()# (#variables.COLUMNS#)
 				VALUES (
@@ -104,7 +111,8 @@ component accessors="true" singleton{
 					:cacheKey,
 					:token,
 					:expiration,
-					:created
+					:created,
+					:subject
 				)
 			",
 			{
@@ -112,7 +120,8 @@ component accessors="true" singleton{
 				cacheKey  	= { cfsqltype="varchar", 	value=arguments.key },
 				token  		= { cfsqltype="longvarchar",value=arguments.token },
 				expiration 	= { cfsqltype="varchar", 	value=arguments.expiration },
-				created     = { cfsqltype="timestamp", 	value=now() }
+				created     = { cfsqltype="timestamp", 	value=now() },
+				subject 	= { cfsqltype="varchar", 	value=arguments.payload.sub },
 			},
 			{
 				datasource = variables.properties.dsn
@@ -316,6 +325,7 @@ component accessors="true" singleton{
 					break;
 				}
 			}
+
 			// create it
 			if( NOT tableFound ){
 				transaction{
@@ -326,6 +336,7 @@ component accessors="true" singleton{
 							expiration VARCHAR(255) NOT NULL,
 							created #getDateTimeColumnType()# NOT NULL,
 							token #getTextColumnType()# NOT NULL,
+							subject VARCHAR(255) NOT NULL,
 							PRIMARY KEY (id)
 						)",
 						{},
