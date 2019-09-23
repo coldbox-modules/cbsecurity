@@ -91,7 +91,7 @@ component accessors="true" singleton{
 			// The unique identifier of the token
 			"jti" 		: hash( timestamp & arguments.user.getId() ),
 			// Get the user scopes for the JWT token
-			"scopes" 	: arguments.user.getScopes()
+			"scopes" 	: arguments.user.getJwtScopes()
 		};
 
 		// Append user custom claims with override, they take prescedence
@@ -119,19 +119,18 @@ component accessors="true" singleton{
 	/**
 	 * Calls the auth service using the parsed token or optional passed token, to get the user by subject claim else throw an exception
 	 *
-	 * @token Optional token to use, by default we use the parsed token.
-	 *
 	 * @returns User object that implements IAuth and IJwtSubject
 	 * @throws InvalidUser if user is not found
 	 */
 	function authenticate(){
+		// Get the User it represents
 		var oUser = getUserService().get( getPayload().sub );
 
 		// Verify it
 		if( isNull( oUser ) || !len( oUser.getId() ) ){
 			throw(
 				message = "The user (#getPayload().sub#) was not found by the user service",
-				type 	= "InvalidUser"
+				type 	= "InvalidTokenUser"
 			);
 		}
 
@@ -162,7 +161,8 @@ component accessors="true" singleton{
 
 	/**
 	 * Try's to get a jwt token from the authorization header or the custom header
-	 * defined in the configuration. If it is a valid token and it decodes, then it will
+	 * defined in the configuration. If it is a valid token and it decodes we will then
+	 * continue to validat the subject it represents.  Once those are satisfied, then it will
 	 * store it in the `prc` as `prc.jwt_token` and the payload as `prc.jwt_payload`.
 	 *
 	 * @throws TokenExpiredException If the token has expired or no longer in the storage (invalidated)
@@ -176,6 +176,10 @@ component accessors="true" singleton{
 
 		// Did we find an incoming token
 		if( !len( jwtToken ) ){
+			if( variables.log.canDebug() ){
+				variables.log.debug( "Token not found anywhere" );
+			}
+
 			throw(
 				message = "Token not found in authorization header or the custom header or the request collection",
 				type 	= "TokenNotFoundException"
@@ -220,8 +224,7 @@ component accessors="true" singleton{
 		}
 
 		// Verify that this token has not been invalidated in the storage?
-		if( getTokenStorage().exists( jwtToken.jti ) ){
-
+		if( !getTokenStorage().exists( decodedToken.jti ) ){
 			if( variables.log.canWarn() ){
 				variables.log.warn( "Token rejected, it was not found in token storage", decodedToken );
 			}
@@ -229,7 +232,7 @@ component accessors="true" singleton{
 			throw(
 				message = "Token has expired, not found in storage",
 				detail 	= "Storage lookup failed",
-				type 	= "TokenExpiredException"
+				type 	= "TokenRejectionException"
 			);
 		}
 
@@ -243,6 +246,9 @@ component accessors="true" singleton{
 			.getContext()
 			.setPrivateValue( "jwt_token", jwtToken )
 			.setPrivateValue( "jwt_payload", decodedToken );
+
+		// Authenticate the payload
+		authenticate();
 
 		// Return it
 		return decodedToken;
@@ -327,7 +333,7 @@ component accessors="true" singleton{
 	 *
 	 * @throws InvalidToken
 	 */
-	string function decode( required token ){
+	struct function decode( required token ){
 		try{
 			return variables.jwt.decode(
 				arguments.token,
@@ -465,14 +471,14 @@ component accessors="true" singleton{
 		}
 
 		// Check and Load Baby!
-        if ( ! len( variables.settings.authService ) ) {
+        if ( ! len( variables.settings.authenticationService ) ) {
 			throw(
 				message	= "No [authService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.authenticationService`.",
 				type 	= "IncompleteConfiguration"
 			);
         }
 
-		variables.authService = variables.wirebox.getInstance( variables.settings.authService );
+		variables.authService = variables.wirebox.getInstance( variables.settings.authenticationService );
 
         return variables.authService;
     }
@@ -512,12 +518,13 @@ component accessors="true" singleton{
 	 * @permissions The permissions we want to validate in the scopes
 	 */
 	private function validateSecurity( required permissions ){
-		var results = { "allow" : false, "type" : "authentication" };
+		var results = { "allow" : false, "type" : "authentication", "messages" : "" };
 
 		try{
 			// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
 			var payload = getPayload();
 		} catch( Any e ){
+			results.messages = e.type & ":" & e.message;
 			return results;
 		}
 
@@ -535,7 +542,7 @@ component accessors="true" singleton{
 				results.type = "authorization";
 			} else {
 				// We are satisfied!
-				results.allow.true;
+				results.allow = true;
 			}
 		}
 

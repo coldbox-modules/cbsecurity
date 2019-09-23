@@ -11,13 +11,16 @@
         "cbauth":"^3.0.0",
         "BCrypt":"^2.5.0-snapshot"
     },
-    "devDependencies":{},
+    "devDependencies":{
+        "route-visualizer":"^1.2.0+4"
+    },
     "installPaths":{
         "coldbox":"coldbox/",
         "testbox":"testbox/",
         "jwt":"modules/jwt/",
         "cbauth":"modules/cbauth/",
-        "BCrypt":"modules/BCrypt/"
+        "BCrypt":"modules/BCrypt/",
+        "route-visualizer":"modules/route-visualizer/"
     },
     "testbox":{
         "runner":"http://localhost:60299/tests/runner.cfm"

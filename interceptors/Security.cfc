@@ -343,7 +343,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					// Log Block
 					if ( log.canWarn() ) {
 						log.warn(
-							"Invalid #validatorResults.type# by User (#getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#"
+							"Invalid #validatorResults.type# by User (#getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#",
+							validatorResults
 						);
 					}
 

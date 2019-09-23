@@ -41,7 +41,7 @@ component singleton{
 	 * @roles
 	 */
 	private function validateSecurity( required roles ){
-		var results = { "allow" : false, "type" : "authentication" };
+		var results = { "allow" : false, "type" : "authentication", "messages" : "" };
 
 		// Are we logged in?
 		if( isUserLoggedIn() ){

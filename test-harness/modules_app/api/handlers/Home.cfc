@@ -3,7 +3,6 @@
  */
 component{
 
-	property name="jwtSerivce" 		inject="jwtService@cbsecurity";
 	property name="userService" 	inject="userService";
 
 	/**
@@ -42,7 +41,6 @@ component{
 		};
 	}
 
-
 	/**
 	* login
 	*/
@@ -51,14 +49,19 @@ component{
 		param rc.password = "";
 
 		try{
-			var token = variables.jwtService.attempt( rc.username, rc.password );
+			var token = jwt().attempt( rc.username, rc.password );
 			return {
 				"error" 	: true,
 				"data" 		: token,
-				"message" 	: "Bearer token created."
+				"message" 	: "Bearer token created and it expires in #jwt().getSettings().jwt.expiration# minutes"
 			};
-		} catch ( any "InvalidCredentials" ) {
-			return onInvalidAuth( argumentCollection=arguments );
+		} catch ( "InvalidCredentials" e  ) {
+			event.setHTTPHeader( statusCode=401, statusText="Not Authorized" );
+			return {
+				"error" 	: true,
+				"data" 		: "",
+				"message" 	: "Invalid Credentials"
+			};
 		}
 
 	}
@@ -75,11 +78,11 @@ component{
 		prc.oUser = populateModel( "User" );
 		userService.create( prc.oUser );
 
-		var token = jwtService.fromuser( prc.oUser );
+		var token = jwt().fromuser( prc.oUser );
 		return {
 			"error" 	: true,
 			"data" 		: token,
-			"message" 	: "User registered correctly and Bearer token created."
+			"message" 	: "User registered correctly and Bearer token created and it expires in #jwt().getSettings().jwt.expiration# minutes"
 		};
 	}
 
@@ -93,6 +96,38 @@ component{
 			"data" 		: "",
 			"message" 	: "Successfully logged out"
 		};
+	}
+
+	/**
+	* gen
+	*/
+	function gen( event, rc, prc ){
+		var timestamp 	= now();
+		var userId 		= 123;
+		return jwt().encode( {
+			// Issuing authority
+			"iss" 		: event.getHTMLBaseURL(),
+			// Token creation
+			"iat" 		: jwt().toEpoch( timestamp ),
+			// The subject identifier
+			"sub" 		: 123,
+			// The token expiration
+			"exp" 		: jwt().toEpoch( dateAdd( "s", 1, timestamp ) ),
+			// The unique identifier of the token
+			"jti" 		: hash( timestamp & userId ),
+			// Get the user scopes for the JWT token
+			"scopes" 	: [],
+			"role" 		: "admin"
+		} );
+	}
+
+
+	/**
+	* dec
+	*/
+	function dec( event, rc, prc ){
+		var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE1NjkyNzI0NjQsInJvbGUiOiJhZG1pbiIsInNjb3BlcyI6W10sImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvIiwic3ViIjoxMjMsImV4cCI6MTU2OTI3MjQ2NSwianRpIjoiRTRDNEM3MDdFNjA1MzQwRDkxRDNCMDBCMkI4NTdFNDMifQ.N2rT_b_Xp8e9Hw0O7yVork6Fg8aC7RKf0Fv-Bmu7Iv5CVvFrmk1gkF_oKeXmcl22MiwhB2oQJhMNZiFa5OfSKw";
+		return jwt().decode( token );
 	}
 
 }

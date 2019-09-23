@@ -14,7 +14,7 @@ interface{
 	 * - allow:boolean True, user can continue access, false, invalid access actions will ensue
 	 * - type:string(authentication|authorization) The type of block that ocurred.  Either an authentication or an authorization issue.
 	 *
-	 * @return { allow:boolean, type:string(authentication|authorization) }
+	 * @return { allow:boolean, type:string(authentication|authorization), messages:string }
 	 */
 	struct function ruleValidator( required rule, required controller );
 
@@ -26,7 +26,7 @@ interface{
 	 * - allow:boolean True, user can continue access, false, invalid access actions will ensue
 	 * - type:string(authentication|authorization) The type of block that ocurred.  Either an authentication or an authorization issue.
 	 *
-	 * @return { allow:boolean, type:string(authentication|authorization) }
+	 * @return { allow:boolean, type:string(authentication|authorization), messages:string }
 	 */
 	struct function annotationValidator( required securedValue, required controller );
 
