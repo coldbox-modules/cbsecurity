@@ -13,6 +13,7 @@ component accessors="true" singleton{
 	property name="settings" 			inject="coldbox:moduleSettings:cbSecurity";
 	property name="interceptorService" 	inject="coldbox:interceptorService";
 	property name="requestService" 		inject="coldbox:requestService";
+	property name="log"			 		inject="logbox:logger:{this}";
 
 	/**
 	 * The auth service in use
@@ -76,7 +77,7 @@ component accessors="true" singleton{
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
 	 */
 	string function fromUser( required user, struct customClaims={} ){
-		var event 		= variables.requestService.getRequestContext();
+		var event 		= variables.requestService.getContext();
 		var timestamp 	= now();
 		var payload 	= {
 			// Issuing authority
@@ -139,7 +140,7 @@ component accessors="true" singleton{
 
 		// Store in ColdBox data bus
 		variables.requestService
-			.getRequestContext()
+			.getContext()
 			.setPrivateValue( variables.settings.prcUserVariable, oUser )
 
 		// Return the user
@@ -193,6 +194,11 @@ component accessors="true" singleton{
 		requiredClaims
 			.each( function( item ){
 				if( !decodedClaims.findNoCase( arguments.item ) ){
+
+					if( variables.log.canWarn() ){
+						variables.log.warn( "Token is invalid as it does not contain the `#arguments.item#` claim", decodedToken );
+					}
+
 					throw(
 						message = "Token is invalid as it does not contain the `#arguments.item#` claim",
 						type 	= "TokenInvalidException"
@@ -202,6 +208,11 @@ component accessors="true" singleton{
 
 		// Verify Expiration first
 		if( dateCompare( fromEpoch( decodedToken.exp ), now() ) < 0 ){
+
+			if( variables.log.canWarn() ){
+				variables.log.warn( "Token rejected, it has expired", decodedToken );
+			}
+
 			throw(
 				message = "Token has expired",
 				type 	= "TokenExpiredException"
@@ -210,6 +221,11 @@ component accessors="true" singleton{
 
 		// Verify that this token has not been invalidated in the storage?
 		if( getTokenStorage().exists( jwtToken.jti ) ){
+
+			if( variables.log.canWarn() ){
+				variables.log.warn( "Token rejected, it was not found in token storage", decodedToken );
+			}
+
 			throw(
 				message = "Token has expired, not found in storage",
 				detail 	= "Storage lookup failed",
@@ -217,9 +233,14 @@ component accessors="true" singleton{
 			);
 		}
 
+		// Log
+		if( variables.log.canDebug() ){
+			variables.log.debug( "Token is valid, not expired and found in storage, inflating to PRC", decodedToken );
+		}
+
 		// Store it
 		variables.requestService
-			.getRequestContext()
+			.getContext()
 			.setPrivateValue( "jwt_token", jwtToken )
 			.setPrivateValue( "jwt_payload", decodedToken );
 
@@ -232,7 +253,7 @@ component accessors="true" singleton{
 	 * if not token is set then this will be an empty string.
 	 */
 	string function getToken(){
-		var event = variables.requestService.getRequestContext();
+		var event = variables.requestService.getContext();
 
 		if( !event.privateValueExists( "jwt_token" ) ){
 			parseToken();
@@ -248,7 +269,7 @@ component accessors="true" singleton{
 	 */
 	function setToken( required token ){
 		variables.requestService
-			.getRequestContext()
+			.getContext()
 			.setPrivateValue( "jwt_token", arguments.token )
 			.setPrivateValue( "jwt_payload", decode( arguments.token ) );
 
@@ -259,7 +280,7 @@ component accessors="true" singleton{
 	 * Get the stored token from `prc.jwt_payload`, if it doesn't exist, it tries to parse it via `parseToken()`, if no token is set this will be an empty struct.
 	 */
 	struct function getPayload(){
-		var event = variables.requestService.getRequestContext();
+		var event = variables.requestService.getContext();
 
 		if( !event.privateValueExists( "jwt_payload" ) ){
 			parseToken();
@@ -338,8 +359,6 @@ component accessors="true" singleton{
 	 * @return { allow:boolean, type:authentication|authorization }
 	 */
 	struct function ruleValidator( required rule, required controller ){
-		writeDump( var=arguments.rule, label="jwtService" );
-		abort;
 		return validateSecurity( arguments.rule.roles );
 	}
 
@@ -464,7 +483,7 @@ component accessors="true" singleton{
 	 * Try to discover the jwt token from many incoming resources
 	 */
 	private string function discoverToken(){
-		var event = variables.requestService.getRequestContext();
+		var event = variables.requestService.getContext();
 
 		// Discover api token from headers using a custom header or the incoming RC
 		var jwtToken = event.getHTTPHeader(
@@ -494,7 +513,13 @@ component accessors="true" singleton{
 	 */
 	private function validateSecurity( required permissions ){
 		var results = { "allow" : false, "type" : "authentication" };
-		var payload = getPayload();
+
+		try{
+			// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
+			var payload = getPayload();
+		} catch( Any e ){
+			return results;
+		}
 
 		// Are we logged in?
 		if( getAuthService().isLoggedIn() ){
@@ -502,12 +527,12 @@ component accessors="true" singleton{
 			// Do we have any permissions to validate?
 			if( listLen( arguments.permissions ) ){
 				// Check if the user has the right permissions?
-				results.allow 	= (
+				results.allow = (
 					tokenHasScopes( arguments.permissions, payload.scopes )
 					&&
 					getAuthService().getUser().hasPermission( arguments.permissions )
 				);
-				results.type 	= "authorization";
+				results.type = "authorization";
 			} else {
 				// We are satisfied!
 				results.allow.true;
