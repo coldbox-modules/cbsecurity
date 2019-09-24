@@ -574,7 +574,7 @@ component accessors="true" singleton{
 				// Check if the user has the right permissions?
 				results.allow = (
 					tokenHasScopes( arguments.permissions, payload.scopes )
-					&&
+					||
 					getAuthService().getUser().hasPermission( arguments.permissions )
 				);
 				results.type = "authorization";
@@ -588,7 +588,7 @@ component accessors="true" singleton{
 	}
 
 	/**
-	 * Verify if the jwt token has the appripriate scopes
+	 * Verify if the jwt token has the appropriate scopes
 	 */
 	private function tokenHasScopes( required permission, required scopes ){
 		if( isSimpleValue( arguments.permission) ){
