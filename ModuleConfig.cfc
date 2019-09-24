@@ -69,15 +69,12 @@ component {
 			"enableSecurityVisualizer"		: false,
 			// JWT Settings
 			"jwt"                     		: {
-				// The jwt secret encoding key, defaults to getSystemEnv( "JWT_SECRET", "" )
-				"secretKey"               : "",
-
-				// by default it uses the authorization bearer header, but you can also pass a custom one as well.
+				// The jwt secret encoding key to use
+				"secretKey"               : getSystemSetting( "JWT_SECRET", "" ),
+				// by default it uses the authorization bearer header, but you can also pass a custom one as well or as an rc variable.
 				"customAuthHeader"        : "x-auth-token",
-
 				// The expiration in minutes for the jwt tokens
 				"expiration"              : 60,
-
 				// If true, enables refresh tokens, longer lived tokens (not implemented yet)
 				"enableRefreshTokens"     : false,
 				// The default expiration for refresh tokens, defaults to 30 days

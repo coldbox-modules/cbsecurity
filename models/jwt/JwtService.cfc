@@ -40,6 +40,20 @@ component accessors="true" singleton{
 		return this;
 	}
 
+	/**
+	 * Runs after DI
+	 */
+	function onDIComplete(){
+		// Verify a few settings just in case
+		if ( isNull( variables.settings.jwt.secretKey ) || !len( variables.settings.jwt.secretKey ) ){
+			throw(
+				message = "The JWT secret key cannot be empty, please fill this out in your `config/ColdBox.cfc` under your cbsecurity settings",
+				detail 	= "cbsecurity.jwt.secretKey",
+				type 	= "InvalidSecretKey"
+			)
+		}
+	}
+
 	/************************************************************************************/
 	/****************************** TOKEN CREATION METHODS ******************************/
 	/************************************************************************************/
