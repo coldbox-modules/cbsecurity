@@ -69,6 +69,8 @@
 			cbSecurity : {
 				// Global Relocation when an invalid access is detected, instead of each rule declaring one.
 				"invalidAuthenticationEvent" : "main.index",
+				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
+				"defaultAuthenticationAction" : "redirect",
 				// Global override event when an invalid access is detected, instead of each rule declaring one.
 				"invalidAuthorizationEvent"  : "main.index",
 				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect

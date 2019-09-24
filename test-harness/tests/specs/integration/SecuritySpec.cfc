@@ -39,6 +39,8 @@ component
 			beforeEach( function(currentSpec){
 				// Setup as a new ColdBox request for this suite, VERY IMPORTANT. ELSE EVERYTHING LOOKS LIKE THE SAME REQUEST.
 				setup();
+				cbauth = getInstance( "authenticationService@cbauth" );
+				cbauth.logout();
 			} );
 
 
