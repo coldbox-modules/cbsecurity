@@ -145,7 +145,7 @@ component accessors="true" singleton{
 		// Store in ColdBox data bus
 		variables.requestService
 			.getContext()
-			.setPrivateValue( variables.settings.prcUserVariable, oUser )
+			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
 		// Return the user
 		return oUser;

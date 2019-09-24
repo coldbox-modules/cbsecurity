@@ -13,7 +13,7 @@ component singleton {
 		return this;
 	}
 
-	User function new() provider="User";
+	User function new() provider="User"{}
 
 	User function retrieveUserById( required id ){
 		return populator.populateFromQuery( new (), queryExecute( "SELECT * FROM `users` WHERE `id` = ?", [ id ] ) );
