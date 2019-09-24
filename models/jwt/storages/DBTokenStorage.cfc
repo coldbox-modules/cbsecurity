@@ -122,15 +122,13 @@ component accessors="true" singleton{
 	 * Do the rotation
 	 */
 	function doRotation(){
-		var qLogs 		= "";
-		var cols 		= variables.columns;
 		var targetDate 	= dateAdd( "d", "-#variables.properties.rotationDays#", now() );
 
 		if( variables.log.canInfo() ){
 			variables.log.info( "DBTokenStorage starting token rotation using (#variables.properties.rotationDays#) rotation days" );
 		}
 
-		var qResults = queryExecute(
+		queryExecute(
 			"DELETE
 			  FROM #getTable()#
 			 WHERE expiration < :targetDate
@@ -139,7 +137,8 @@ component accessors="true" singleton{
 				targetDate = { cfsqltype="timestamp", value=targetDate }
 			},
 			{
-				datasource = variables.properties.dsn
+				datasource = variables.properties.dsn,
+				result 		= "local.qResults"
 			}
 		);
 
@@ -186,7 +185,7 @@ component accessors="true" singleton{
 				token  		= { cfsqltype="longvarchar",value=arguments.token },
 				expiration 	= { cfsqltype="timestamp", 	value=jwtService.fromEpoch( arguments.payload.exp ) },
 				issued     	= { cfsqltype="timestamp", 	value=jwtService.fromEpoch( arguments.payload.iat ) },
-				subject 	= { cfsqltype="varchar", 	value=arguments.payload.sub },
+				subject 	= { cfsqltype="varchar", 	value=arguments.payload.sub }
 			},
 			{
 				datasource = variables.properties.dsn
@@ -217,12 +216,13 @@ component accessors="true" singleton{
 			",
 			{
 				cacheKey 	: arguments.key,
-				now 		: { cfsqltype="timestamp", 	value=now() },
+				now 		: { cfsqltype="timestamp", 	value=now() }
 			},
 			{
 				datsource 	= variables.properties.dsn
 			}
 		);
+
 		return qResults.recordcount > 0;
 	}
 

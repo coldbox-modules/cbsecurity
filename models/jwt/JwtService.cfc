@@ -141,7 +141,7 @@ component accessors="true" singleton{
 		// Announce the creation
 		variables.interceptorService.processState( "cbSecurity_onJWTCreation", {
 			token 	: jwtToken,
-			payload : arguments.payload,
+			payload : payload,
 			user 	: arguments.user
 		} );
 
@@ -208,6 +208,8 @@ component accessors="true" singleton{
 		variables.interceptorService.processState( "cbSecurity_onJWTInvalidation", {
 			token 	: arguments.token
 		} );
+
+		return results;
 	}
 
 	/************************************************************************************/
