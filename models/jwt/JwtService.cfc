@@ -143,7 +143,7 @@ component accessors="true" singleton{
 	 */
 	function authenticate(){
 		// Get the User it represents
-		var oUser = getUserService().get( getPayload().sub );
+		var oUser = getUserService().retrieveUserById( getPayload().sub );
 
 		// Verify it
 		if( isNull( oUser ) || !len( oUser.getId() ) ){

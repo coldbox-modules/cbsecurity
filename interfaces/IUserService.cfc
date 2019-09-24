@@ -6,13 +6,27 @@
  */
 interface{
 
-    /**
-     * Retrieve a user by unique identifier
-     *
-     * @id The unique identifier
-     *
-     * @return User that implements JWTSubject and/or IAuthUser
-     */
-    any function get( required id );
+	/**
+	 * Verify if the incoming username/password are valid credentials.
+	 *
+	 * @username The username
+	 * @password The password
+	 */
+	boolean function isValidCredentials( required username, required password );
 
+	/**
+	 * Retrieve a user by username
+	 *
+	 * @return User that implements JWTSubject and/or IAuthUser
+	 */
+	function retrieveUserByUsername( required username );
+
+	/**
+	 * Retrieve a user by unique identifier
+	 *
+	 * @id The unique identifier
+	 *
+	 * @return User that implements JWTSubject and/or IAuthUser
+	 */
+	function retrieveUserById( required id );
 }
