@@ -171,6 +171,9 @@ component accessors="true" singleton{
 	 * @token The token to invalidate
 	 */
 	boolean function invalidate( required token ){
+		if( variables.log.canInfo() ){
+			variables.log.info( "Token invalidation request issued for :#arguments.token#" );
+		}
 		return getTokenStorage().clear( arguments.token );
 	}
 
@@ -312,6 +315,22 @@ component accessors="true" singleton{
 		}
 
 		return event.getPrivateValue( "jwt_payload" );
+	}
+
+	/**
+	 * Get the authenticated user stored on `prc` via the variables.settings.prcUserVariable setting.
+	 * if it doesn't exist, then call parseToken() and try to load it and authenticate it.
+	 *
+	 * @return The user that implements IAuth and IJwtSubject
+	 */
+	function getUser(){
+		var event = variables.requestService.getContext();
+
+		if( !event.privateValueExists( variables.settings.prcUserVariable ) ){
+			parseToken();
+		}
+
+		return event.getPrivateValue( variables.settings.prcUserVariable );
 	}
 
 	/************************************************************************************/

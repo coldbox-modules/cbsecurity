@@ -10,6 +10,7 @@ component accessors="true" singleton{
 	property name="wirebox" 	inject="wirebox";
 	property name="cachebox" 	inject="cachebox";
 	property name="settings" 	inject="coldbox:moduleSettings:cbSecurity";
+	property name="jwtService"	inject="JwtService@cbSecurity";
 
 	/**
 	 * Storage properties
@@ -69,8 +70,8 @@ component accessors="true" singleton{
 			buildKey( arguments.key ),
 			{
 				token 		: arguments.token,
-				expiration 	: arguments.expiration,
-				created 	: now(),
+				expiration 	: jwtService.fromEpoch( arguments.payload.exp ),
+				issued 		: jwtService.fromEpoch( arguments.payload.iat ),
 				payload		: arguments.payload
 			},
 			arguments.expiration

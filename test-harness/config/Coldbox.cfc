@@ -124,8 +124,11 @@
 					"tokenStorage"        : {
 						"enabled"    : true,
 						"keyPrefix"  : "cbjwt_",
-						"driver"     : "cachebox",
-						"properties" : { "cacheName" : "default" }
+						//"driver"     : "cachebox",
+						//"properties" : { "cacheName" : "default" }
+
+						"driver"     : "db",
+						"properties" : { "table" : "jwtTokens" }
 					}
 				}
 			}

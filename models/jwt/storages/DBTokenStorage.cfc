@@ -15,7 +15,8 @@
  * - id : db identifier
  * - cacheKey : varchar 255
  * - token : text
- * - expiration : varchar 255 (unix timestamp)
+ * - expiration : (unix timestamp)
+ * - issued : (unix timestamp)
  * - subject : varchar 255
  *
  */
@@ -25,6 +26,7 @@ component accessors="true" singleton{
 	property name="wirebox" 	inject="wirebox";
 	property name="cachebox" 	inject="cachebox";
 	property name="settings" 	inject="coldbox:moduleSettings:cbSecurity";
+	property name="jwtService"	inject="JwtService@cbSecurity";
 
 	/**
 	 * Storage properties
@@ -41,7 +43,7 @@ component accessors="true" singleton{
 	 */
 	property name="keyPrefix";
 
-	variables.COLUMNS = "id,cacheKey,token,expiration,created,subject";
+	variables.COLUMNS = "id,cacheKey,token,expiration,issued,subject";
 
 	/**
 	 * Constructor
@@ -111,7 +113,7 @@ component accessors="true" singleton{
 					:cacheKey,
 					:token,
 					:expiration,
-					:created,
+					:issued,
 					:subject
 				)
 			",
@@ -119,8 +121,8 @@ component accessors="true" singleton{
 				uuid      	= { cfsqltype="varchar", 	value="#variables.uuid.randomUUID().toString()#" },
 				cacheKey  	= { cfsqltype="varchar", 	value=arguments.key },
 				token  		= { cfsqltype="longvarchar",value=arguments.token },
-				expiration 	= { cfsqltype="varchar", 	value=arguments.expiration },
-				created     = { cfsqltype="timestamp", 	value=now() },
+				expiration 	= { cfsqltype="timestamp", 	value=jwtService.fromEpoch( arguments.payload.exp ) },
+				issued     = { cfsqltype="timestamp", 	value=jwtService.fromEpoch( arguments.payload.iat ) },
 				subject 	= { cfsqltype="varchar", 	value=arguments.payload.sub },
 			},
 			{
@@ -136,27 +138,16 @@ component accessors="true" singleton{
      * @key The cache key
      */
     boolean function exists( required key ){
-		queryExecute(
-			"INSERT INTO #getTable()# (#variables.COLUMNS#)
-				VALUES (
-					:uuid,
-					:cacheKey,
-					:token,
-					:expiration,
-					:created
-				)
-			",
+		var qResults = queryExecute(
+			"SELECT cacheKey FROM #getTable()# WHERE cacheKey = :cacheKey",
 			{
-				uuid      	= { cfsqltype="varchar", 	value="#variables.uuid.randomUUID().toString()#" },
-				cacheKey  	= { cfsqltype="varchar", 	value=arguments.key },
-				token  		= { cfsqltype="varchar", 	value=arguments.token },
-				expiration 	= { cfsqltype="timestamp", 	value=arguments.expiration },
-				created     = { cfsqltype="timestamp", 	value=now() }
+				cacheKey : arguments.key
 			},
 			{
-				datasource = variables.properties.dsn
+				datsource 	= variables.properties.dsn
 			}
 		);
+		return qResults.recordcount > 0;
 	}
 
     /**
@@ -170,7 +161,7 @@ component accessors="true" singleton{
     struct function get( required key, struct defaultValue ){
 		// select entry
 		var q = queryExecute(
-			"SELECT cacheKey, token, expiration, created
+			"SELECT cacheKey, token, expiration, issued
 				FROM #getTable()#
 				WHERE cacheKey = ?
 			",
@@ -183,10 +174,10 @@ component accessors="true" singleton{
 		// Just return if records found, else null
 		if( q.recordCount ){
 			return {
-				"token"      : q.token,
-				"cacheKey"   : q.cacheKey,
-				"expiration" : q.expiration,
-				"created"    : q.created
+				"token"      	: q.token,
+				"cacheKey"   	: q.cacheKey,
+				"expiration" 	: q.expiration,
+				"issued"    	: q.issued
 			};
 		}
 
@@ -333,8 +324,8 @@ component accessors="true" singleton{
 						"CREATE TABLE #getTable()# (
 							id VARCHAR(36) NOT NULL,
 							cacheKey VARCHAR(255) NOT NULL,
-							expiration VARCHAR(255) NOT NULL,
-							created #getDateTimeColumnType()# NOT NULL,
+							expiration #getDateTimeColumnType()# NOT NULL,
+							issued #getDateTimeColumnType()# NOT NULL,
 							token #getTextColumnType()# NOT NULL,
 							subject VARCHAR(255) NOT NULL,
 							PRIMARY KEY (id)
