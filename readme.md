@@ -56,7 +56,7 @@ cbsecurity = {
 	// You can define your security rules here or externally via a source
 	"rules"							: [],
 	// The validator is an object that will validate rules and annotations and provide feedback on either authentication or authorization issues.
-	"validator"						: "CFValidator@cbsecurity",
+	"validator"						: "CBAuthValidator@cbsecurity",
 	// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
 	"authenticationService"  		: "authenticationService@cbauth",
 	// WireBox ID of the user service to use
