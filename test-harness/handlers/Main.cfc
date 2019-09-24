@@ -14,15 +14,15 @@ component {
 	}
 
 	/**
-	* login
-	*/
+	 * login
+	 */
 	function login( event, rc, prc ){
 		event.setView( "main/login" );
 	}
 
 	/**
-	* doLogin
-	*/
+	 * doLogin
+	 */
 	function doLogin( event, rc, prc ){
 		return "login";
 	}

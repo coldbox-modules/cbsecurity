@@ -6,6 +6,8 @@ This module will enhance your ColdBox applications by providing out of the box s
 
 - A security rule engine for incoming requests
 - Annotation driven security for handlers and actions
+- JWT (Json Web Tokens) generator, decoder and authentication services
+- Pluggable with any Authentication service or can leverage [cbauth](https://github.com/elpete/cbauth)
 
 The module also has the capability to distinguish between invalid authentication and invalid authorization and determine an outcome of the process.  The module also supports the ability to load/unload security rules from contributing modules. So you can create a nice HMVC hierarchy of security.
 

@@ -4,27 +4,28 @@
 		// coldbox directives
 		coldbox = {
 			// Application Setup
-			appName : "Module Tester",
+			appName                 : "Module Tester",
 			// Development Settings
-			reinitPassword : "",
+			reinitPassword          : "",
 			handlersIndexAutoReload : true,
 			modulesExternalLocation : [],
 			// Implicit Events
-			defaultEvent : "",
-			requestStartHandler : "",
-			requestEndHandler : "",
+			defaultEvent            : "",
+			requestStartHandler     : "",
+			requestEndHandler       : "",
 			applicationStartHandler : "",
-			applicationEndHandler : "",
-			sessionStartHandler : "",
-			sessionEndHandler : "",
-			missingTemplateHandler : "",
+			applicationEndHandler   : "",
+			sessionStartHandler     : "",
+			sessionEndHandler       : "",
+			missingTemplateHandler  : "",
 			// Error/Exception Handling
-			exceptionHandler : "",
-			onInvalidEvent : "",
-			customErrorTemplate : "/coldbox/system/includes/BugReport.cfm",
+			exceptionHandler        : "",
+			onInvalidEvent          : "",
+			customErrorTemplate     : "/coldbox/system/includes/BugReport.cfm",
 			// Application Aspects
-			handlerCaching : false,
-			eventCaching : false
+			handlerCaching          : false,
+			eventCaching            : false,
+			autoMapModels           : true
 		};
 
 		// environment settings, create a detectEnvironment() method to detect it yourself.
@@ -41,107 +42,90 @@
 		};
 
 		// Register interceptors as an array, we need order
-		interceptors = [
-			// SES
-			{ class : "coldbox.system.interceptors.SES" }
-		];
+		interceptors = [];
 
 		// LogBox DSL
 		logBox = {
 			// Define Appenders
 			appenders : {
 				files : {
-					class : "coldbox.system.logging.appenders.RollingFileAppender",
+					class      : "coldbox.system.logging.appenders.RollingFileAppender",
 					properties : { filename : "tester", filePath : "/#appMapping#/logs" }
 				},
-				console : {
-					class : "coldbox.system.logging.appenders.ConsoleAppender"
-				}
+				console : { class : "coldbox.system.logging.appenders.ConsoleAppender" }
 			},
 			// Root Logger
-			root : { levelmax : "DEBUG", appenders : "*" },
+			root  : { levelmax : "DEBUG", appenders : "*" },
 			// Implicit Level Categories
-			info : [ "coldbox.system" ],
+			info  : [ "coldbox.system" ],
 			debug : [ "cbsecurity" ]
 		};
 
 		// Module Settings
 		moduleSettings = {
 			// CB Auth
-			cbAuth : {
-				userServiceClass : "UserService"
-			},
+			cbAuth     : { userServiceClass : "UserService" },
 			// CB Security
 			cbSecurity : {
 				// Global Relocation when an invalid access is detected, instead of each rule declaring one.
-				"invalidAuthenticationEvent" 	: "main.index",
+				"invalidAuthenticationEvent" : "main.index",
 				// Global override event when an invalid access is detected, instead of each rule declaring one.
-				"invalidAuthorizationEvent"		: "main.index",
+				"invalidAuthorizationEvent"  : "main.index",
 				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
-				"defaultAuthorizationAction"	: "redirect",
+				"defaultAuthorizationAction" : "redirect",
 				// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
-				"authenticationService"  		: "authenticationService@cbauth",
+				"authenticationService"      : "authenticationService@cbauth",
 				// WireBox ID of the user service to use
-				"userService"             		: "UserService",
+				"userService"                : "UserService",
 				// Enable Visualizer
-				"enableSecurityVisualizer"		: true,
+				"enableSecurityVisualizer"   : true,
 				// The global security rules
-				"rules" 						: [
+				"rules"                      : [
 					// should use direct action and do a global redirect
 					{
-						"whitelist": "",
-						"securelist": "admin",
-						"match": "event",
-						"roles": "admin",
-						"permissions": "",
-						"action" : "redirect"
+						"whitelist"   : "",
+						"securelist"  : "admin",
+						"match"       : "event",
+						"roles"       : "admin",
+						"permissions" : "",
+						"action"      : "redirect"
 					},
 					// no action, use global default action
 					{
-						"whitelist": "",
-						"securelist": "noAction",
-						"match": "url",
-						"roles": "admin",
-						"permissions": ""
+						"whitelist"   : "",
+						"securelist"  : "noAction",
+						"match"       : "url",
+						"roles"       : "admin",
+						"permissions" : ""
 					},
 					// Using overrideEvent only, so use an explicit override
-					{
-						"securelist": "ruleActionOverride",
-						"match": "url",
-						"overrideEvent": "main.login"
-					},
+					{ "securelist" : "ruleActionOverride", "match" : "url", "overrideEvent" : "main.login" },
 					// direct action, use global override
 					{
-						"whitelist": "",
-						"securelist": "override",
-						"match": "url",
-						"roles": "",
-						"permissions": "",
-						"action" : "override"
+						"whitelist"   : "",
+						"securelist"  : "override",
+						"match"       : "url",
+						"roles"       : "",
+						"permissions" : "",
+						"action"      : "override"
 					},
 					// Using redirect only, so use an explicit redirect
-					{
-						"securelist": "ruleActionRedirect",
-						"match": "url",
-						"redirect": "main.login"
-					}
+					{ "securelist" : "ruleActionRedirect", "match" : "url", "redirect" : "main.login" }
 				],
 				// JWT Settings
-				"jwt"                     		: {
-					"secretKey"               : "C3D4AF35-8FCD-49AB-943A39AEFFB584EE",
-					"customAuthHeader"        : "x-auth-token",
-					"expiration"              : 60,
-					"enableRefreshTokens"     : false,
-					"refreshExpiration"       : 43200,
-					"algorithm"               : "HS512",
-					"requiredClaims"          : [ "role" ],
-					"tokenStorage"            : {
-						"enabled"       : true,
-						"keyPrefix"     : "cbjwt_",
-						"driver"        : "cachebox",
-						"properties"    : {
-							"cacheName" : "default"
-						}
+				"jwt" : {
+					"secretKey"           : "C3D4AF35-8FCD-49AB-943A39AEFFB584EE",
+					"customAuthHeader"    : "x-auth-token",
+					"expiration"          : 60,
+					"enableRefreshTokens" : false,
+					"refreshExpiration"   : 43200,
+					"algorithm"           : "HS512",
+					"requiredClaims"      : [ "role" ],
+					"tokenStorage"        : {
+						"enabled"    : true,
+						"keyPrefix"  : "cbjwt_",
+						"driver"     : "cachebox",
+						"properties" : { "cacheName" : "default" }
 					}
 				}
 			}

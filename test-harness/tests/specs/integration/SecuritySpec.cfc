@@ -152,8 +152,10 @@ component
 
 				given( "A secured annotated handler and an annotated action and a valid access", function(){
 					then( "it should allow access", function(){
-						prepareMock( getInstance( "CFValidator@cbSecurity" ) )
-							.$( "annotationValidator", { allow : true, type : "authentication" } );
+						prepareMock( getInstance( "CFValidator@cbSecurity" ) ).$(
+							"annotationValidator",
+							{ allow : true, type : "authentication" }
+						);
 						var event = execute( event = "Annotations.secret", renderResults = true );
 						expect( event.getRenderedContent() ).toInclude( "Mega secured action" );
 					} );

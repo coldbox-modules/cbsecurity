@@ -1,7 +1,7 @@
 /**
  * A ColdBox Event Handler
  */
-component{
+component {
 
 	/**
 	 * Home page
