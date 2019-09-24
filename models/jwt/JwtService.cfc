@@ -125,12 +125,8 @@ component accessors="true" singleton{
 		// Append incoming custom claims with override, they take prescedence
 		structAppend( payload, arguments.customClaims, true );
 
-		// Create the token
-		var jwtToken = jwt.encode(
-			payload,
-			variables.settings.jwt.secretKey,
-			variables.settings.jwt.algorithm
-		);
+		// Create the token for the user
+		var jwtToken = this.encode(	payload );
 
 		// Store it with the expiration as well if enabled
 		if( variables.settings.jwt.tokenStorage.enabled ){
@@ -141,6 +137,13 @@ component accessors="true" singleton{
 				payload		= payload
 			);
 		}
+
+		// Announce the creation
+		variables.interceptorService.processState( "cbSecurity_onJWTCreation", {
+			token 	: jwtToken,
+			payload : arguments.payload,
+			user 	: arguments.user
+		} );
 
 		// Return it
 		return jwtToken;
@@ -158,6 +161,12 @@ component accessors="true" singleton{
 
 		// Verify it
 		if( isNull( oUser ) || !len( oUser.getId() ) ){
+			// Announce the creation
+			variables.interceptorService.processState( "cbSecurity_onJWTInvalidUser", {
+				token 	: this.getToken(),
+				payload	: this.getPayload()
+			} );
+
 			throw(
 				message = "The user (#getPayload().sub#) was not found by the user service",
 				type 	= "InvalidTokenUser"
@@ -172,6 +181,13 @@ component accessors="true" singleton{
 			.getContext()
 			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
+		// Announce the creation
+		variables.interceptorService.processState( "cbSecurity_onJWTValidAuthentication", {
+			token 	: this.getToken(),
+			payload	: this.getPayload(),
+			user 	: oUser
+		} );
+
 		// Return the user
 		return oUser;
 	}
@@ -185,7 +201,13 @@ component accessors="true" singleton{
 		if( variables.log.canInfo() ){
 			variables.log.info( "Token invalidation request issued for :#arguments.token#" );
 		}
-		return getTokenStorage().clear( arguments.token );
+
+		var results = getTokenStorage().clear( arguments.token );
+
+		// Announce the creation
+		variables.interceptorService.processState( "cbSecurity_onJWTInvalidation", {
+			token 	: arguments.token
+		} );
 	}
 
 	/************************************************************************************/
@@ -236,6 +258,12 @@ component accessors="true" singleton{
 						variables.log.warn( "Token is invalid as it does not contain the `#arguments.item#` claim", decodedToken );
 					}
 
+					// Announce the creation
+					variables.interceptorService.processState( "cbSecurity_onJWTInvalidClaims", {
+						token 	: jwtToken,
+						payload	: decodedToken
+					} );
+
 					throw(
 						message = "Token is invalid as it does not contain the `#arguments.item#` claim",
 						type 	= "TokenInvalidException"
@@ -250,6 +278,12 @@ component accessors="true" singleton{
 				variables.log.warn( "Token rejected, it has expired", decodedToken );
 			}
 
+			// Announce the creation
+			variables.interceptorService.processState( "cbSecurity_onJWTExpiration", {
+				token 	: jwtToken,
+				payload	: decodedToken
+			} );
+
 			throw(
 				message = "Token has expired",
 				type 	= "TokenExpiredException"
@@ -261,6 +295,12 @@ component accessors="true" singleton{
 			if( variables.log.canWarn() ){
 				variables.log.warn( "Token rejected, it was not found in token storage", decodedToken );
 			}
+
+			// Announce the creation
+			variables.interceptorService.processState( "cbSecurity_onJWTStorageRejection", {
+				token 	: jwtToken,
+				payload	: decodedToken
+			} );
 
 			throw(
 				message = "Token has expired, not found in storage",
@@ -279,6 +319,12 @@ component accessors="true" singleton{
 			.getContext()
 			.setPrivateValue( "jwt_token", jwtToken )
 			.setPrivateValue( "jwt_payload", decodedToken );
+
+		// Announce the creation
+		variables.interceptorService.processState( "cbSecurity_onJWTValidParsing", {
+			token 	: jwtToken,
+			payload	: decodedToken
+		} );
 
 		// Authenticate the payload
 		authenticate();

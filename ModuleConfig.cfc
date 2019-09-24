@@ -106,8 +106,18 @@ component {
 		// Security Interceptions
 		interceptorSettings = {
 			customInterceptionPoints = [
+				// Validator Events
 				"cbSecurity_onInvalidAuthentication",
-				"cbSecurity_onInvalidAuhtorization"
+				"cbSecurity_onInvalidAuhtorization",
+				// JWT Events
+				"cbSecurity_onJWTCreation",
+				"cbSecurity_onJWTInvalidation",
+				"cbSecurity_onJWTValidAuthentication",
+				"cbSecurity_onJWTInvalidUser",
+				"cbSecurity_onJWTInvalidClaims",
+				"cbSecurity_onJWTExpiration",
+				"cbSecurity_onJWTStorageRejection",
+				"cbSecurity_onJWTValidParsing"
 			]
 		};
 
