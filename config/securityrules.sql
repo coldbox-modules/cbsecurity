@@ -11,6 +11,7 @@ CREATE TABLE securityrules
 	'overrideEvent' VARCHAR(255),
 	'useSSL' bit NOT NULL DEFAULT 0
 	'match' varchar(10) DEFAULT 'event'
+	'action' varchar(20) DEFAULT 'redirect'
 	PRIMARY KEY (securityrule_id),
 	UNIQUE (securityrule_id)
 );

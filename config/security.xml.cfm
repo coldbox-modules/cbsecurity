@@ -24,5 +24,6 @@ that can be found in an event.
 		<redirect>user.login</redirect>
 		<overrideEvent>user.login</overrideEvent>
 		<useSSL>false</useSSL>
+		<action>redirect</action>
     </rule>
 </rules>

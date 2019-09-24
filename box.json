@@ -26,6 +26,9 @@
         "cbauth":"^3.0.0"
     },
     "scripts":{
-        "toMaster":"recipe build/toMaster.boxr"
+		"toMaster":"recipe build/toMaster.boxr",
+		"format": "cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --overwrite",
+        "format:watch": "cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --watch",
+        "format:check": "cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --check"
     }
 }
