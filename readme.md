@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/coldbox-modules/cbsecurity.svg?branch=development)](https://travis-ci.org/ColdBox/cbsecurity)
+[![Build Status](https://travis-ci.org/coldbox-modules/cbsecurity.svg?branch=development)](https://travis-ci.org/coldbox-modules/cbsecurity)
 
 # WELCOME TO THE COLDBOX SECURITY MODULE
 
