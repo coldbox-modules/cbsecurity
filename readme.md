@@ -7,9 +7,12 @@ This module will enhance your ColdBox applications by providing out of the box s
 - A security rule engine for incoming requests
 - Annotation driven security for handlers and actions
 - JWT (Json Web Tokens) generator, decoder and authentication services
-- Pluggable with any Authentication service or can leverage [cbauth](https://github.com/elpete/cbauth)
+- Pluggable with any Authentication service or can leverage [cbauth](https://github.com/elpete/cbauth) by default
+- Capability to distinguish between invalid authentication and invalid authorization and determine an outcome of the process.  
+- Ability to load/unload security rules from contributing modules. So you can create a nice HMVC hierarchy of security.
+- Ability for each module to define it's own `validator`
 
-The module also has the capability to distinguish between invalid authentication and invalid authorization and determine an outcome of the process.  The module also supports the ability to load/unload security rules from contributing modules. So you can create a nice HMVC hierarchy of security.
+Welcome to SecureLand!
 
 ## License
 
@@ -85,14 +88,11 @@ cbsecurity = {
 	// JWT Settings
 	"jwt"                     		: {
 		// The jwt secret encoding key, defaults to getSystemEnv( "JWT_SECRET", "" )
-		"secretKey"               : "",
-
+		"secretKey"               : getSystemSetting( "JWT_SECRET", "" ),
 		// by default it uses the authorization bearer header, but you can also pass a custom one as well.
 		"customAuthHeader"        : "x-auth-token",
-
 		// The expiration in minutes for the jwt tokens
 		"expiration"              : 60,
-
 		// If true, enables refresh tokens, longer lived tokens (not implemented yet)
 		"enableRefreshTokens"     : false,
 		// The default expiration for refresh tokens, defaults to 30 days
@@ -122,11 +122,11 @@ cbsecurity = {
 
 ## Usage
 
-Using the default configuration, this module will register the `Security` interceptor automatically for you according to the settings (`cbsecurity.interceptor.Security`).  
+Using the default configuration, this module will register the `Security` interceptor automatically for you according to the settings shown above and using the interceptor => (`cbsecurity.interceptor.Security`).  
 
 > **Info** You can deactivate this and load as a manual interceptor via the `autoLoadFirewall` setting.
 
-The interceptor will intercept all calls to your application via the `preProcess()` interception point.  Each request will then be validated against any registered security rules and then validated against any handler/action security annotations (if active).
+The interceptor will intercept all calls to your application via the `preProcess()` interception point.  Each request will then be validated against any registered security rules and then validated against any handler/action security annotations (if active) via a Security Validator.  Also, if the request is made to a module, each module has the capability to have it's own separate validator apart from the global one.
 
 > **Info** You can deactive annotation driven security via the `handlerAnnotationSecurity` setting.
 
@@ -136,7 +136,7 @@ How does the interceptor know a user doesn't have access? Well, here is where yo
 
 > **Info** You can find an interface for these methods in `cbsecurity.interfaces.ISecurityValidator`
 
-The validator's job is to tell back to the firewall if they are allowed access and if they don't, what type of validation they broke: authentication or authorization.
+The validator's job is to tell back to the firewall if they are allowed access and if they don't, what type of validation they broke: **authentication** or **authorization**.
 
 > `Authentication` is when a user is NOT logged in
 
@@ -191,7 +191,7 @@ rules = [
 
 ### Global Rules
 
-The global rules come from the `config/Coldbox.cfc`
+The global rules come from the `config/Coldbox.cfc` and they are defined within the `cbsecurity` module setting.
 
 ```js
 // Module Settings
@@ -261,8 +261,14 @@ settings = {
 	cbsecurity = {
 		// Module Relocation when an invalid access is detected, instead of each rule declaring one.
 		"invalidAuthenticationEvent" 	: "mod1:secure.index",
+		// Default Auhtentication Action: override or redirect when a user has not logged in
+		"defaultAuthenticationAction"	: "override",
 		// Module override event when an invalid access is detected, instead of each rule declaring one.
 		"invalidAuthorizationEvent"		: "mod1:secure.auth",
+		// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
+		"defaultAuthorizationAction"	: "override",
+		// Custom validator for the module.
+		"validator" 					: "jwtService@cbsecurity"
 		// You can define your security rules here or externally via a source
 		"rules"							: [
 			{
@@ -345,11 +351,12 @@ Now that we have seen security rules and also security annotations let's see how
  * This function is called once an incoming event matches a security rule.
  * You will receive the security rule that matched and an instance of the ColdBox controller.
  *
- * You must return a struct with two keys:
+ * You must return a struct with the following keys:
  * - allow:boolean True, user can continue access, false, invalid access actions will ensue
  * - type:string(authentication|authorization) The type of block that ocurred.  Either an authentication or an authorization issue.
+ * - messages:string Any messages for debugging
  *
- * @return { allow:boolean, type:string(authentication|authorization) }
+ * @return { allow:boolean, type:string(authentication|authorization), messages:string }
  */
 struct function ruleValidator( required rule, required controller );
 
@@ -357,11 +364,12 @@ struct function ruleValidator( required rule, required controller );
  * This function is called once access to a handler/action is detected.
  * You will receive the secured annotation value and an instance of the ColdBox Controller
  *
- * You must return a struct with two keys:
+ * You must return a struct with the following keys:
  * - allow:boolean True, user can continue access, false, invalid access actions will ensue
  * - type:string(authentication|authorization) The type of block that ocurred.  Either an authentication or an authorization issue.
+ * - messages:string Any messages for debugging
  *
- * @return { allow:boolean, type:string(authentication|authorization) }
+ * @return { allow:boolean, type:string(authentication|authorization), messages:string }
  */
 struct function annotationValidator( required securedValue, required controller );
 ```
@@ -370,6 +378,7 @@ Each validator must return a struct with the following keys:
 
 - `allow:boolean` A boolean indicator if authentication or authorization was violated
 - `type:stringOf(authentication|authorization)` A string that indicates the type of violation: authentication or authorization.
+- `messages:string` A string of messages used for debugging
 
 Here is a sample validator using permission based security in both rules and annotation context
 
@@ -382,7 +391,7 @@ struct function annotationValidator( required securedValue, required controller 
 	return permissionValidator( securedValue, controller );
 }
 private function permissionValidator( permissions, controller, rule ){
-	var results = { "allow" : false, "type" : "authentication" };
+	var results = { "allow" : false, "type" : "authentication", "messages" : "" };
 	var user 	= security.getCurrentUser();
 
 	// First check if user has been authenticated.
@@ -416,7 +425,6 @@ You will receive the following data in the `interceptData` struct:
 - `annotationType` : The annotation type intercepted, `handler` or `action` or empty if rule driven
 - `processActions` : A boolean indicator that defaults to true.  If you change this to false, then the interceptor won't fire the invalid actions.  Usually this means, you manually will do them.
 
-
 ## Security Visualizer
 
 This module also ships with a security visualizer that will document all your security rules and your settings in a nice panel.  In order to activate it you must add the `enableSecurityVisualizer` setting to your config and mark it as `true`.  Once enabled you can navigate to: `/cbsecurity` and you will be presentd with the visualizer.
@@ -424,7 +432,6 @@ This module also ships with a security visualizer that will document all your se
 > **Important** The visualizer is disabled by default and if it detects an environment of production, it will disable itself.
 
 <img src="https://raw.githubusercontent.com/coldbox-modules/cbsecurity/development/test-harness/visualizer.png" class="img-responsive">
-
 
 ********************************************************************************
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
