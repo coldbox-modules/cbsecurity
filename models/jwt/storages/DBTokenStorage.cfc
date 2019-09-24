@@ -27,6 +27,7 @@ component accessors="true" singleton{
 	property name="cachebox" 	inject="cachebox";
 	property name="settings" 	inject="coldbox:moduleSettings:cbSecurity";
 	property name="jwtService"	inject="JwtService@cbSecurity";
+	property name="log"			inject="logbox:logger:{this}";
 
 	/**
 	 * Storage properties
@@ -81,10 +82,72 @@ component accessors="true" singleton{
 		if( isNull( variables.properties.schema ) ){
 			variables.properties.schema = "";
 		}
-
+		// Days since expiration of token, to remove
+		if( isNull( variables.properties.rotationDays ) ){
+			variables.properties.rotationDays = 7;
+		}
+		// Run rotations every hour by default
+		if( isNull( variables.properties.rotationFrequency ) ){
+			variables.properties.rotationFrequency = 60;
+		}
 		// Build out table
 		if( variables.properties.autoCreate ){
 			ensureTable();
+		}
+
+		// DB Rotation Time
+		variables.lastDBRotation = "";
+
+		return this;
+	}
+
+	/**
+	 * Rotation checks
+	 */
+	function rotationCheck(){
+		// Verify if in rotation frequency
+		if(
+			isDate( variables.lastDBRotation )
+			AND
+			dateDiff( "n",  variables.lastDBRotation, now() ) LTE variables.properties.rotationFrequency
+		){
+			return;
+		}
+
+		// Rotations
+		this.doRotation();
+	}
+
+	/**
+	 * Do the rotation
+	 */
+	function doRotation(){
+		var qLogs 		= "";
+		var cols 		= variables.columns;
+		var targetDate 	= dateAdd( "d", "-#variables.properties.rotationDays#", now() );
+
+		if( variables.log.canInfo() ){
+			variables.log.info( "DBTokenStorage starting token rotation using (#variables.properties.rotationDays#) rotation days" );
+		}
+
+		var qResults = queryExecute(
+			"DELETE
+			  FROM #getTable()#
+			 WHERE expiration < :targetDate
+			",
+			{
+				targetDate = { cfsqltype="timestamp", value=targetDate }
+			},
+			{
+				datasource = variables.properties.dsn
+			}
+		);
+
+		// Store last profile time
+		variables.lastDBRotation = now();
+
+		if( variables.log.canInfo() ){
+			variables.log.info( "DBTokenStorage finalized rotation", qResults );
 		}
 
 		return this;
@@ -122,26 +185,39 @@ component accessors="true" singleton{
 				cacheKey  	= { cfsqltype="varchar", 	value=arguments.key },
 				token  		= { cfsqltype="longvarchar",value=arguments.token },
 				expiration 	= { cfsqltype="timestamp", 	value=jwtService.fromEpoch( arguments.payload.exp ) },
-				issued     = { cfsqltype="timestamp", 	value=jwtService.fromEpoch( arguments.payload.iat ) },
+				issued     	= { cfsqltype="timestamp", 	value=jwtService.fromEpoch( arguments.payload.iat ) },
 				subject 	= { cfsqltype="varchar", 	value=arguments.payload.sub },
 			},
 			{
 				datasource = variables.properties.dsn
 			}
 		);
+
+		// Run rotation checks
+		rotationCheck();
+
 		return this;
 	}
 
     /**
-     * Verify if the passed in token key exists
+     * Verify if the passed in token key exists and is valid.
      *
      * @key The cache key
      */
     boolean function exists( required key ){
+		// Run rotation checks first!
+		rotationCheck();
+
+		// Verify now
 		var qResults = queryExecute(
-			"SELECT cacheKey FROM #getTable()# WHERE cacheKey = :cacheKey",
+			"SELECT cacheKey
+				FROM #getTable()#
+				WHERE cacheKey = :cacheKey
+				  AND expiration >= :now
+			",
 			{
-				cacheKey : arguments.key
+				cacheKey 	: arguments.key,
+				now 		: { cfsqltype="timestamp", 	value=now() },
 			},
 			{
 				datsource 	= variables.properties.dsn
@@ -159,6 +235,9 @@ component accessors="true" singleton{
      * @throws TokenNotFoundException
      */
     struct function get( required key, struct defaultValue ){
+		// Run rotation checks first
+		rotationCheck();
+
 		// select entry
 		var q = queryExecute(
 			"SELECT cacheKey, token, expiration, issued
@@ -195,6 +274,9 @@ component accessors="true" singleton{
      * @return JWTStorage
      */
     any function clear( required any key ){
+		// Run rotation checks
+		rotationCheck();
+
 		queryExecute(
 			"DELETE
 			   FROM #getTable()#
