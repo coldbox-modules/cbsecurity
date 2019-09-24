@@ -7,6 +7,9 @@
  */
 component singleton{
 
+	// Injection
+	property name="cbauth" inject="authenticationService@cbauth";
+
 	/**
 	 * This function is called once an incoming event matches a security rule.
 	 * You will receive the security rule that matched and an instance of the
@@ -20,7 +23,7 @@ component singleton{
 	 * @return { allow:boolean, type:authentication|authorization, messages:string }
 	 */
 	struct function ruleValidator( required rule, required controller ){
-		return validateSecurity( arguments.rule.roles );
+		return validateSecurity( arguments.rule.permissions );
 	}
 
 	/**
@@ -39,19 +42,19 @@ component singleton{
 	}
 
 	/**
-	 * Validate Security
+	 * Validate Security via CBAuth
 	 *
-	 * @roles
+	 * @permissions
 	 */
-	private function validateSecurity( required roles ){
+	private function validateSecurity( required permissions ){
 		var results = { "allow" : false, "type" : "authentication", "messages" : "" };
 
 		// Are we logged in?
-		if( isUserLoggedIn() ){
+		if( variables.cbauth.isLoggedIn() ){
 
-			// Do we have any roles?
-			if( listLen( arguments.roles ) ){
-				results.allow 	= isUserInAnyRole( arguments.roles );
+			// Do we have any permissions?
+			if( listLen( arguments.permissions ) ){
+				results.allow 	= variables.cbauth.getUser().hasPermission( arguments.permissions );
 				results.type 	= "authorization";
 			} else {
 				// We are satisfied!
