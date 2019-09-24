@@ -91,9 +91,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				then( "it should block with no authorization", function(){
 					var thisToken = getInstance( "jwtService@cbSecurity" ).attempt( "test", "test" );
 
-					getController()
-						.getCacheBox()
-						.getCache( "default" )
+					getInstance( "jwtService@cbSecurity" )
+						.getTokenStorage()
 						.clearAll();
 					getRequestContext().setValue( "x-auth-token", thisToken );
 					var event = execute( route = "/api/secure", renderResults = true );
@@ -111,10 +110,14 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					var thisToken = getInvalidUserToken();
 					getRequestContext().setValue( "x-auth-token", thisToken.token );
 
-					getController()
-						.getCacheBox()
-						.getCache( "default" )
-						.set( "cbjwt_#thisToken.payload.jti#", thisToken );
+					getInstance( "jwtService@cbSecurity" )
+						.getTokenStorage()
+						.set(
+							key 		= thisToken.payload.jti,
+							token 		= thisToken.token,
+							expiration 	= 2,
+							payload		= thisToken.payload
+						);
 					var event = execute( route = "/api/secure", renderResults = true );
 
 					expect( event.getCurrentEvent() ).toBe( "api:Home.onInvalidAuth" );
