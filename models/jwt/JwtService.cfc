@@ -84,6 +84,17 @@ component accessors="true" singleton{
 	}
 
 	/**
+	 * Logout a user and invalidate their token
+	 *
+	 * @user
+	 * @customClaims
+	 */
+	function logout(){
+		invalidate( this.getToken() );
+		getAuthService().logout();
+	}
+
+	/**
 	 * Create a token according to the passed user object and custom claims.
 	 * We are assuming the user is a valid and authenticated user.
 	 *

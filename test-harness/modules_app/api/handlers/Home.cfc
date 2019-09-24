@@ -73,7 +73,7 @@ component {
 	 * logout
 	 */
 	function logout( event, rc, prc ){
-		auth().logout();
+		jwtAuth().logout();
 		return { "error" : false, "data" : "", "message" : "Successfully logged out" };
 	}
 
