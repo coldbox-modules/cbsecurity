@@ -152,7 +152,7 @@ component
 
 				given( "A secured annotated handler and an annotated action and a valid access", function(){
 					then( "it should allow access", function(){
-						prepareMock( getInstance( "CFValidator@cbSecurity" ) ).$(
+						prepareMock( getInstance( "CBAuthValidator@cbSecurity" ) ).$(
 							"annotationValidator",
 							{ allow : true, type : "authentication" }
 						);
@@ -163,7 +163,7 @@ component
 
 				given( "A secured annotated handler and an annotated action with invalid auth", function(){
 					then( "it should allow access to handler but not to action", function(){
-						prepareMock( getInstance( "CFValidator@cbSecurity" ) )
+						prepareMock( getInstance( "CBAuthValidator@cbSecurity" ) )
 							.$( "annotationValidator" )
 							.$results(
 								{ allow : true, type : "authentication" },
