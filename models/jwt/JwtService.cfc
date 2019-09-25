@@ -95,6 +95,13 @@ component accessors="true" singleton{
 	}
 
 	/**
+	 * Shortcut function to our authentication services to check if we are logged in
+	 */
+	boolean function isLoggedIn(){
+		return getAuthService().isLoggedIn();
+	}
+
+	/**
 	 * Create a token according to the passed user object and custom claims.
 	 * We are assuming the user is a valid and authenticated user.
 	 *
