@@ -1,34 +1,40 @@
 {
-	"name" 		: "ColdBox Security",
-	"version"	: "2.0.1",
-	"location" 	: "https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbsecurity/@build.version@/cbsecurity-@build.version@.zip",
-	"author" 	: "Ortus Solutions.com <info@ortussolutions.com",
-	"slug"		: "cbsecurity",
-	"type"		: "modules",
-	"homepage"	: "https://github.com/ColdBox/cbsecurity",
-	"documentation"		: "https://coldbox-security.ortusbooks.com/",
-	"repository"		: { "type" : "git", "url" : "https://github.com/ColdBox/cbsecurity" },
-	"shortDescription"	: "This module provides a robust security engine for ColdBox applications.",
-	"license"			: [
-		{ "type" : "Apache2", "url" : "http://www.apache.org/licenses/LICENSE-2.0.html" }
-	],
-	"contributors"		: [
-		"Brad Wood <bdw429s@gmail.com>",
-		"Curt Gratz <gratz@computerknowhow.com>"
-	],
-	"ignore":[
+    "name":"ColdBox Security",
+    "version":"2.1.0",
+    "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbsecurity/@build.version@/cbsecurity-@build.version@.zip",
+    "author":"Ortus Solutions.com <info@ortussolutions.com",
+    "slug":"cbsecurity",
+    "type":"modules",
+    "homepage":"https://github.com/ColdBox/cbsecurity",
+    "documentation":"https://coldbox-security.ortusbooks.com/",
+    "repository":{
+        "type":"git",
+        "url":"https://github.com/ColdBox/cbsecurity"
+    },
+    "shortDescription":"This module provides a robust security engine for ColdBox applications.",
+    "license":[
+        {
+            "type":"Apache2",
+            "url":"http://www.apache.org/licenses/LICENSE-2.0.html"
+        }
+    ],
+    "contributors":[
+        "Brad Wood <bdw429s@gmail.com>",
+        "Curt Gratz <gratz@computerknowhow.com>"
+    ],
+    "ignore":[
         "**/.*",
         "tests",
         "*/.md"
-	],
-	"dependencies":{
+    ],
+    "dependencies":{
         "jwt":"^1.1.0",
-        "cbauth":"^3.0.0"
+        "cbauth":"^4.0.0"
     },
     "scripts":{
-		"toMaster":"recipe build/toMaster.boxr",
-		"format": "cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --overwrite",
-        "format:watch": "cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --watch",
-        "format:check": "cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --check"
+        "toMaster":"recipe build/toMaster.boxr",
+        "format":"cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --overwrite",
+        "format:watch":"cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --watch",
+        "format:check":"cfformat handlers/**.cfc,interceptors/**.cfc,models/**.cfc --check"
     }
 }
