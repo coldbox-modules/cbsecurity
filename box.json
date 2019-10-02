@@ -29,7 +29,7 @@
     ],
     "dependencies":{
         "jwt":"^1.1.0",
-        "cbauth":"^3.0.0"
+        "cbauth":"^4.0.0"
     },
     "scripts":{
         "toMaster":"recipe build/toMaster.boxr",

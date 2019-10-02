@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.1.0
+
+* `Feature` : cbauth upgraded to version 4
+
 ## 2.0.0
 
 ### New Features
