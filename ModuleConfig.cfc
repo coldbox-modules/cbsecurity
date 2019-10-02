@@ -17,7 +17,7 @@ component {
 	// Entry Point
 	this.entryPoint 		= "cbsecurity";
 	// Helpers
-	this.applicationHelper 	= [ "/cbsecurity/helpers/mixins.cfm" ];
+	this.applicationHelper 	= [ "helpers/mixins.cfm" ];
 	// Dependencies
 	this.dependencies 		= [ "cbauth", "jwt" ];
 
