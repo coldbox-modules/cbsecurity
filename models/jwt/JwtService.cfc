@@ -209,7 +209,10 @@ component accessors="true" singleton{
 			variables.log.info( "Token invalidation request issued for :#arguments.token#" );
 		}
 
-		var results = getTokenStorage().clear( arguments.token );
+		// Invalidate the token, decode it first and use the jti claim
+		var results = getTokenStorage().clear(
+			this.decode( arguments.token ).jti
+		);
 
 		// Announce the creation
 		variables.interceptorService.processState( "cbSecurity_onJWTInvalidation", {

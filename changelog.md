@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.2.0
+
+* `Bug` : Invalidation of tokens was not happening due to not using the actual key for the storage
+
 ## 2.1.0
 
 * `Feature` : cbauth upgraded to version 4
