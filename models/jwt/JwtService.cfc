@@ -222,6 +222,15 @@ component accessors="true" singleton{
 		return results;
 	}
 
+	/**
+	 * Verifies if the passed in token exists in the storage provider
+	 *
+	 * @token The token to check
+	 */
+	boolean function isTokenInStorage( required token ){
+		return getTokenStorage().exists( this.decode( arguments.token ).jti );
+	}
+
 	/************************************************************************************/
 	/****************************** PARSING + COLDBOX INTEGRATION METHODS ***************/
 	/************************************************************************************/

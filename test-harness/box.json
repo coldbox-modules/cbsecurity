@@ -8,7 +8,7 @@
         "coldbox":"^5.0.0",
         "testbox":"be",
         "jwt":"^1.1.0",
-        "cbauth":"^3.0.0",
+        "cbauth":"^4.0.0",
         "BCrypt":"^2.5.0-snapshot"
     },
     "devDependencies":{
@@ -24,10 +24,10 @@
     },
     "testbox":{
         "runner":"http://localhost:60299/tests/runner.cfm"
-	},
-	"scripts" : {
-		"format": "cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --overwrite",
-        "format:watch": "cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --watch",
-        "format:check": "cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --check"
-	}
+    },
+    "scripts":{
+        "format":"cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --overwrite",
+        "format:watch":"cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --watch",
+        "format:check":"cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --check"
+    }
 }
