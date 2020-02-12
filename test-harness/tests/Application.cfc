@@ -32,6 +32,9 @@ component {
 
 	// request start
 	public boolean function onRequestStart( String targetPage ){
+		if( server.keyExists( "lucee" ) ){
+			pagePoolClear();
+		}
 		return true;
 	}
 

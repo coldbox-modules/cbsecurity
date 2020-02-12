@@ -19,7 +19,7 @@ component {
 	// Helpers
 	this.applicationHelper 	= [ "helpers/mixins.cfm" ];
 	// Dependencies
-	this.dependencies 		= [ "cbauth", "jwt" ];
+	this.dependencies 		= [ "cbauth", "jwtcfml" ];
 
 	/**
 	 * Module Config

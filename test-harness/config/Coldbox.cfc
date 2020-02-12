@@ -118,9 +118,9 @@
 				"jwt" : {
 					"secretKey"           : "C3D4AF35-8FCD-49AB-943A39AEFFB584EE",
 					"customAuthHeader"    : "x-auth-token",
-					"expiration"          : 60,
-					"enableRefreshTokens" : false,
-					"refreshExpiration"   : 43200,
+					//"expiration"          : 60,
+					//"enableRefreshTokens" : false,
+					//"refreshExpiration"   : 43200,
 					"algorithm"           : "HS512",
 					"requiredClaims"      : [ "role" ],
 					"tokenStorage"        : {

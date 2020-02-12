@@ -82,7 +82,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					expect( event.getCurrentEvent() ).toBe( "api:Home.onInvalidAuth" );
 					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
 					expect( event.getPrivateValue( "cbsecurity_validatorResults" ).messages ).toInclude(
-						"TokenExpiredException"
+						"Token has expired"
 					);
 				} );
 			} );

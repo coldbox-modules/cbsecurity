@@ -7,13 +7,20 @@
  */
 component accessors="true" singleton {
 
-	// DI
-	property name="jwt"                inject="provider:JWTService@jwt";
+	/*********************************************************************************************/
+	/** DI **/
+	/*********************************************************************************************/
+
+	property name="jwt"                inject="provider:jwt@jwtcfml";
 	property name="wirebox"            inject="wirebox";
 	property name="settings"           inject="coldbox:moduleSettings:cbSecurity";
 	property name="interceptorService" inject="coldbox:interceptorService";
 	property name="requestService"     inject="coldbox:requestService";
 	property name="log"                inject="logbox:logger:{this}";
+
+	/*********************************************************************************************/
+	/** PROPERTIES **/
+	/*********************************************************************************************/
 
 	/**
 	 * The auth service in use
@@ -30,6 +37,10 @@ component accessors="true" singleton {
 	 */
 	property name="tokenStorage";
 
+	/*********************************************************************************************/
+	/** STATIC PROPERTIES **/
+	/*********************************************************************************************/
+
 	// Required Claims
 	variables.REQUIRED_CLAIMS = [
 		"jti",
@@ -40,6 +51,41 @@ component accessors="true" singleton {
 		"scopes"
 	];
 
+	// Default Settings
+	variables.DEFAULT_SETTINGS = {
+		// The jwt secret encoding key
+		"secretKey"               : "",
+		// The Custom header to inspect for tokens
+		"customAuthHeader"        : "x-auth-token",
+		// The expiration in minutes for the jwt tokens
+		"expiration"              : 60,
+		// If true, enables refresh tokens, longer lived tokens (not implemented yet)
+		"enableRefreshTokens"     : false,
+		// The default expiration for refresh tokens, defaults to 30 days
+		"refreshExpiration"       : 43200,
+		// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
+		"algorithm"               : "HS512",
+		// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
+		"requiredClaims"          : [] ,
+		// The token storage settings
+		"tokenStorage"            : {
+			// enable or not, default is true
+			"enabled"       : true,
+			// A cache key prefix to use when storing the tokens
+			"keyPrefix"     : "cbjwt_",
+			// The driver to use: db, cachebox or a WireBox ID
+			"driver"        : "cachebox",
+			// Driver specific properties
+			"properties"    : {
+				"cacheName" : "default"
+			}
+		}
+	};
+
+	/*********************************************************************************************/
+	/** CONSTRUCTOR & STARTUP **/
+	/*********************************************************************************************/
+
 	/**
 	 * Constructor
 	 */
@@ -48,17 +94,24 @@ component accessors="true" singleton {
 	}
 
 	/**
-	 * Runs after DI
+	 * Runs after DI, here is where we setup the jwt settings for operation
 	 */
 	function onDIComplete(){
-		// Verify a few settings just in case
-		if ( isNull( variables.settings.jwt.secretKey ) || !len( variables.settings.jwt.secretKey ) ) {
-			throw(
-				message = "The JWT secret key cannot be empty, please fill this out in your `config/ColdBox.cfc` under your cbsecurity settings",
-				detail  = "cbsecurity.jwt.secretKey",
-				type    = "InvalidSecretKey"
-			)
+		// If no settings defined, use the defaults
+		if( !structKeyExists( variables.settings, "jwt" ) ){
+			variables.settings.jwt = variables.DEFAULT_SETTINGS;
 		}
+
+		// Incorporate defaults into incoming data
+		structAppend( variables.settings.jwt, variables.DEFAULT_SETTINGS, false );
+		structAppend( variables.settings.jwt.tokenStorage, variables.DEFAULT_SETTINGS.tokenStorage, false );
+
+		// If no secret is defined, then let's create one dynamically
+		if ( isNull( variables.settings.jwt.secretKey ) || !len( variables.settings.jwt.secretKey ) ) {
+			variables.settings.jwt.secretKey = generateSecretKey( "blowfish", 448 );
+			variables.log.warn( "No jwt secret key setting found, automatically generating one" );
+		}
+
 	}
 
 	/************************************************************************************/
@@ -326,8 +379,14 @@ component accessors="true" singleton {
 			}
 		} );
 
+
 		// Verify Expiration first
-		if ( dateCompare( fromEpoch( decodedToken.exp ), now() ) < 0 ) {
+		if (
+			dateCompare(
+				( isDate( decodedToken.exp ) ? decodedToken.exp : fromEpoch( decodedToken.exp ) ),
+				now()
+			) < 0
+		) {
 			if ( variables.log.canWarn() ) {
 				variables.log.warn( "Token rejected, it has expired", decodedToken );
 			}
@@ -477,11 +536,17 @@ component accessors="true" singleton {
 	 * @token The token to validate
 	 */
 	boolean function verify( required token ){
-		return variables.jwt.verify(
-			arguments.token,
-			variables.settings.jwt.secretKey,
-			variables.settings.jwt.algorithm
-		);
+		try{
+			variables.jwt.decode(
+				token = arguments.token,
+				key = variables.settings.jwt.secretKey,
+				algorithms = variables.settings.jwt.algorithm,
+				verify = false
+			);
+			return true;
+		} catch( Any e ){
+			return false;
+		}
 	}
 
 	/**
@@ -494,9 +559,9 @@ component accessors="true" singleton {
 	struct function decode( required token ){
 		try {
 			return variables.jwt.decode(
-				arguments.token,
-				variables.settings.jwt.secretKey,
-				variables.settings.jwt.algorithm
+				token = arguments.token,
+				key = variables.settings.jwt.secretKey,
+				algorithms = variables.settings.jwt.algorithm
 			);
 		} catch ( any e ) {
 			throw(
@@ -567,7 +632,9 @@ component accessors="true" singleton {
 	}
 
 	/**
-	 * Get the appropriate token storage
+	 * Get the appropriate token storage provider
+	 *
+	 * @return cbsecurity.interfaces.jwt.IJwtStorage
 	 */
 	function getTokenStorage(){
 		// If loaded, use it!
