@@ -3,6 +3,7 @@
 ## 2.2.0
 
 * `Feature` : Added a new convenience method on the JWT Service: `isTokenInStorage( token )` to verify if a token still exists in the token storage
+* `Improve` : More cfformating goodness!
 * `Bug` : Invalidation of tokens was not happening due to not using the actual key for the storage
 
 ## 2.1.0

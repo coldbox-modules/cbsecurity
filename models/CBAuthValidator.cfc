@@ -5,7 +5,7 @@
  * This is the core validator which leverages CF Security via cflogin and cfloginuser
  * https://helpx.adobe.com/coldfusion/developing-applications/developing-cfml-applications/securing-applications/using-coldfusion-security-tags-and-functions.html
  */
-component singleton{
+component singleton {
 
 	// Injection
 	property name="cbauth" inject="authenticationService@cbauth";
@@ -47,15 +47,18 @@ component singleton{
 	 * @permissions
 	 */
 	private function validateSecurity( required permissions ){
-		var results = { "allow" : false, "type" : "authentication", "messages" : "" };
+		var results = {
+			"allow"    : false,
+			"type"     : "authentication",
+			"messages" : ""
+		};
 
 		// Are we logged in?
-		if( variables.cbauth.isLoggedIn() ){
-
+		if ( variables.cbauth.isLoggedIn() ) {
 			// Do we have any permissions?
-			if( listLen( arguments.permissions ) ){
-				results.allow 	= variables.cbauth.getUser().hasPermission( arguments.permissions );
-				results.type 	= "authorization";
+			if ( listLen( arguments.permissions ) ) {
+				results.allow = variables.cbauth.getUser().hasPermission( arguments.permissions );
+				results.type  = "authorization";
 			} else {
 				// We are satisfied!
 				results.allow = true;

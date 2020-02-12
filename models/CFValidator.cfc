@@ -5,7 +5,7 @@
  * This is the core validator which leverages CF Security via cflogin and cfloginuser
  * https://helpx.adobe.com/coldfusion/developing-applications/developing-cfml-applications/securing-applications/using-coldfusion-security-tags-and-functions.html
  */
-component singleton{
+component singleton {
 
 	/**
 	 * This function is called once an incoming event matches a security rule.
@@ -44,15 +44,18 @@ component singleton{
 	 * @roles
 	 */
 	private function validateSecurity( required roles ){
-		var results = { "allow" : false, "type" : "authentication", "messages" : "" };
+		var results = {
+			"allow"    : false,
+			"type"     : "authentication",
+			"messages" : ""
+		};
 
 		// Are we logged in?
-		if( isUserLoggedIn() ){
-
+		if ( isUserLoggedIn() ) {
 			// Do we have any roles?
-			if( listLen( arguments.roles ) ){
-				results.allow 	= isUserInAnyRole( arguments.roles );
-				results.type 	= "authorization";
+			if ( listLen( arguments.roles ) ) {
+				results.allow = isUserInAnyRole( arguments.roles );
+				results.type  = "authorization";
 			} else {
 				// We are satisfied!
 				results.allow = true;
