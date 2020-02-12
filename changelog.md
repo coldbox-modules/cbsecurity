@@ -14,6 +14,8 @@
   * ES512
 * `Feature` : Added a new convenience method on the JWT Service: `isTokenInStorage( token )` to verify if a token still exists in the token storage
 * `Feature` : If no jwt secret is given in the settings, we will dynamically generate one that will last for the duration of the application scope.
+* `Feature` : New setting for `jwt` struct: `issuer`, you can now set the issuer of tokens string or if not set, then cbSecurity will use the home page URI as the issuer of authority string.
+* `Feature` : All tokens will be validated that the same `iss` (Issuer) has granted the token
 * `Improve` : Ability to have defaults for all JWT settings instead of always typing them in the configs
 * `Improve` : More cfformating goodness!
 * `Bug` : Invalidation of tokens was not happening due to not using the actual key for the storage

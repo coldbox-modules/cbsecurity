@@ -53,32 +53,32 @@ component accessors="true" singleton {
 
 	// Default Settings
 	variables.DEFAULT_SETTINGS = {
+		// The jwt token issuer claim -> iss
+		"issuer"              : "",
 		// The jwt secret encoding key
-		"secretKey"               : "",
+		"secretKey"           : "",
 		// The Custom header to inspect for tokens
-		"customAuthHeader"        : "x-auth-token",
+		"customAuthHeader"    : "x-auth-token",
 		// The expiration in minutes for the jwt tokens
-		"expiration"              : 60,
+		"expiration"          : 60,
 		// If true, enables refresh tokens, longer lived tokens (not implemented yet)
-		"enableRefreshTokens"     : false,
+		"enableRefreshTokens" : false,
 		// The default expiration for refresh tokens, defaults to 30 days
-		"refreshExpiration"       : 43200,
+		"refreshExpiration"   : 43200,
 		// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
-		"algorithm"               : "HS512",
+		"algorithm"           : "HS512",
 		// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
-		"requiredClaims"          : [] ,
+		"requiredClaims"      : [],
 		// The token storage settings
-		"tokenStorage"            : {
+		"tokenStorage"        : {
 			// enable or not, default is true
-			"enabled"       : true,
+			"enabled"    : true,
 			// A cache key prefix to use when storing the tokens
-			"keyPrefix"     : "cbjwt_",
+			"keyPrefix"  : "cbjwt_",
 			// The driver to use: db, cachebox or a WireBox ID
-			"driver"        : "cachebox",
+			"driver"     : "cachebox",
 			// Driver specific properties
-			"properties"    : {
-				"cacheName" : "default"
-			}
+			"properties" : { "cacheName" : "default" }
 		}
 	};
 
@@ -98,13 +98,21 @@ component accessors="true" singleton {
 	 */
 	function onDIComplete(){
 		// If no settings defined, use the defaults
-		if( !structKeyExists( variables.settings, "jwt" ) ){
+		if ( !structKeyExists( variables.settings, "jwt" ) ) {
 			variables.settings.jwt = variables.DEFAULT_SETTINGS;
 		}
 
 		// Incorporate defaults into incoming data
-		structAppend( variables.settings.jwt, variables.DEFAULT_SETTINGS, false );
-		structAppend( variables.settings.jwt.tokenStorage, variables.DEFAULT_SETTINGS.tokenStorage, false );
+		structAppend(
+			variables.settings.jwt,
+			variables.DEFAULT_SETTINGS,
+			false
+		);
+		structAppend(
+			variables.settings.jwt.tokenStorage,
+			variables.DEFAULT_SETTINGS.tokenStorage,
+			false
+		);
 
 		// If no secret is defined, then let's create one dynamically
 		if ( isNull( variables.settings.jwt.secretKey ) || !len( variables.settings.jwt.secretKey ) ) {
@@ -112,6 +120,10 @@ component accessors="true" singleton {
 			variables.log.warn( "No jwt secret key setting found, automatically generating one" );
 		}
 
+		// Check if issuer is set, if not, default to the home page URI
+		if ( !len( variables.settings.jwt.issuer ) ) {
+			variables.settings.jwt.issuer = requestService.getContext().buildLink( "" );
+		}
 	}
 
 	/************************************************************************************/
@@ -170,11 +182,10 @@ component accessors="true" singleton {
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
 	 */
 	string function fromUser( required user, struct customClaims = {} ){
-		var event     = variables.requestService.getContext();
 		var timestamp = now();
 		var payload   = {
 			// Issuing authority
-			"iss" : event.getHTMLBaseURL(),
+			"iss" : variables.settings.jwt.issuer,
 			// Token creation
 			"iat" : toEpoch( timestamp ),
 			// The subject identifier
@@ -381,12 +392,7 @@ component accessors="true" singleton {
 
 
 		// Verify Expiration first
-		if (
-			dateCompare(
-				( isDate( decodedToken.exp ) ? decodedToken.exp : fromEpoch( decodedToken.exp ) ),
-				now()
-			) < 0
-		) {
+		if ( dateCompare( ( isDate( decodedToken.exp ) ? decodedToken.exp : fromEpoch( decodedToken.exp ) ), now() ) < 0 ) {
 			if ( variables.log.canWarn() ) {
 				variables.log.warn( "Token rejected, it has expired", decodedToken );
 			}
@@ -531,20 +537,21 @@ component accessors="true" singleton {
 	}
 
 	/**
-	 * Verify an incoming token against our jwt library to check if it is valid.
+	 * Verify an incoming token against our jwt library to check if it is valid token only
+	 * No expiration or claim verification
 	 *
 	 * @token The token to validate
 	 */
 	boolean function verify( required token ){
-		try{
+		try {
 			variables.jwt.decode(
-				token = arguments.token,
-				key = variables.settings.jwt.secretKey,
+				token      = arguments.token,
+				key        = variables.settings.jwt.secretKey,
 				algorithms = variables.settings.jwt.algorithm,
-				verify = false
+				verify     = false
 			);
 			return true;
-		} catch( Any e ){
+		} catch ( Any e ) {
 			return false;
 		}
 	}
@@ -559,9 +566,10 @@ component accessors="true" singleton {
 	struct function decode( required token ){
 		try {
 			return variables.jwt.decode(
-				token = arguments.token,
-				key = variables.settings.jwt.secretKey,
-				algorithms = variables.settings.jwt.algorithm
+				token      = arguments.token,
+				key        = variables.settings.jwt.secretKey,
+				algorithms = variables.settings.jwt.algorithm,
+				claims     = { "iss" : variables.settings.jwt.issuer }
 			);
 		} catch ( any e ) {
 			throw(

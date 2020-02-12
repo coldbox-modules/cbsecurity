@@ -87,6 +87,8 @@ cbsecurity = {
 	"enableSecurityVisualizer"		: false,
 	// JWT Settings
 	"jwt"                     		: {
+		// The issuer authority for the tokens, placed in the `iss` claim
+		"issuer"				  : "",
 		// The jwt secret encoding key, defaults to getSystemEnv( "JWT_SECRET", "" )
 		"secretKey"               : getSystemSetting( "JWT_SECRET", "" ),
 		// by default it uses the authorization bearer header, but you can also pass a custom one as well.
