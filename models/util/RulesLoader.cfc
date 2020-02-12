@@ -4,11 +4,11 @@
  * ---
  * Rule loader service
  */
-component accessors="true" singleton{
+component accessors="true" singleton {
 
 	// DI
-	property name="controller" 	inject="coldbox";
-	property name="wirebox" 	inject="wirebox";
+	property name="controller" inject="coldbox";
+	property name="wirebox"    inject="wirebox";
 
 	/**
 	 * Constructor
@@ -23,15 +23,14 @@ component accessors="true" singleton{
 	 * @rules The rules to normalize
 	 * @module The module to incorporate if passed
 	 */
-	array function normalizeRules( required array rules, module="" ){
-		return arguments.rules
-			.map( function( item ){
-				// Append template
-				structAppend( item, getRuleTemplate(), false );
-				// Incorporate module if needed
-				item.module = module;
-				return item;
-			} );
+	array function normalizeRules( required array rules, module = "" ){
+		return arguments.rules.map( function( item ){
+			// Append template
+			structAppend( item, getRuleTemplate(), false );
+			// Incorporate module if needed
+			item.module = module;
+			return item;
+		} );
 	}
 
 	/**
@@ -66,23 +65,23 @@ component accessors="true" singleton{
 		param arguments.settings.rulesSource = "";
 
 		// Auto detect rules source
-		if( isSimpleValue( arguments.settings.rules ) ){
+		if ( isSimpleValue( arguments.settings.rules ) ) {
 			// Auto detect source
-			switch( arguments.settings.rules ){
-				case "db" : {
+			switch ( arguments.settings.rules ) {
+				case "db": {
 					arguments.settings.rulesSource = "db";
 					break;
 				}
-				case "model" : {
+				case "model": {
 					arguments.settings.rulesSource = "model";
 					break;
 				}
-				default : {
+				default: {
 					arguments.settings.rulesFile = arguments.settings.rulesSource;
-					if( findNoCase( "json", arguments.settings.rulesSource ) ){
+					if ( findNoCase( "json", arguments.settings.rulesSource ) ) {
 						arguments.settings.rulesSource = "json";
 					}
-					if( findNoCase( "xml", arguments.settings.rulesSource ) ){
+					if ( findNoCase( "xml", arguments.settings.rulesSource ) ) {
 						arguments.settings.rulesSource = "xml";
 					}
 				}
@@ -93,11 +92,16 @@ component accessors="true" singleton{
 		}
 
 		// Rule Source Checks
-		if ( arguments.settings[ "rulesSource" ].len() && !reFindNoCase( "^(xml|db|model|json)$", arguments.settings[ "rulesSource" ] ) ) {
+		if (
+			arguments.settings[ "rulesSource" ].len() && !reFindNoCase(
+				"^(xml|db|model|json)$",
+				arguments.settings[ "rulesSource" ]
+			)
+		) {
 			throw(
 				message = "The rules source you set is invalid: #arguments.settings[ "rulesSource" ]#.",
-				detail 	= "The valid sources are xml, db, model, or json",
-				type 	= "Security.InvalidRuleSource"
+				detail  = "The valid sources are xml, db, model, or json",
+				type    = "Security.InvalidRuleSource"
 			);
 		}
 
@@ -106,25 +110,19 @@ component accessors="true" singleton{
 			case "json": {
 				// Check if file property exists
 				if ( !arguments.settings[ "rulesFile" ].len() ) {
-					throw(
-						message = "Please enter a valid rulesFile setting",
-						type 	= "Security.RulesFileNotDefined"
-					);
+					throw( message = "Please enter a valid rulesFile setting", type = "Security.RulesFileNotDefined" );
 				}
 				break;
 			}
 
 			case "db": {
 				if ( !arguments.settings[ "rulesDSN" ].len() ) {
-					throw(
-						message = "Missing setting for DB source: rulesDSN ",
-						type 	= "Security.RuleDSNNotDefined"
-					);
+					throw( message = "Missing setting for DB source: rulesDSN ", type = "Security.RuleDSNNotDefined" );
 				}
 				if ( !arguments.settings[ "rulesTable" ].len() ) {
 					throw(
 						message = "Missing setting for DB source: rulesTable ",
-						type 	= "Security.RulesTableNotDefined"
+						type    = "Security.RulesTableNotDefined"
 					);
 				}
 				break;
@@ -134,7 +132,7 @@ component accessors="true" singleton{
 				if ( !arguments.settings[ "rulesModel" ].len() ) {
 					throw(
 						message = "Missing setting for model source: rulesModel ",
-						type 	= "Security.RulesModelNotDefined"
+						type    = "Security.RulesModelNotDefined"
 					);
 				}
 
@@ -151,7 +149,7 @@ component accessors="true" singleton{
 	 */
 	function loadXmlRules( required settings ){
 		// Validate the XML File
-		var node = "";
+		var node        = "";
 		var thisElement = "";
 
 		// Try to locate the file path
@@ -160,18 +158,15 @@ component accessors="true" singleton{
 		// Validate Location
 		if ( !len( arguments.settings.rulesFile ) ) {
 			throw(
-				message 	= "Security Rules File could not be located: #arguments.settings.rulesFile#. Please check again.",
-				type 		= "Security.XMLRulesNotFound"
+				message = "Security Rules File could not be located: #arguments.settings.rulesFile#. Please check again.",
+				type    = "Security.XMLRulesNotFound"
 			);
 		}
 
 		// Read in and parse
-		return xmlSearch(
-				xmlParse( arguments.settings.rulesFile ),
-				"/rules/rule"
-			).map( function( node ){
-				return parseXmlRule( arguments.node.xmlChildren );
-			} );
+		return xmlSearch( xmlParse( arguments.settings.rulesFile ), "/rules/rule" ).map( function( node ){
+			return parseXmlRule( arguments.node.xmlChildren );
+		} );
 	}
 
 	/**
@@ -183,9 +178,9 @@ component accessors="true" singleton{
 		// Validate the JSON File
 		var rulesFile = "";
 		var jsonRules = "";
-		var x = 1;
-		var thisRule = "";
-		var node = "";
+		var x         = 1;
+		var thisRule  = "";
+		var node      = "";
 
 		// Try to locate the file path
 		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
@@ -194,7 +189,7 @@ component accessors="true" singleton{
 		if ( !len( arguments.settings.rulesFile ) ) {
 			throw(
 				message = "Security Rules File could not be located: #arguments.settings.rulesFile#. Please check again.",
-				type 	= "Security.RulesFileNotFound"
+				type    = "Security.RulesFileNotFound"
 			);
 		}
 
@@ -205,15 +200,14 @@ component accessors="true" singleton{
 		if ( !isJSON( jsonRules ) ) {
 			throw(
 				message = "Security Rules File is not valid JSON: #arguments.settings.rulesFile#. Please check again.",
-				type 	= "Security.InvalidJson"
+				type    = "Security.InvalidJson"
 			);
 		}
 
-		return deserializeJSON( jsonRules )
-			.map( function( item ){
-				structAppend( item, getRuleTemplate(), false );
-				return item;
-			} );
+		return deserializeJSON( jsonRules ).map( function( item ){
+			structAppend( item, getRuleTemplate(), false );
+			return item;
+		} );
 	}
 
 	/**
@@ -225,9 +219,9 @@ component accessors="true" singleton{
 		var ruleSql = arguments.settings.rulesSQL;
 
 		// Core SQL or they are using their own
-		if( !len( arguments.settings.rulesSQL ) ){
+		if ( !len( arguments.settings.rulesSQL ) ) {
 			ruleSql = "SELECT * FROM #arguments.settings.rulesTable#";
-			if( len( arguments.settings.rulesOrderBy ) ){
+			if ( len( arguments.settings.rulesOrderBy ) ) {
 				ruleSql &= " ORDER BY #arguments.settings.rulesOrderBy#";
 			}
 		}
@@ -236,12 +230,9 @@ component accessors="true" singleton{
 			queryExecute(
 				ruleSql,
 				[],
-				{
-					datasource : arguments.settings.rulesDSN
-				}
+				{ datasource : arguments.settings.rulesDSN }
 			)
 		);
-
 	}
 
 	/**
@@ -254,10 +245,10 @@ component accessors="true" singleton{
 		var oModel = variables.wirebox.getInstance( arguments.settings.rulesModel );
 
 		// Get the rules
-		var rules = invoke( oModel,	arguments.settings.rulesModelMethod );
+		var rules = invoke( oModel, arguments.settings.rulesModelMethod );
 
 		// Determine type and normalize
-		if( isQuery( rules ) ){
+		if ( isQuery( rules ) ) {
 			return queryToArray( rules );
 		} else {
 			return rules.map( function( item ){
@@ -272,16 +263,16 @@ component accessors="true" singleton{
 	 */
 	struct function getRuleTemplate(){
 		return {
-			"whitelist" 	: "", // A list of white list events or Uri's
-			"securelist"	: "", // A list of secured list events or Uri's
-			"match"			: "event", // Match the event or a url
-			"roles"			: "", // Attach a list of roles to the rule
-			"permissions"	: "", // Attach a list of permissions to the rule
-			"redirect" 		: "", // If rule breaks, and you have a redirect it will redirect here
-			"overrideEvent"	: "", // If rule breaks, and you have an event, it will override it
-			"useSSL"		: false, // Force SSL,
-			"action"		: "", // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
-			"module"		: "" // metadata we can add so mark rules that come from modules
+			"whitelist"     : "", // A list of white list events or Uri's
+			"securelist"    : "", // A list of secured list events or Uri's
+			"match"         : "event", // Match the event or a url
+			"roles"         : "", // Attach a list of roles to the rule
+			"permissions"   : "", // Attach a list of permissions to the rule
+			"redirect"      : "", // If rule breaks, and you have a redirect it will redirect here
+			"overrideEvent" : "", // If rule breaks, and you have an event, it will override it
+			"useSSL"        : false, // Force SSL,
+			"action"        : "", // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
+			"module"        : "" // metadata we can add so mark rules that come from modules
 		};
 	}
 
@@ -310,11 +301,10 @@ component accessors="true" singleton{
 	 * @xmlNode The XML node to parse
 	 */
 	private struct function parseXmlRule( required xmlNode ){
-		return arguments.xmlNode
-			.reduce( function( results, item ){
-				results[ trim( item.xmlName ) ] = trim( item.xmlText );
-				return results;
-			}, getRuleTemplate() );
+		return arguments.xmlNode.reduce( function( results, item ){
+			results[ trim( item.xmlName ) ] = trim( item.xmlText );
+			return results;
+		}, getRuleTemplate() );
 	}
 
 }

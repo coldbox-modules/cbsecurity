@@ -9,8 +9,8 @@
 component accessors="true" extends="coldbox.system.Interceptor" {
 
 	// DI
-	property name="rulesLoader" 	inject="rulesLoader@cbSecurity";
-	property name="handlerService" 	inject="coldbox:handlerService";
+	property name="rulesLoader"    inject="rulesLoader@cbSecurity";
+	property name="handlerService" inject="coldbox:handlerService";
 
 	/**
 	 * The reference to the security validator for this interceptor
@@ -26,7 +26,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Configure the security firewall
 	 */
 	function configure(){
-
 		// init the security modules dictionary
 		variables.securityModules = {};
 
@@ -34,19 +33,17 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		variables.rulesLoader.rulesSourceChecks( getProperties() );
 
 		// If we added our own rules, then normalize them.
-		if( arrayLen( getProperty( "rules" ) ) ){
+		if ( arrayLen( getProperty( "rules" ) ) ) {
 			setProperty( "rules", variables.rulesLoader.normalizeRules( getProperty( "rules" ) ) );
 		}
 
 		// Load Rules if we have a ruleSource
-		if( getProperty( "rulesSource" ).len() ){
+		if ( getProperty( "rulesSource" ).len() ) {
 			setProperty( "rules", variables.rulesLoader.loadRules( getProperties() ) );
 		}
 
 		// Load up the validator
-		registerValidator(
-			getInstance( getProperty( "validator" ) )
-		);
+		registerValidator( getInstance( getProperty( "validator" ) ) );
 	}
 
 	/**
@@ -85,12 +82,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 */
 	Security function registerModule( required string module, required struct settings ){
 		// Param settings
-		param arguments.settings.rules 							= [];
-		param arguments.settings.invalidAuthenticationEvent 	= "";
-		param arguments.settings.defaultAuthenticationAction 	= "";
-		param arguments.settings.invalidAuthorizationEvent 		= "";
-		param arguments.settings.defaultAuthorizationAction 	= "";
-		param arguments.settings.validator 						= "";
+		param arguments.settings.rules                       = [];
+		param arguments.settings.invalidAuthenticationEvent  = "";
+		param arguments.settings.defaultAuthenticationAction = "";
+		param arguments.settings.invalidAuthorizationEvent   = "";
+		param arguments.settings.defaultAuthorizationAction  = "";
+		param arguments.settings.validator                   = "";
 
 		// Store configuration in this firewall
 		variables.securityModules[ arguments.module ] = arguments.settings;
@@ -99,7 +96,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		arguments.settings.rules = variables.rulesLoader.normalizeRules( arguments.settings.rules, module );
 
 		// Append them
-		arrayAppend( getProperty( "rules" ), arguments.settings.rules, true );
+		arrayAppend(
+			getProperty( "rules" ),
+			arguments.settings.rules,
+			true
+		);
 
 		// Log it
 		log.info( "+ Registered module (#arguments.module#) with cbSecurity" );
@@ -124,11 +125,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		buffer
 	){
 		// Is this a cbSecurity Module & not registered
-		if(
+		if (
 			structKeyExists( arguments.interceptData.moduleConfig.settings, "cbSecurity" )
 			&&
 			!structKeyExists( variables.securityModules, arguments.interceptData.moduleName )
-		){
+		) {
 			registerModule(
 				arguments.interceptData.moduleName,
 				arguments.interceptData.moduleConfig.settings.cbSecurity
@@ -153,16 +154,15 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		buffer
 	){
 		// Is the module registered?
-		if( structKeyExists( variables.securityModules, arguments.interceptData.moduleName ) ){
+		if ( structKeyExists( variables.securityModules, arguments.interceptData.moduleName ) ) {
 			// Delete registration
 			structDelete( variables.securityModules, arguments.interceptData.moduleName );
 			// Delete rules
 			setProperty(
 				"rules",
-				getProperty( "rules" )
-					.filter( function( item ){
-						return item.module != interceptData.moduleName;
-					} )
+				getProperty( "rules" ).filter( function( item ){
+					return item.module != interceptData.moduleName;
+				} )
 			);
 			// Log it
 			log.info( "- Unregistered module (#arguments.interceptData.moduleName#) with cbSecurity" );
@@ -186,7 +186,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		buffer
 	){
 		// Execute Rule processing
-		if( getProperty( "rules" ).len() ){
+		if ( getProperty( "rules" ).len() ) {
 			processRules(
 				arguments.event,
 				arguments.interceptData,
@@ -195,7 +195,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		// Are we doing annotation based security?
-		if( getProperty( "handlerAnnotationSecurity" ) ){
+		if ( getProperty( "handlerAnnotationSecurity" ) ) {
 			processAnnotationRules(
 				arguments.event,
 				arguments.interceptData,
@@ -218,13 +218,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	){
 		// Get handler bean for the current event
 		var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
-        if ( handlerBean.getHandler() == "" ) {
-            return;
+		if ( handlerBean.getHandler() == "" ) {
+			return;
 		}
 
 		// If metadata is not loaded, load it
-        if ( ! handlerBean.isMetadataLoaded() ) {
-            handlerService.getHandler( handlerBean, arguments.event );
+		if ( !handlerBean.isMetadataLoaded() ) {
+			handlerService.getHandler( handlerBean, arguments.event );
 		}
 
 		// Verify we can access Handler
@@ -232,9 +232,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			handlerBean.getHandlerMetadata( "secured", false ),
 			arguments.event
 		);
-		if( ! handlerResults.allow ){
+		if ( !handlerResults.allow ) {
 			arguments.event.setPrivateValue( "cbSecurity_validatorResults", handlerResults );
-			return processInvalidAnnotationAccess( arguments.event, handlerResults, "handler" );
+			return processInvalidAnnotationAccess(
+				arguments.event,
+				handlerResults,
+				"handler"
+			);
 		}
 
 		if ( log.canDebug() ) {
@@ -246,9 +250,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			handlerBean.getActionMetadata( "secured", false ),
 			arguments.event
 		);
-		if( !actionResults.allow ){
+		if ( !actionResults.allow ) {
 			arguments.event.setPrivateValue( "cbSecurity_validatorResults", actionResults );
-			return processInvalidAnnotationAccess( arguments.event, actionResults, "action" );
+			return processInvalidAnnotationAccess(
+				arguments.event,
+				actionResults,
+				"action"
+			);
 		}
 
 		// Final Log
@@ -264,8 +272,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @validatorResults The validation results
 	 * @type The annotation type: handler|action
 	 */
-	private function processInvalidAnnotationAccess( required event, required validatorResults, required type ){
-
+	private function processInvalidAnnotationAccess(
+		required event,
+		required validatorResults,
+		required type
+	){
 		// Log Block
 		if ( log.canWarn() ) {
 			log.warn(
@@ -278,24 +289,24 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Announce the block event
 		var iData = {
-			"ip" 				: getRealIp(), // The offending IP
-			"rule" 				: {}, // An empty rule, since it is by annotation security
-			"settings"			: getProperties(), // All the config settings, just in case
-			"validatorResults"	: arguments.validatorResults,
-			"annotationType"	: arguments.type,
-			"processActions" 	: true // Boolean indicator if the invalid actions should process or not
+			"ip"               : getRealIp(), // The offending IP
+			"rule"             : {}, // An empty rule, since it is by annotation security
+			"settings"         : getProperties(), // All the config settings, just in case
+			"validatorResults" : arguments.validatorResults,
+			"annotationType"   : arguments.type,
+			"processActions"   : true // Boolean indicator if the invalid actions should process or not
 		};
-		announceInterception( state="cbSecurity_onInvalid#arguments.validatorResults.type#", interceptData=iData );
+		announceInterception( state = "cbSecurity_onInvalid#arguments.validatorResults.type#", interceptData = iData );
 
 		// Are we processing the invalid actions?
-		if( iData.processActions ){
+		if ( iData.processActions ) {
 			processInvalidActions(
-				rule	= rulesLoader.getRuleTemplate(),
-				event	= arguments.event,
-				type	= arguments.validatorResults.type
+				rule  = rulesLoader.getRuleTemplate(),
+				event = arguments.event,
+				type  = arguments.validatorResults.type
 			);
-		} // end invalid actions processing
-
+		}
+		// end invalid actions processing
 	}
 
 	/**
@@ -311,7 +322,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required currentEvent
 	){
 		// Verify all rules
-		for( var thisRule in getProperty( "rules" ) ){
+		for ( var thisRule in getProperty( "rules" ) ) {
 			// Determine Match Target by event or url
 			var matchTarget = ( thisRule.match == "url" ? arguments.event.getCurrentRoutedURL() : arguments.currentEvent );
 
@@ -325,7 +336,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 			// Are we in the secured list?
 			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
-
 				if ( log.canDebug() ) {
 					log.debug( "---> Incoming '#matchTarget#' MATCHED this rule: #thisRule.toString()#" );
 				}
@@ -333,13 +343,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				// Verify if user is logged in and in a secure state
 				var validatorResults = getValidator( arguments.event ).ruleValidator( thisRule, variables.controller );
 				// Verify type, else default to "authentication"
-				if( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ){
+				if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
 					validatorResults.type = "authentication";
 				}
 
 				// Do we allow or not?
-				if ( !validatorResults.allow  ) {
-
+				if ( !validatorResults.allow ) {
 					// Log Block
 					if ( log.canWarn() ) {
 						log.warn(
@@ -358,24 +367,32 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 					// Announce the block event
 					var iData = {
-						"ip" 				: getRealIp(), // The offending IP
-						"rule" 				: thisRule, // The broken rule
-						"validatorResults"	: validatorResults,
-						"settings"			: getProperties(), // All the config settings, just in case
-						"annotationType"	: "",
-						"processActions" 	: true // Boolean indicator if the invalid actions should process or not
+						"ip"               : getRealIp(), // The offending IP
+						"rule"             : thisRule, // The broken rule
+						"validatorResults" : validatorResults,
+						"settings"         : getProperties(), // All the config settings, just in case
+						"annotationType"   : "",
+						"processActions"   : true // Boolean indicator if the invalid actions should process or not
 					};
-					announceInterception( state="cbSecurity_onInvalid#validatorResults.type#", interceptData=iData );
+					announceInterception(
+						state         = "cbSecurity_onInvalid#validatorResults.type#",
+						interceptData = iData
+					);
 
 					// Are we processing the invalid actions?
-					if( iData.processActions ){
-						processInvalidActions( rule=thisRule, event=arguments.event, type=validatorResults.type );
-					} // end invalid actions processing
+					if ( iData.processActions ) {
+						processInvalidActions(
+							rule  = thisRule,
+							event = arguments.event,
+							type  = validatorResults.type
+						);
+					}
+					// end invalid actions processing
 
 					break;
 				}
 				// end if valid state
-				else{
+				else {
 					if ( log.canDebug() ) {
 						log.debug(
 							"Secure target=#matchTarget# matched and user authorized for rule: #thisRule.toString()#."
@@ -385,13 +402,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				}
 			}
 			// No match, continue to next rule
-			else{
+			else {
 				if ( log.canDebug() ) {
 					log.debug( "Incoming '#matchTarget#' did not match this rule: #thisRule.toString()#" );
 				}
 			}
-
-		} // end rule iterations
+		}
+		// end rule iterations
 	}
 
 	/**
@@ -406,10 +423,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			structKeyExists( arguments.validator, "annotationValidator" )
 		) {
 			variables.validator = arguments.validator;
-		} else{
+		} else {
 			throw(
 				message = "Validator object does not have a 'userValidator()' and `annotationValidator()' methods. I can only register objects with these interface methods.",
-				type 	= "Security.ValidatorMethodException"
+				type    = "Security.ValidatorMethodException"
 			);
 		}
 	}
@@ -419,7 +436,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 *
 	 * @event The request context
 	 */
-	any function getValidator( required event=variables.requestService.getContext() ){
+	any function getValidator( required event = variables.requestService.getContext() ){
 		// Check for module overrides
 		var currentModule = arguments.event.getCurrentModule();
 		if (
@@ -478,10 +495,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Debug
 		if ( log.canDebug() ) {
-			log.debug(
-				"Using global #arguments.property# setting",
-				getProperty( arguments.property )
-			);
+			log.debug( "Using global #arguments.property# setting", getProperty( arguments.property ) );
 		}
 
 		// Return global property
@@ -499,18 +513,26 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 */
 	private struct function verifySecuredAnnotation( required securedValue, required event ){
 		// If no value, then default it to true
-		if( !len( arguments.securedValue ) ){ arguments.securedValue = true; }
+		if ( !len( arguments.securedValue ) ) {
+			arguments.securedValue = true;
+		}
 
 		// Are we securing?
-		if( isBoolean( arguments.securedValue ) && !arguments.securedValue ){
-			return { "allow" : true, "type" : "authentication" }; // we can access
+		if ( isBoolean( arguments.securedValue ) && !arguments.securedValue ) {
+			return {
+				"allow" : true,
+				"type"  : "authentication"
+			}; // we can access
 		}
 
 		// Now call the validator and pass in the secured value
-		var validatorResults = getValidator( arguments.event ).annotationValidator( arguments.securedValue, variables.controller );
+		var validatorResults = getValidator( arguments.event ).annotationValidator(
+			arguments.securedValue,
+			variables.controller
+		);
 
 		// Verify type, else default to "authentication"
-		if( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ){
+		if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
 			validatorResults.type = "authentication";
 		}
 		return validatorResults;
@@ -523,13 +545,32 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @event The request context
 	 * @type The invalid type: authentication or authorization
 	 */
-	private function processInvalidActions( required rule, required event, required type ){
+	private function processInvalidActions(
+		required rule,
+		required event,
+		required type
+	){
 		// Discover action, from specific (rule) to global setting
-		var defaultAction = ( arguments.rule.action.len() ? arguments.rule.action : discoverInvalidProperty( "default#arguments.type#Action", arguments.event ) );
+		var defaultAction = (
+			arguments.rule.action.len() ? arguments.rule.action : discoverInvalidProperty(
+				"default#arguments.type#Action",
+				arguments.event
+			)
+		);
 		// Discover relocation, from specific (rule) to global setting
-		var redirectEvent = ( arguments.rule.redirect.len() ? arguments.rule.redirect : discoverInvalidProperty( "invalid#arguments.type#Event", arguments.event ) );
+		var redirectEvent = (
+			arguments.rule.redirect.len() ? arguments.rule.redirect : discoverInvalidProperty(
+				"invalid#arguments.type#Event",
+				arguments.event
+			)
+		);
 		// Discover override, from specific (rule) to global setting
-		var overrideEvent = ( arguments.rule.overrideEvent.len() ? arguments.rule.overrideEvent : discoverInvalidProperty( "invalid#arguments.type#Event", arguments.event ) );
+		var overrideEvent = (
+			arguments.rule.overrideEvent.len() ? arguments.rule.overrideEvent : discoverInvalidProperty(
+				"invalid#arguments.type#Event",
+				arguments.event
+			)
+		);
 
 		// Now let's check if a rule has individual redirect or overrideEvent elements
 		if ( arguments.rule.overrideEvent.len() ) {
@@ -545,54 +586,54 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		// Determine actions from rules
-		switch( defaultAction ){
-			case "redirect" : {
+		switch ( defaultAction ) {
+			case "redirect": {
 				// Double check for length else give warning
-				if( !redirectEvent.len() ){
+				if ( !redirectEvent.len() ) {
 					throw(
 						message = "The redirect action is empty, either add a redirect to the rule or a global Invalid#arguments.type#Event setting",
-						type 	= "InvalidAccessAction"
+						type    = "InvalidAccessAction"
 					);
 				}
 				// Are we relocating to an event or to an http? location
-				if( reFindNoCase( "^http?:", redirectEvent ) ){
+				if ( reFindNoCase( "^http?:", redirectEvent ) ) {
 					// Relocate now
 					relocate(
-						URL 	= redirectEvent,
+						URL     = redirectEvent,
 						persist = "_securedURL",
 						// Chain SSL: Global, rule, request
-						ssl 	= ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
+						ssl     = ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
 					);
 				} else {
 					// Relocate now
 					relocate(
-						event 	= redirectEvent,
+						event   = redirectEvent,
 						persist = "_securedURL",
 						// Chain SSL: Global, rule, request
-						ssl 	= ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
+						ssl     = ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
 					);
 				}
 
 				break;
 			}
 
-			case "override" : {
+			case "override": {
 				// Double check for length else give warning
-				if( !overrideEvent.len() ){
+				if ( !overrideEvent.len() ) {
 					throw(
 						message = "The override event action is empty, either add a redirect to the rule or a global Invalid#arguments.type#Event setting",
-						type 	= "InvalidAccessAction"
+						type    = "InvalidAccessAction"
 					);
 				}
 				// Override event
-				arguments.event.overrideEvent( event=overrideEvent );
+				arguments.event.overrideEvent( event = overrideEvent );
 				break;
 			}
 
-			default : {
+			default: {
 				throw(
 					message = "The type [#defaultAction#] is not a valid rule action.  Valid types are [ 'redirect', 'override' ].",
-					type 	= "InvalidRuleActionType"
+					type    = "InvalidRuleActionType"
 				);
 			}
 		}
@@ -608,9 +649,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		if ( arguments.event.isSES() ) {
 			securedURL = arguments.event.buildLink(
-				to 			= event.getCurrentRoutedURL(),
+				to          = event.getCurrentRoutedURL(),
 				queryString = CGI.QUERY_STRING,
-				translate 	= false
+				translate   = false
 			);
 		}
 
@@ -626,7 +667,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @patternList The list pattern to test
 	 */
 	private boolean function isInPattern( required currentEvent, required patternList ){
-
 		//  Loop Over Patterns
 		for ( var pattern in arguments.patternList ) {
 			//  Using Regex
@@ -646,17 +686,17 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Get Real IP, by looking at clustered, proxy headers and locally.
 	 */
 	private function getRealIP(){
-		var headers = getHttpRequestData().headers;
+		var headers = getHTTPRequestData().headers;
 
 		// Very balanced headers
-		if( structKeyExists( headers, 'x-cluster-client-ip' ) ){
-			return headers[ 'x-cluster-client-ip' ];
+		if ( structKeyExists( headers, "x-cluster-client-ip" ) ) {
+			return headers[ "x-cluster-client-ip" ];
 		}
-		if( structKeyExists( headers, 'X-Forwarded-For' ) ){
-			return headers[ 'X-Forwarded-For' ];
+		if ( structKeyExists( headers, "X-Forwarded-For" ) ) {
+			return headers[ "X-Forwarded-For" ];
 		}
 
-		return len( CGI.REMOTE_ADDR ) ? CGI.REMOTE_ADDR : '127.0.0.1';
+		return len( CGI.REMOTE_ADDR ) ? CGI.REMOTE_ADDR : "127.0.0.1";
 	}
 
 }

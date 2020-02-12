@@ -10,8 +10,8 @@
         },
         "rewrites":{
             "enable":"true"
-		},
-		"aliases":{
+        },
+        "aliases":{
             "/moduleroot/cbsecurity":"../"
         }
     },

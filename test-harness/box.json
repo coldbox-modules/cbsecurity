@@ -7,9 +7,9 @@
     "dependencies":{
         "coldbox":"^5.0.0",
         "testbox":"be",
-        "jwt":"^1.1.0",
-        "cbauth":"^3.0.0",
-        "BCrypt":"^2.5.0-snapshot"
+        "cbauth":"^4.0.0",
+        "BCrypt":"^2.5.0-snapshot",
+        "jwt-cfml":"^1.0.0"
     },
     "devDependencies":{
         "route-visualizer":"^1.2.0+4"
@@ -17,17 +17,17 @@
     "installPaths":{
         "coldbox":"coldbox/",
         "testbox":"testbox/",
-        "jwt":"modules/jwt/",
         "cbauth":"modules/cbauth/",
         "BCrypt":"modules/BCrypt/",
-        "route-visualizer":"modules/route-visualizer/"
+        "route-visualizer":"modules/route-visualizer/",
+        "jwt-cfml":"modules/jwtcfml/"
     },
     "testbox":{
         "runner":"http://localhost:60299/tests/runner.cfm"
-	},
-	"scripts" : {
-		"format": "cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --overwrite",
-        "format:watch": "cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --watch",
-        "format:check": "cfformat config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --check"
-	}
+    },
+    "scripts":{
+        "format":"cfformat run config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --overwrite",
+        "format:watch":"cfformat run config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --watch",
+        "format:check":"cfformat run config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --check"
+    }
 }

@@ -57,7 +57,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				} );
 			} );
 
-			given( "an valid jwt token with no required claims and accessing a secure api call", function(){
+			given( "a valid jwt token with no required claims and accessing a secure api call", function(){
 				then( "it should block with no authorization", function(){
 					getRequestContext().setValue(
 						"x-auth-token",
@@ -72,7 +72,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				} );
 			} );
 
-			given( "an valid jwt token that's expired", function(){
+			given( "a valid jwt token that's expired", function(){
 				then( "it should block with no authorization", function(){
 					getRequestContext().setValue(
 						"x-auth-token",
@@ -82,7 +82,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					expect( event.getCurrentEvent() ).toBe( "api:Home.onInvalidAuth" );
 					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
 					expect( event.getPrivateValue( "cbsecurity_validatorResults" ).messages ).toInclude(
-						"TokenExpiredException"
+						"Token has expired"
 					);
 				} );
 			} );
@@ -146,7 +146,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 		var service   = getInstance( "jwtService@cbsecurity" );
 		var payload   = {
 			// Issuing authority
-			"iss"    : getRequestContext().getHTMLBaseURL(),
+			"iss"    : service.getSettings().jwt.issuer,
 			// Token creation
 			"iat"    : service.toEpoch( timestamp ),
 			// The subject identifier

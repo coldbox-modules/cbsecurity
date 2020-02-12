@@ -42,7 +42,7 @@ before_script:
   - mysql -u root < test-harness/tests/resources/cbsecurity.sql
   - echo "Database created and loaded with test data"
   # Seed .env
-  - echo "Seeding database .env file at /test-harness/.env"
+  - echo "Seeding .env file at /test-harness/.env"
   - touch test-harness/.env
   - printf "DB_HOST=localhost\n" >> test-harness/.env
   - printf "DB_DATABASE=cbsecurity\n" >> test-harness/.env

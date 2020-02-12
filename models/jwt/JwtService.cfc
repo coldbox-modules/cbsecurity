@@ -5,15 +5,22 @@
  * This is the JWT Services that will provide you with glorious JWT capabilities.
  * Learn more about Json Web Tokens here: https://jwt.io/
  */
-component accessors="true" singleton{
+component accessors="true" singleton {
 
-	// DI
-	property name="jwt" 				inject="provider:JWTService@jwt";
-	property name="wirebox" 			inject="wirebox";
-	property name="settings" 			inject="coldbox:moduleSettings:cbSecurity";
-	property name="interceptorService" 	inject="coldbox:interceptorService";
-	property name="requestService" 		inject="coldbox:requestService";
-	property name="log"			 		inject="logbox:logger:{this}";
+	/*********************************************************************************************/
+	/** DI **/
+	/*********************************************************************************************/
+
+	property name="jwt"                inject="provider:jwt@jwtcfml";
+	property name="wirebox"            inject="wirebox";
+	property name="settings"           inject="coldbox:moduleSettings:cbSecurity";
+	property name="interceptorService" inject="coldbox:interceptorService";
+	property name="requestService"     inject="coldbox:requestService";
+	property name="log"                inject="logbox:logger:{this}";
+
+	/*********************************************************************************************/
+	/** PROPERTIES **/
+	/*********************************************************************************************/
 
 	/**
 	 * The auth service in use
@@ -30,8 +37,54 @@ component accessors="true" singleton{
 	 */
 	property name="tokenStorage";
 
+	/*********************************************************************************************/
+	/** STATIC PROPERTIES **/
+	/*********************************************************************************************/
+
 	// Required Claims
-	variables.REQUIRED_CLAIMS = [ "jti", "iss", "iat", "sub", "exp", "scopes" ];
+	variables.REQUIRED_CLAIMS = [
+		"jti",
+		"iss",
+		"iat",
+		"sub",
+		"exp",
+		"scopes"
+	];
+
+	// Default Settings
+	variables.DEFAULT_SETTINGS = {
+		// The jwt token issuer claim -> iss
+		"issuer"              : "",
+		// The jwt secret encoding key
+		"secretKey"           : "",
+		// The Custom header to inspect for tokens
+		"customAuthHeader"    : "x-auth-token",
+		// The expiration in minutes for the jwt tokens
+		"expiration"          : 60,
+		// If true, enables refresh tokens, longer lived tokens (not implemented yet)
+		"enableRefreshTokens" : false,
+		// The default expiration for refresh tokens, defaults to 30 days
+		"refreshExpiration"   : 43200,
+		// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
+		"algorithm"           : "HS512",
+		// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
+		"requiredClaims"      : [],
+		// The token storage settings
+		"tokenStorage"        : {
+			// enable or not, default is true
+			"enabled"    : true,
+			// A cache key prefix to use when storing the tokens
+			"keyPrefix"  : "cbjwt_",
+			// The driver to use: db, cachebox or a WireBox ID
+			"driver"     : "cachebox",
+			// Driver specific properties
+			"properties" : { "cacheName" : "default" }
+		}
+	};
+
+	/*********************************************************************************************/
+	/** CONSTRUCTOR & STARTUP **/
+	/*********************************************************************************************/
 
 	/**
 	 * Constructor
@@ -41,16 +94,35 @@ component accessors="true" singleton{
 	}
 
 	/**
-	 * Runs after DI
+	 * Runs after DI, here is where we setup the jwt settings for operation
 	 */
 	function onDIComplete(){
-		// Verify a few settings just in case
-		if ( isNull( variables.settings.jwt.secretKey ) || !len( variables.settings.jwt.secretKey ) ){
-			throw(
-				message = "The JWT secret key cannot be empty, please fill this out in your `config/ColdBox.cfc` under your cbsecurity settings",
-				detail 	= "cbsecurity.jwt.secretKey",
-				type 	= "InvalidSecretKey"
-			)
+		// If no settings defined, use the defaults
+		if ( !structKeyExists( variables.settings, "jwt" ) ) {
+			variables.settings.jwt = variables.DEFAULT_SETTINGS;
+		}
+
+		// Incorporate defaults into incoming data
+		structAppend(
+			variables.settings.jwt,
+			variables.DEFAULT_SETTINGS,
+			false
+		);
+		structAppend(
+			variables.settings.jwt.tokenStorage,
+			variables.DEFAULT_SETTINGS.tokenStorage,
+			false
+		);
+
+		// If no secret is defined, then let's create one dynamically
+		if ( isNull( variables.settings.jwt.secretKey ) || !len( variables.settings.jwt.secretKey ) ) {
+			variables.settings.jwt.secretKey = generateSecretKey( "blowfish", 448 );
+			variables.log.warn( "No jwt secret key setting found, automatically generating one" );
+		}
+
+		// Check if issuer is set, if not, default to the home page URI
+		if ( !len( variables.settings.jwt.issuer ) ) {
+			variables.settings.jwt.issuer = requestService.getContext().buildLink( "" );
 		}
 	}
 
@@ -68,18 +140,19 @@ component accessors="true" singleton{
 	 *
 	 * @throws InvalidCredentials
 	 */
-	string function attempt( required username, required password, struct customClaims={} ){
+	string function attempt(
+		required username,
+		required password,
+		struct customClaims = {}
+	){
 		var auth = getAuthService();
 
-		if( auth.authenticate( arguments.username, arguments.password ) ){
+		if ( auth.authenticate( arguments.username, arguments.password ) ) {
 			// Create it
 			return fromUser( auth.getUser(), arguments.customClaims );
 		} else {
 			// Can't do anything if the authenticate is false.
-			throw(
-				message = "The credentials are invalid!",
-				type 	= "InvalidCredentials"
-			);
+			throw( message = "The credentials are invalid!", type = "InvalidCredentials" );
 		}
 	}
 
@@ -108,49 +181,65 @@ component accessors="true" singleton{
 	 * @user The user to generate the token for, must implement IAuth and IJwtSubject
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
 	 */
-	string function fromUser( required user, struct customClaims={} ){
-		var event 		= variables.requestService.getContext();
-		var timestamp 	= now();
-		var payload 	= {
+	string function fromUser( required user, struct customClaims = {} ){
+		var timestamp = now();
+		var payload   = {
 			// Issuing authority
-			"iss" 		: event.getHTMLBaseURL(),
+			"iss" : variables.settings.jwt.issuer,
 			// Token creation
-			"iat" 		: toEpoch( timestamp ),
+			"iat" : toEpoch( timestamp ),
 			// The subject identifier
-			"sub" 		: arguments.user.getId(),
+			"sub" : arguments.user.getId(),
 			// The token expiration
-			"exp" 		: toEpoch( dateAdd( "n", variables.settings.jwt.expiration, timestamp ) ),
+			"exp" : toEpoch(
+				dateAdd(
+					"n",
+					variables.settings.jwt.expiration,
+					timestamp
+				)
+			),
 			// The unique identifier of the token
-			"jti" 		: hash( timestamp & arguments.user.getId() ),
+			"jti"    : hash( timestamp & arguments.user.getId() ),
 			// Get the user scopes for the JWT token
-			"scopes" 	: arguments.user.getJwtScopes()
+			"scopes" : arguments.user.getJwtScopes()
 		};
 
 		// Append user custom claims with override, they take prescedence
-		structAppend( payload, arguments.user.getJwtCustomClaims(), true );
+		structAppend(
+			payload,
+			arguments.user.getJwtCustomClaims(),
+			true
+		);
 
 		// Append incoming custom claims with override, they take prescedence
-		structAppend( payload, arguments.customClaims, true );
+		structAppend(
+			payload,
+			arguments.customClaims,
+			true
+		);
 
 		// Create the token for the user
-		var jwtToken = this.encode(	payload );
+		var jwtToken = this.encode( payload );
 
 		// Store it with the expiration as well if enabled
-		if( variables.settings.jwt.tokenStorage.enabled ){
+		if ( variables.settings.jwt.tokenStorage.enabled ) {
 			getTokenStorage().set(
-				key 		= payload.jti,
-				token 		= jwtToken,
-				expiration 	= variables.settings.jwt.expiration,
-				payload		= payload
+				key        = payload.jti,
+				token      = jwtToken,
+				expiration = variables.settings.jwt.expiration,
+				payload    = payload
 			);
 		}
 
 		// Announce the creation
-		variables.interceptorService.processState( "cbSecurity_onJWTCreation", {
-			token 	: jwtToken,
-			payload : payload,
-			user 	: arguments.user
-		} );
+		variables.interceptorService.processState(
+			"cbSecurity_onJWTCreation",
+			{
+				token   : jwtToken,
+				payload : payload,
+				user    : arguments.user
+			}
+		);
 
 		// Return it
 		return jwtToken;
@@ -167,16 +256,19 @@ component accessors="true" singleton{
 		var oUser = getUserService().retrieveUserById( getPayload().sub );
 
 		// Verify it
-		if( isNull( oUser ) || !len( oUser.getId() ) ){
+		if ( isNull( oUser ) || !len( oUser.getId() ) ) {
 			// Announce the creation
-			variables.interceptorService.processState( "cbSecurity_onJWTInvalidUser", {
-				token 	: this.getToken(),
-				payload	: this.getPayload()
-			} );
+			variables.interceptorService.processState(
+				"cbSecurity_onJWTInvalidUser",
+				{
+					token   : this.getToken(),
+					payload : this.getPayload()
+				}
+			);
 
 			throw(
 				message = "The user (#getPayload().sub#) was not found by the user service",
-				type 	= "InvalidTokenUser"
+				type    = "InvalidTokenUser"
 			);
 		}
 
@@ -189,11 +281,14 @@ component accessors="true" singleton{
 			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
 		// Announce the creation
-		variables.interceptorService.processState( "cbSecurity_onJWTValidAuthentication", {
-			token 	: this.getToken(),
-			payload	: this.getPayload(),
-			user 	: oUser
-		} );
+		variables.interceptorService.processState(
+			"cbSecurity_onJWTValidAuthentication",
+			{
+				token   : this.getToken(),
+				payload : this.getPayload(),
+				user    : oUser
+			}
+		);
 
 		// Return the user
 		return oUser;
@@ -205,18 +300,29 @@ component accessors="true" singleton{
 	 * @token The token to invalidate
 	 */
 	boolean function invalidate( required token ){
-		if( variables.log.canInfo() ){
+		if ( variables.log.canInfo() ) {
 			variables.log.info( "Token invalidation request issued for :#arguments.token#" );
 		}
 
-		var results = getTokenStorage().clear( arguments.token );
+		// Invalidate the token, decode it first and use the jti claim
+		var results = getTokenStorage().clear( this.decode( arguments.token ).jti );
 
 		// Announce the creation
-		variables.interceptorService.processState( "cbSecurity_onJWTInvalidation", {
-			token 	: arguments.token
-		} );
+		variables.interceptorService.processState(
+			"cbSecurity_onJWTInvalidation",
+			{ token : arguments.token }
+		);
 
 		return results;
+	}
+
+	/**
+	 * Verifies if the passed in token exists in the storage provider
+	 *
+	 * @token The token to check
+	 */
+	boolean function isTokenInStorage( required token ){
+		return getTokenStorage().exists( this.decode( arguments.token ).jti );
 	}
 
 	/************************************************************************************/
@@ -239,88 +345,98 @@ component accessors="true" singleton{
 		var jwtToken = discoverToken();
 
 		// Did we find an incoming token
-		if( !len( jwtToken ) ){
-			if( variables.log.canDebug() ){
+		if ( !len( jwtToken ) ) {
+			if ( variables.log.canDebug() ) {
 				variables.log.debug( "Token not found anywhere" );
 			}
 
 			throw(
 				message = "Token not found in authorization header or the custom header or the request collection",
-				type 	= "TokenNotFoundException"
+				type    = "TokenNotFoundException"
 			);
 		}
 
 		// Decode it
-		var decodedToken 	= decode( jwtToken );
-		var decodedClaims 	= decodedToken.keyArray();
+		var decodedToken  = decode( jwtToken );
+		var decodedClaims = decodedToken.keyArray();
 
 		// Verify the required claims
 		var requiredClaims = [];
 		requiredClaims
 			.append( variables.settings.jwt.requiredClaims, true )
 			.append( variables.REQUIRED_CLAIMS, true );
-		requiredClaims
-			.each( function( item ){
-				if( !decodedClaims.findNoCase( arguments.item ) ){
-
-					if( variables.log.canWarn() ){
-						variables.log.warn( "Token is invalid as it does not contain the `#arguments.item#` claim", decodedToken );
-					}
-
-					// Announce the creation
-					variables.interceptorService.processState( "cbSecurity_onJWTInvalidClaims", {
-						token 	: jwtToken,
-						payload	: decodedToken
-					} );
-
-					throw(
-						message = "Token is invalid as it does not contain the `#arguments.item#` claim",
-						type 	= "TokenInvalidException"
+		requiredClaims.each( function( item ){
+			if ( !decodedClaims.findNoCase( arguments.item ) ) {
+				if ( variables.log.canWarn() ) {
+					variables.log.warn(
+						"Token is invalid as it does not contain the `#arguments.item#` claim",
+						decodedToken
 					);
 				}
-			} );
+
+				// Announce the creation
+				variables.interceptorService.processState(
+					"cbSecurity_onJWTInvalidClaims",
+					{
+						token   : jwtToken,
+						payload : decodedToken
+					}
+				);
+
+				throw(
+					message = "Token is invalid as it does not contain the `#arguments.item#` claim",
+					type    = "TokenInvalidException"
+				);
+			}
+		} );
+
 
 		// Verify Expiration first
-		if( dateCompare( fromEpoch( decodedToken.exp ), now() ) < 0 ){
-
-			if( variables.log.canWarn() ){
+		if ( dateCompare( ( isDate( decodedToken.exp ) ? decodedToken.exp : fromEpoch( decodedToken.exp ) ), now() ) < 0 ) {
+			if ( variables.log.canWarn() ) {
 				variables.log.warn( "Token rejected, it has expired", decodedToken );
 			}
 
 			// Announce the creation
-			variables.interceptorService.processState( "cbSecurity_onJWTExpiration", {
-				token 	: jwtToken,
-				payload	: decodedToken
-			} );
-
-			throw(
-				message = "Token has expired",
-				type 	= "TokenExpiredException"
+			variables.interceptorService.processState(
+				"cbSecurity_onJWTExpiration",
+				{
+					token   : jwtToken,
+					payload : decodedToken
+				}
 			);
+
+			throw( message = "Token has expired", type = "TokenExpiredException" );
 		}
 
 		// Verify that this token has not been invalidated in the storage?
-		if( !getTokenStorage().exists( decodedToken.jti ) ){
-			if( variables.log.canWarn() ){
+		if ( !getTokenStorage().exists( decodedToken.jti ) ) {
+			if ( variables.log.canWarn() ) {
 				variables.log.warn( "Token rejected, it was not found in token storage", decodedToken );
 			}
 
 			// Announce the creation
-			variables.interceptorService.processState( "cbSecurity_onJWTStorageRejection", {
-				token 	: jwtToken,
-				payload	: decodedToken
-			} );
+			variables.interceptorService.processState(
+				"cbSecurity_onJWTStorageRejection",
+				{
+					token   : jwtToken,
+					payload : decodedToken
+				}
+			);
 
 			throw(
 				message = "Token has expired, not found in storage",
-				detail 	= "Storage lookup failed",
-				type 	= "TokenRejectionException"
+				detail  = "Storage lookup failed",
+				type    = "TokenRejectionException"
 			);
 		}
 
 		// Log
-		if( variables.log.canDebug() ){
-			variables.log.debug( "Token is valid, not expired and found in storage, inflating to PRC", decodedToken );
+		if ( variables.log.canDebug() ) {
+			variables.log.debug(
+				"Token is valid, not expired and found in storage, inflating to PRC",
+				decodedToken
+			);
 		}
 
 		// Store it
@@ -330,10 +446,13 @@ component accessors="true" singleton{
 			.setPrivateValue( "jwt_payload", decodedToken );
 
 		// Announce the creation
-		variables.interceptorService.processState( "cbSecurity_onJWTValidParsing", {
-			token 	: jwtToken,
-			payload	: decodedToken
-		} );
+		variables.interceptorService.processState(
+			"cbSecurity_onJWTValidParsing",
+			{
+				token   : jwtToken,
+				payload : decodedToken
+			}
+		);
 
 		// Authenticate the payload
 		authenticate();
@@ -349,7 +468,7 @@ component accessors="true" singleton{
 	string function getToken(){
 		var event = variables.requestService.getContext();
 
-		if( !event.privateValueExists( "jwt_token" ) ){
+		if ( !event.privateValueExists( "jwt_token" ) ) {
 			parseToken();
 		}
 
@@ -376,7 +495,7 @@ component accessors="true" singleton{
 	struct function getPayload(){
 		var event = variables.requestService.getContext();
 
-		if( !event.privateValueExists( "jwt_payload" ) ){
+		if ( !event.privateValueExists( "jwt_payload" ) ) {
 			parseToken();
 		}
 
@@ -392,7 +511,7 @@ component accessors="true" singleton{
 	function getUser(){
 		var event = variables.requestService.getContext();
 
-		if( !event.privateValueExists( variables.settings.prcUserVariable ) ){
+		if ( !event.privateValueExists( variables.settings.prcUserVariable ) ) {
 			parseToken();
 		}
 
@@ -418,16 +537,23 @@ component accessors="true" singleton{
 	}
 
 	/**
-	 * Verify an incoming token against our jwt library to check if it is valid.
+	 * Verify an incoming token against our jwt library to check if it is valid token only
+	 * No expiration or claim verification
 	 *
 	 * @token The token to validate
 	 */
 	boolean function verify( required token ){
-		return variables.jwt.verify(
-			arguments.token,
-			variables.settings.jwt.secretKey,
-			variables.settings.jwt.algorithm
-		);
+		try {
+			variables.jwt.decode(
+				token      = arguments.token,
+				key        = variables.settings.jwt.secretKey,
+				algorithms = variables.settings.jwt.algorithm,
+				verify     = false
+			);
+			return true;
+		} catch ( Any e ) {
+			return false;
+		}
 	}
 
 	/**
@@ -438,17 +564,18 @@ component accessors="true" singleton{
 	 * @throws InvalidToken
 	 */
 	struct function decode( required token ){
-		try{
+		try {
 			return variables.jwt.decode(
-				arguments.token,
-				variables.settings.jwt.secretKey,
-				variables.settings.jwt.algorithm
+				token      = arguments.token,
+				key        = variables.settings.jwt.secretKey,
+				algorithms = variables.settings.jwt.algorithm,
+				claims     = { "iss" : variables.settings.jwt.issuer }
 			);
-		} catch( any e ){
+		} catch ( any e ) {
 			throw(
 				message = "Cannot decode token: #e.message#",
-				detail 	= e.stackTrace,
-				type = "TokenInvalidException"
+				detail  = e.stackTrace,
+				type    = "TokenInvalidException"
 			);
 		}
 	}
@@ -493,7 +620,7 @@ component accessors="true" singleton{
 	 */
 	function toEpoch( required target ){
 		return dateDiff(
-			's',
+			"s",
 			dateConvert( "utc2local", "January 1 1970 00:00" ),
 			arguments.target
 		);
@@ -505,7 +632,7 @@ component accessors="true" singleton{
 	 * @target The epoch timestamp
 	 */
 	function fromEpoch( required target ){
-		return DateAdd(
+		return dateAdd(
 			"s",
 			arguments.target, // should be in utc
 			dateConvert( "utc2local", "January 1 1970 00:00" )
@@ -513,26 +640,30 @@ component accessors="true" singleton{
 	}
 
 	/**
-	 * Get the appropriate token storage
+	 * Get the appropriate token storage provider
+	 *
+	 * @return cbsecurity.interfaces.jwt.IJwtStorage
 	 */
 	function getTokenStorage(){
 		// If loaded, use it!
-		if( !isNull( variables.tokenStorage ) ){
+		if ( !isNull( variables.tokenStorage ) ) {
 			return variables.tokenStorage;
 		}
 
 		// Build the appropriate driver
-		switch( variables.settings.jwt.tokenstorage.driver ){
-			case "cachebox" : {
+		switch ( variables.settings.jwt.tokenstorage.driver ) {
+			case "cachebox": {
 				variables.tokenStorage = variables.wirebox.getInstance( "CacheTokenStorage@cbsecurity" );
 				break;
 			}
-			case "db" : {
+			case "db": {
 				variables.tokenStorage = variables.wirebox.getInstance( "DBTokenStorage@cbsecurity" );
 				break;
 			}
-			default : {
-				variables.tokenStorage = variables.wirebox.getInstance( variables.settings.jwt.tokenStorage.driver );
+			default: {
+				variables.tokenStorage = variables.wirebox.getInstance(
+					variables.settings.jwt.tokenStorage.driver
+				);
 				break;
 			}
 		}
@@ -546,46 +677,46 @@ component accessors="true" singleton{
 	/**
 	 * Get the user service defined in the settings
 	 */
-	any function getUserService() {
+	any function getUserService(){
 		// If loaded, use it!
-		if( !isNull( variables.userService ) ){
+		if ( !isNull( variables.userService ) ) {
 			return variables.userService;
 		}
 
 		// Check and Load Baby!
-        if ( ! len( variables.settings.userService ) ) {
+		if ( !len( variables.settings.userService ) ) {
 			throw(
-				message	= "No [userService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.userService`.",
-				type 	= "IncompleteConfiguration"
+				message = "No [userService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.userService`.",
+				type    = "IncompleteConfiguration"
 			);
-        }
+		}
 
 		variables.userService = variables.wirebox.getInstance( variables.settings.userService );
 
-        return variables.userService;
+		return variables.userService;
 	}
 
 	/**
 	 * Get the authentication service defined in the settings
 	 */
-	any function getAuthService() {
+	any function getAuthService(){
 		// If loaded, use it!
-		if( !isNull( variables.authService ) ){
+		if ( !isNull( variables.authService ) ) {
 			return variables.authService;
 		}
 
 		// Check and Load Baby!
-        if ( ! len( variables.settings.authenticationService ) ) {
+		if ( !len( variables.settings.authenticationService ) ) {
 			throw(
-				message	= "No [authService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.authenticationService`.",
-				type 	= "IncompleteConfiguration"
+				message = "No [authService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.authenticationService`.",
+				type    = "IncompleteConfiguration"
 			);
-        }
+		}
 
 		variables.authService = variables.wirebox.getInstance( variables.settings.authenticationService );
 
-        return variables.authService;
-    }
+		return variables.authService;
+	}
 
 	/****************************** PRIVATE ******************************/
 
@@ -597,20 +728,18 @@ component accessors="true" singleton{
 
 		// Discover api token from headers using a custom header or the incoming RC
 		var jwtToken = event.getHTTPHeader(
-			header 			= variables.settings.jwt.customAuthHeader,
-			defaultValue	= event.getValue( name=variables.settings.jwt.customAuthHeader, defaultValue="" )
+			header       = variables.settings.jwt.customAuthHeader,
+			defaultValue = event.getValue( name = variables.settings.jwt.customAuthHeader, defaultValue = "" )
 		);
 
 		// If we found it, return it, else try other headers
-		if( jwtToken.len() ){
+		if ( jwtToken.len() ) {
 			return jwtToken;
 		}
 
 		// Authorization Header
-		return event.getHTTPHeader(
-				header 			= 'Authorization',
-				defaultValue	= ""
-			)
+		return event
+			.getHTTPHeader( header = "Authorization", defaultValue = "" )
 			.replaceNoCase( "Bearer", "" )
 			.trim();
 	}
@@ -622,21 +751,24 @@ component accessors="true" singleton{
 	 * @permissions The permissions we want to validate in the scopes
 	 */
 	private function validateSecurity( required permissions ){
-		var results = { "allow" : false, "type" : "authentication", "messages" : "" };
+		var results = {
+			"allow"    : false,
+			"type"     : "authentication",
+			"messages" : ""
+		};
 
-		try{
+		try {
 			// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
 			var payload = getPayload();
-		} catch( Any e ){
+		} catch ( Any e ) {
 			results.messages = e.type & ":" & e.message;
 			return results;
 		}
 
 		// Are we logged in?
-		if( getAuthService().isLoggedIn() ){
-
+		if ( getAuthService().isLoggedIn() ) {
 			// Do we have any permissions to validate?
-			if( listLen( arguments.permissions ) ){
+			if ( listLen( arguments.permissions ) ) {
 				// Check if the user has the right permissions?
 				results.allow = (
 					tokenHasScopes( arguments.permissions, payload.scopes )
@@ -657,7 +789,7 @@ component accessors="true" singleton{
 	 * Verify if the jwt token has the appropriate scopes
 	 */
 	private function tokenHasScopes( required permission, required scopes ){
-		if( isSimpleValue( arguments.permission) ){
+		if ( isSimpleValue( arguments.permission ) ) {
 			arguments.permission = listToArray( arguments.permission );
 		}
 

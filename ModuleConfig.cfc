@@ -19,7 +19,7 @@ component {
 	// Helpers
 	this.applicationHelper 	= [ "helpers/mixins.cfm" ];
 	// Dependencies
-	this.dependencies 		= [ "cbauth", "jwt" ];
+	this.dependencies 		= [ "cbauth", "jwtcfml" ];
 
 	/**
 	 * Module Config
@@ -69,6 +69,8 @@ component {
 			"enableSecurityVisualizer"		: false,
 			// JWT Settings
 			"jwt"                     		: {
+				// The issuer authority for the tokens, placed in the `iss` claim
+				"issuer"				  : "",
 				// The jwt secret encoding key to use
 				"secretKey"               : getSystemSetting( "JWT_SECRET", "" ),
 				// by default it uses the authorization bearer header, but you can also pass a custom one as well or as an rc variable.
