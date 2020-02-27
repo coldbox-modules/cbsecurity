@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.2.1
+
+* `bug` : `verify` should pass `verify=true` into the jwt library for proper verification
+
 ## 2.2.0
 
 * `Feature` : Migrated from the jwt to the `jwtcfml` (https://forgebox.io/view/jwt-cfml) library to expand encoding/decoding capabilities to support `RS` and `ES` algorithms:
