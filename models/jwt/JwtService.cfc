@@ -544,12 +544,7 @@ component accessors="true" singleton {
 	 */
 	boolean function verify( required token ){
 		try {
-			variables.jwt.decode(
-				token      = arguments.token,
-				key        = variables.settings.jwt.secretKey,
-				algorithms = variables.settings.jwt.algorithm,
-				verify     = false
-			);
+			this.decode( arguments.token );
 			return true;
 		} catch ( Any e ) {
 			return false;
