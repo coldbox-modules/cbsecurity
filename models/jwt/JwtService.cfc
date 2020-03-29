@@ -17,7 +17,7 @@ component accessors="true" singleton {
 	property name="interceptorService" inject="coldbox:interceptorService";
 	property name="requestService"     inject="coldbox:requestService";
 	property name="log"                inject="logbox:logger:{this}";
-	property name="cbsecurity"			inject="@cbSecurity";
+	property name="cbsecurity"         inject="@cbSecurity";
 
 	/*********************************************************************************************/
 	/** PROPERTIES **/
@@ -244,7 +244,9 @@ component accessors="true" singleton {
 	 */
 	function authenticate(){
 		// Get the User it represents
-		var oUser = variables.cbSecurity.getUserService().retrieveUserById( getPayload().sub );
+		var oUser = variables.cbSecurity
+			.getUserService()
+			.retrieveUserById( getPayload().sub );
 
 		// Verify it
 		if ( isNull( oUser ) || !len( oUser.getId() ) ) {
@@ -715,7 +717,10 @@ component accessors="true" singleton {
 				results.allow = (
 					tokenHasScopes( arguments.permissions, payload.scopes )
 					||
-					variables.cbSecurity.getAuthService().getUser().hasPermission( arguments.permissions )
+					variables.cbSecurity
+						.getAuthService()
+						.getUser()
+						.hasPermission( arguments.permissions )
 				);
 				results.type = "authorization";
 			} else {

@@ -22,9 +22,9 @@ component singleton accessors="true" {
 	/** DI **/
 	/*********************************************************************************************/
 
-	property name="settings" 		inject="coldbox:moduleSettings:cbsecurity";
-	property name="log"             inject="logbox:logger:{this}";
-	property name="wirebox"			inject="wirebox";
+	property name="settings" inject="coldbox:moduleSettings:cbsecurity";
+	property name="log"      inject="logbox:logger:{this}";
+	property name="wirebox"  inject="wirebox";
 
 
 	/*********************************************************************************************/
@@ -120,7 +120,8 @@ component singleton accessors="true" {
 		return arrayWrap( arguments.permissions )
 			.filter( function( item ){
 				return oUser.hasPermission( arguments.item );
-			} ).len() > 0;
+			} )
+			.len() > 0;
 	}
 
 	/**
@@ -131,13 +132,14 @@ component singleton accessors="true" {
 	 * @permissions One, a list or an array of permissions
 	 */
 	boolean function all( required permissions ){
-		var oUser 	= getAuthService().getUser();
-		var aPerms 	= arrayWrap( arguments.permissions );
+		var oUser  = getAuthService().getUser();
+		var aPerms = arrayWrap( arguments.permissions );
 
 		return aPerms
 			.filter( function( item ){
 				return oUser.hasPermission( arguments.item );
-			} ).len() == aPerms.len();
+			} )
+			.len() == aPerms.len();
 	}
 
 	/**
@@ -153,7 +155,8 @@ component singleton accessors="true" {
 		return arrayWrap( arguments.permissions )
 			.filter( function( item ){
 				return oUser.hasPermission( arguments.item );
-			} ).len() == 0;
+			} )
+			.len() == 0;
 	}
 
 	/**
@@ -182,9 +185,9 @@ component singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secure( required permissions, message=variables.DEFAULT_ERROR_MESSAGE ){
-		if( !has( arguments.permissions ) ){
-			throw( type = "NotAuthorized", message=arguments.message );
+	CBSecurity function secure( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
+		if ( !has( arguments.permissions ) ) {
+			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
 	}
@@ -199,9 +202,9 @@ component singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secureAll( required permissions, message=variables.DEFAULT_ERROR_MESSAGE ){
-		if( !all( arguments.permissions ) ){
-			throw( type = "NotAuthorized", message=arguments.message );
+	CBSecurity function secureAll( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
+		if ( !all( arguments.permissions ) ) {
+			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
 	}
@@ -216,9 +219,9 @@ component singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secureNone( required permissions, message=variables.DEFAULT_ERROR_MESSAGE ){
-		if( !none( arguments.permissions ) ){
-			throw( type = "NotAuthorized", message=arguments.message );
+	CBSecurity function secureNone( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
+		if ( !none( arguments.permissions ) ) {
+			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
 	}
@@ -243,13 +246,13 @@ component singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secureWhen( required context, message=variables.DEFAULT_ERROR_MESSAGE ){
+	CBSecurity function secureWhen( required context, message = variables.DEFAULT_ERROR_MESSAGE ){
 		var results = arguments.context;
 		// Check if udf/lambda
-		if( isCustomFunction( arguments.context ) || isClosure( arguments.context ) ){
+		if ( isCustomFunction( arguments.context ) || isClosure( arguments.context ) ) {
 			results = arguments.context( getAuthService().getUser() );
 		}
-		if( results ){
+		if ( results ) {
 			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
@@ -259,7 +262,7 @@ component singleton accessors="true" {
 	 * Alias proxy if somebody is coming from cbguard, proxies to the secure() method
 	 */
 	function guard(){
-		return secure( argumentCollection=arguments );
+		return secure( argumentCollection = arguments );
 	}
 
 	/***************************************************************/
@@ -285,11 +288,15 @@ component singleton accessors="true" {
 	 * @success The closure/lambda/udf that executes if the context passes
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
-	function when( required permissions, required success, fail ){
+	function when(
+		required permissions,
+		required success,
+		fail
+	){
 		arguments.permissions = arrayWrap( arguments.permissions );
-		if( has( arguments.permissions ) ){
+		if ( has( arguments.permissions ) ) {
 			arguments.success( getAuthService().getUser(), arguments.permissions );
-		} else if( !isNull( arguments.fail ) ){
+		} else if ( !isNull( arguments.fail ) ) {
 			arguments.fail( getAuthService().getUser(), arguments.permissions );
 		}
 		return this;
@@ -314,11 +321,15 @@ component singleton accessors="true" {
 	 * @success The closure/lambda/udf that executes if the context passes
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
-	function whenAll( required permissions, required success, fail ){
+	function whenAll(
+		required permissions,
+		required success,
+		fail
+	){
 		arguments.permissions = arrayWrap( arguments.permissions );
-		if( all( arguments.permissions ) ){
+		if ( all( arguments.permissions ) ) {
 			arguments.success( getAuthService().getUser(), arguments.permissions );
-		} else if( !isNull( arguments.fail ) ){
+		} else if ( !isNull( arguments.fail ) ) {
 			arguments.fail( getAuthService().getUser(), arguments.permissions );
 		}
 		return this;
@@ -343,11 +354,15 @@ component singleton accessors="true" {
 	 * @success The closure/lambda/udf that executes if the context passes
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
-	function whenNone( required permissions, required success, fail ){
+	function whenNone(
+		required permissions,
+		required success,
+		fail
+	){
 		arguments.permissions = arrayWrap( arguments.permissions );
-		if( none( arguments.permissions ) ){
+		if ( none( arguments.permissions ) ) {
 			arguments.success( getAuthService().getUser(), arguments.permissions );
-		} else if( !isNull( arguments.fail ) ){
+		} else if ( !isNull( arguments.fail ) ) {
 			arguments.fail( getAuthService().getUser(), arguments.permissions );
 		}
 		return this;
