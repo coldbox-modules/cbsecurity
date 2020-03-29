@@ -45,7 +45,7 @@ component
 
 
 			it( "can retrieve user,auth and mixin services", function(){
-				var e = this.get( "/main/cbsecuremixin" );
+				var e = this.request( route : "/main/cbsecuremixin" );
 				expect( e.getRenderedContent() ).toBeJSON();
 			});
 
