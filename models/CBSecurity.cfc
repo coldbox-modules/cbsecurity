@@ -286,7 +286,13 @@ component singleton accessors="true" {
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
 	function when( required permissions, required success, fail ){
-
+		arguments.permissions = arrayWrap( arguments.permissions );
+		if( has( arguments.permissions ) ){
+			arguments.success( getAuthService().getUser(), arguments.permissions );
+		} else if( !isNull( arguments.fail ) ){
+			arguments.fail( getAuthService().getUser(), arguments.permissions );
+		}
+		return this;
 	}
 
 	/**
@@ -309,7 +315,13 @@ component singleton accessors="true" {
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
 	function whenAll( required permissions, required success, fail ){
-
+		arguments.permissions = arrayWrap( arguments.permissions );
+		if( all( arguments.permissions ) ){
+			arguments.success( getAuthService().getUser(), arguments.permissions );
+		} else if( !isNull( arguments.fail ) ){
+			arguments.fail( getAuthService().getUser(), arguments.permissions );
+		}
+		return this;
 	}
 
 	/**
@@ -332,7 +344,13 @@ component singleton accessors="true" {
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
 	function whenNone( required permissions, required success, fail ){
-
+		arguments.permissions = arrayWrap( arguments.permissions );
+		if( none( arguments.permissions ) ){
+			arguments.success( getAuthService().getUser(), arguments.permissions );
+		} else if( !isNull( arguments.fail ) ){
+			arguments.fail( getAuthService().getUser(), arguments.permissions );
+		}
+		return this;
 	}
 
 	/***************************************************************/

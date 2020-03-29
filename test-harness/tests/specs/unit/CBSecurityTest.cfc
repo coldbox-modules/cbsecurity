@@ -94,6 +94,139 @@ component extends="coldbox.system.testing.BaseModelTest" model="cbsecurity.model
 				});
 			});
 
+
+			describe( "action context methods", function(){
+				describe( "when() methods", function(){
+					it( "can call the sucess closure when the permissions pass", function(){
+						var testVar = false;
+						mockUser.$( "hasPermission", true );
+
+						cbsecurity.when( "test", function( user ){
+							testVar = true;
+						} );
+
+						expect( testVar ).toBeTrue();
+					});
+					it( "can call the fail closure when the permissions fail", function(){
+						var testVar = "";
+						mockUser.$( "hasPermission", false );
+
+						cbsecurity.when(
+							"test",
+							// success
+							function( user ){
+								testVar = false;
+							},
+							// fail
+							function( user ){
+								testVar = true;
+							}
+						);
+
+						expect( testVar ).toBeTrue();
+					});
+					it( "can ignore the success when the permissions fail and no fail has been provided", function(){
+						var testVar = "";
+						mockUser.$( "hasPermission", false );
+
+						cbsecurity.when(
+							"test",
+							// success
+							function( user ){
+								testVar = false;
+							}
+						);
+						expect( testVar ).toBe( "" );
+					});
+				});
+				describe( "whenAll() methods", function(){
+					it( "can call the sucess closure when the permissions pass", function(){
+						var testVar = false;
+						mockUser.$( "hasPermission" ).$results( true, true );
+
+						cbsecurity.whenAll( "test,test2", function( user ){
+							testVar = true;
+						} );
+
+						expect( testVar ).toBeTrue();
+					});
+					it( "can call the fail closure when the permissions fail", function(){
+						var testVar = "";
+						mockUser.$( "hasPermission", false );
+
+						cbsecurity.whenAll(
+							"test",
+							// success
+							function( user ){
+								testVar = false;
+							},
+							// fail
+							function( user ){
+								testVar = true;
+							}
+						);
+
+						expect( testVar ).toBeTrue();
+					});
+					it( "can ignore the success when the permissions fail and no fail has been provided", function(){
+						var testVar = "";
+						mockUser.$( "hasPermission", false );
+
+						cbsecurity.whenAll(
+							"test",
+							// success
+							function( user ){
+								testVar = false;
+							}
+						);
+						expect( testVar ).toBe( "" );
+					});
+				});
+				describe( "whenNone() methods", function(){
+					it( "can call the sucess closure when the permissions are none", function(){
+						var testVar = false;
+						mockUser.$( "hasPermission" ).$results( false, false );
+
+						cbsecurity.whenNone( "test,test2", function( user ){
+							testVar = true;
+						} );
+
+						expect( testVar ).toBeTrue();
+					});
+					it( "can call the fail closure when the permissions are found", function(){
+						var testVar = "";
+						mockUser.$( "hasPermission", true );
+
+						cbsecurity.whenNone(
+							"test",
+							// success
+							function( user ){
+								testVar = false;
+							},
+							// fail
+							function( user ){
+								testVar = true;
+							}
+						);
+
+						expect( testVar ).toBeTrue();
+					});
+					it( "can ignore the success when the permissions are found and no fail has been provided", function(){
+						var testVar = "";
+						mockUser.$( "hasPermission", true );
+
+						cbsecurity.whenNone(
+							"test",
+							// success
+							function( user ){
+								testVar = false;
+							}
+						);
+						expect( testVar ).toBe( "" );
+					});
+				});
+			});
+
 			describe( "blocking methods", function(){
 				describe( "secure() method", function(){
 					it( "can allow a secure() function if permissions pass", function(){
@@ -149,7 +282,6 @@ component extends="coldbox.system.testing.BaseModelTest" model="cbsecurity.model
 						}).toThrow( type="NotAuthorized", regex="Invalid User Baby" );
 					});
 				});
-
 				describe( "secureWhen() method", function(){
 					it( "can secure if a boolean true is passed", function(){
 						expect( function(){
@@ -168,7 +300,6 @@ component extends="coldbox.system.testing.BaseModelTest" model="cbsecurity.model
 					it( "can allow if a closure executes as false", function(){
 						cbsecurity.secureWhen( function( user ){ return false; } );
 					});
-
 				});
 			});
 
