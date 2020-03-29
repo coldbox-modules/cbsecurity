@@ -75,7 +75,9 @@ component singleton accessors="true" {
 			);
 		}
 
-		return variables.userService = variables.wirebox.getInstance( variables.settings.userService );
+		variables.userService = variables.wirebox.getInstance( variables.settings.userService );
+
+		return variables.userService;
 	}
 
 	/**
@@ -99,7 +101,9 @@ component singleton accessors="true" {
 			);
 		}
 
-		return variables.authService = variables.wirebox.getInstance( variables.settings.authenticationService );
+		variables.authService = variables.wirebox.getInstance( variables.settings.authenticationService );
+
+		return variables.authService;
 	}
 
 	/***************************************************************/
