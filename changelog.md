@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.3.0
+
+* `Feature` Introduction of the cbSecurity model: https://coldbox-security.ortusbooks.com/intro/release-history/whats-new-with-2.3.0
+* `Task` : Cfformatting everywhere
+
 ## 2.2.1
 
 * `bug` : `verify` should pass `verify=true` into the jwt library for proper verification
