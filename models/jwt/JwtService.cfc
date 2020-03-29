@@ -17,20 +17,11 @@ component accessors="true" singleton {
 	property name="interceptorService" inject="coldbox:interceptorService";
 	property name="requestService"     inject="coldbox:requestService";
 	property name="log"                inject="logbox:logger:{this}";
+	property name="cbsecurity"			inject="@cbSecurity";
 
 	/*********************************************************************************************/
 	/** PROPERTIES **/
 	/*********************************************************************************************/
-
-	/**
-	 * The auth service in use
-	 */
-	property name="authService";
-
-	/**
-	 * The user service in use
-	 */
-	property name="userService";
 
 	/**
 	 * The token storage provider
@@ -145,7 +136,7 @@ component accessors="true" singleton {
 		required password,
 		struct customClaims = {}
 	){
-		var auth = getAuthService();
+		var auth = cbSecurity.getAuthService();
 
 		if ( auth.authenticate( arguments.username, arguments.password ) ) {
 			// Create it
@@ -164,14 +155,14 @@ component accessors="true" singleton {
 	 */
 	function logout(){
 		invalidate( this.getToken() );
-		getAuthService().logout();
+		cbSecurity.getAuthService().logout();
 	}
 
 	/**
 	 * Shortcut function to our authentication services to check if we are logged in
 	 */
 	boolean function isLoggedIn(){
-		return getAuthService().isLoggedIn();
+		return cbSecurity.getAuthService().isLoggedIn();
 	}
 
 	/**
@@ -253,7 +244,7 @@ component accessors="true" singleton {
 	 */
 	function authenticate(){
 		// Get the User it represents
-		var oUser = getUserService().retrieveUserById( getPayload().sub );
+		var oUser = variables.cbSecurity.getUserService().retrieveUserById( getPayload().sub );
 
 		// Verify it
 		if ( isNull( oUser ) || !len( oUser.getId() ) ) {
@@ -273,7 +264,7 @@ component accessors="true" singleton {
 		}
 
 		// Log in the user
-		getAuthService().login( oUser );
+		variables.cbSecurity.getAuthService().login( oUser );
 
 		// Store in ColdBox data bus
 		variables.requestService
@@ -669,50 +660,6 @@ component accessors="true" singleton {
 		return variables.tokenStorage;
 	}
 
-	/**
-	 * Get the user service defined in the settings
-	 */
-	any function getUserService(){
-		// If loaded, use it!
-		if ( !isNull( variables.userService ) ) {
-			return variables.userService;
-		}
-
-		// Check and Load Baby!
-		if ( !len( variables.settings.userService ) ) {
-			throw(
-				message = "No [userService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.userService`.",
-				type    = "IncompleteConfiguration"
-			);
-		}
-
-		variables.userService = variables.wirebox.getInstance( variables.settings.userService );
-
-		return variables.userService;
-	}
-
-	/**
-	 * Get the authentication service defined in the settings
-	 */
-	any function getAuthService(){
-		// If loaded, use it!
-		if ( !isNull( variables.authService ) ) {
-			return variables.authService;
-		}
-
-		// Check and Load Baby!
-		if ( !len( variables.settings.authenticationService ) ) {
-			throw(
-				message = "No [authService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.authenticationService`.",
-				type    = "IncompleteConfiguration"
-			);
-		}
-
-		variables.authService = variables.wirebox.getInstance( variables.settings.authenticationService );
-
-		return variables.authService;
-	}
-
 	/****************************** PRIVATE ******************************/
 
 	/**
@@ -761,14 +708,14 @@ component accessors="true" singleton {
 		}
 
 		// Are we logged in?
-		if ( getAuthService().isLoggedIn() ) {
+		if ( variables.cbSecurity.getAuthService().isLoggedIn() ) {
 			// Do we have any permissions to validate?
 			if ( listLen( arguments.permissions ) ) {
 				// Check if the user has the right permissions?
 				results.allow = (
 					tokenHasScopes( arguments.permissions, payload.scopes )
 					||
-					getAuthService().getUser().hasPermission( arguments.permissions )
+					variables.cbSecurity.getAuthService().getUser().hasPermission( arguments.permissions )
 				);
 				results.type = "authorization";
 			} else {
