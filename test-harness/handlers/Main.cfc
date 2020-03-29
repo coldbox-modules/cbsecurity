@@ -37,4 +37,8 @@ component {
 		return cbsecure().getSettings();
 	}
 
+	function secureView( event, rc, prc ){
+		event.secureView( "test", "main/index" );
+	}
+
 }

@@ -368,6 +368,40 @@ component singleton accessors="true" {
 		return this;
 	}
 
+	/**
+	 * This is the method proxy injected into the request context that will act like the
+	 * `secureView()` method velow
+	 *
+	 * @permissions One, a list or an array of permissions
+	 * @successView The view to set in the request context if the permissions pass
+	 * @failView The view to set in the request context if the permissions fails, optional
+	 */
+	function secureViewProxy( required permissions, required successView, failView ){
+		arguments.event = this;
+		controller
+			.getWireBox()
+			.getInstance( dsl = "@cbSecurity" )
+			.secureView( argumentCollection=arguments );
+		return this;
+	}
+
+	/**
+	 * This method is injected into all request contex's in order to allow you to easily
+	 * switch between views if the permissions are not found in the user.
+	 *
+	 * @event The proxied request context
+	 * @permissions One, a list or an array of permissions
+	 * @successView The view to set in the request context if the permissions pass
+	 * @failView The view to set in the request context if the permissions fails, optional
+	 */
+	function secureView( required event, required permissions, required successView, failView ){
+		if( has( arguments.permissions ) ){
+			arguments.event.setView( arguments.successView );
+		} else if ( !isNull( arguments.failView ) ){
+			arguments.event.setView( arguments.failView );
+		}
+	}
+
 	/***************************************************************/
 	/* Private Methods
 	/***************************************************************/

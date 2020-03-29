@@ -11,6 +11,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	// DI
 	property name="rulesLoader"    inject="rulesLoader@cbSecurity";
 	property name="handlerService" inject="coldbox:handlerService";
+	property name="cbSecurity"		inject="@cbSecurity";
 
 	/**
 	 * The reference to the security validator for this interceptor
@@ -185,6 +186,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		prc,
 		buffer
 	){
+		// Add SecureView() into the requestcontext
+		arguments.event.secureView = variables.cbSecurity.secureViewProxy;
+
 		// Execute Rule processing
 		if ( getProperty( "rules" ).len() ) {
 			processRules(
