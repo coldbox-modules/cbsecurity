@@ -51,7 +51,7 @@ component accessors="true" singleton {
 		"scopes"
 	];
 
-	// Default Settings
+	// Default JWT Settings
 	variables.DEFAULT_SETTINGS = {
 		// The jwt token issuer claim -> iss
 		"issuer"              : "",
