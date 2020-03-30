@@ -28,8 +28,17 @@ component {
 	}
 
 
-	// Run on first init
-	any function onAppInit( event, rc, prc ){
+	/**
+	* cbSecureMixin
+	*/
+	function cbSecureMixin( event, rc, prc ){
+		cbsecure().getAuthService();
+		cbSecure().getUserService();
+		return cbsecure().getSettings();
+	}
+
+	function secureView( event, rc, prc ){
+		event.secureView( "test", "main/index" );
 	}
 
 }
