@@ -9,7 +9,8 @@
         "testbox":"be",
         "cbauth":"^4.0.0",
         "BCrypt":"^2.5.0-snapshot",
-        "jwt-cfml":"^1.0.0"
+        "jwt-cfml":"^1.0.0",
+        "cbcsrf":"^2.0.0+21"
     },
     "devDependencies":{
         "route-visualizer":"^1.2.0+4"
@@ -20,7 +21,8 @@
         "cbauth":"modules/cbauth/",
         "BCrypt":"modules/BCrypt/",
         "route-visualizer":"modules/route-visualizer/",
-        "jwt-cfml":"modules/jwtcfml/"
+        "jwt-cfml":"modules/jwtcfml/",
+        "cbcsrf":"modules/cbcsrf/"
     },
     "testbox":{
         "runner":"http://localhost:60299/tests/runner.cfm"
