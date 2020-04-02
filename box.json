@@ -2,14 +2,14 @@
     "name":"ColdBox Security",
     "version":"2.4.0",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbsecurity/@build.version@/cbsecurity-@build.version@.zip",
-    "author":"Ortus Solutions.com <info@ortussolutions.com",
+    "author":"Ortus Solutions.com <info@ortussolutions.com>",
     "slug":"cbsecurity",
     "type":"modules",
-    "homepage":"https://github.com/ColdBox/cbsecurity",
+    "homepage":"https://github.com/coldbox-modules/cbsecurity",
     "documentation":"https://coldbox-security.ortusbooks.com/",
     "repository":{
         "type":"git",
-        "url":"https://github.com/ColdBox/cbsecurity"
+        "url":"https://github.com/coldbox-modules/cbsecurity"
     },
     "shortDescription":"This module provides a robust security engine for ColdBox applications.",
     "license":[
@@ -29,12 +29,13 @@
     ],
     "dependencies":{
         "jwt-cfml":"^1.0.0",
-        "cbauth":"^4.0.0"
+		"cbauth":"^4.0.0",
+		"cbcsrf":"^2.0.0"
     },
     "scripts":{
         "toMaster":"recipe build/toMaster.boxr",
-        "format":"cfformat run handlers/**.cfc,interceptors/**.cfc,models/**.cfc --overwrite",
-        "format:watch":"cfformat run handlers/**.cfc,interceptors/**.cfc,models/**.cfc --watch",
-        "format:check":"cfformat run handlers/**.cfc,interceptors/**.cfc,models/**.cfc --check"
+        "format":"cfformat run handlers/,interceptors/,models/,test-harness/tests/specs",
+        "format:watch":"cfformat watch handlers/,interceptors/,models/,test-harness/tests/specs",
+        "format:check":"cfformat check handlers/,interceptors/,models/,test-harness/tests/specs"
     }
 }

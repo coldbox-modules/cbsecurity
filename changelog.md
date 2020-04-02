@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.4.0
+
+* `Feature` : We now include the `cbcsrf` module to allow for protections of cross site request forgery vectors. Please see all the features included in this module here: https://github.com/coldbox-modules/cbcsrf
+
 ## 2.3.0
 
 * `Feature` Introduction of the cbSecurity model: https://coldbox-security.ortusbooks.com/intro/release-history/whats-new-with-2.3.0
