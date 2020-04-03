@@ -136,15 +136,12 @@ component accessors="true" singleton {
 		required password,
 		struct customClaims = {}
 	){
-		var auth = cbSecurity.getAuthService();
+		var oUser = cbSecurity
+			.getAuthService()
+			.authenticate( arguments.username, arguments.password );
 
-		if ( auth.authenticate( arguments.username, arguments.password ) ) {
-			// Create it
-			return fromUser( auth.getUser(), arguments.customClaims );
-		} else {
-			// Can't do anything if the authenticate is false.
-			throw( message = "The credentials are invalid!", type = "InvalidCredentials" );
-		}
+		// Create it
+		return fromUser( oUser, arguments.customClaims );
 	}
 
 	/**

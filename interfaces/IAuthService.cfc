@@ -9,8 +9,9 @@ interface{
     /**
      * Get the authenticated user
      *
+	 * @throws NoUserLoggedIn : If the user is not logged in
+	 *
      * @return User that implements IAuthUser
-     * @throws NoUserLoggedIn
      */
     any function getUser();
 
@@ -20,20 +21,24 @@ interface{
     boolean function isLoggedIn();
 
     /**
-     * Attemps to log in a user
+     * Try to authenticate a user into the system. If the authentication fails an exception is thrown, else the logged in user object is returned
      *
      * @username The username to log in with
      * @password The password to log in with
      *
      * @throws InvalidCredentials
+	 *
+	 * @return User : The logged in user object
      */
-    boolean function authenticate( required username, required password );
+    any function authenticate( required username, required password );
 
     /**
-     * Logs a user into the system
-     *
-     * @user The user object that implements IAuthUser
-     */
+	 * Login a user into our persistent scopes
+	 *
+	 * @user The user object to log in
+	 *
+	 * @return The same user object so you can do functional goodness
+	 */
     function login( required user );
 
     /**

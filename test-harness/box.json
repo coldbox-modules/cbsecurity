@@ -7,7 +7,7 @@
     "dependencies":{
         "coldbox":"^5.0.0",
         "testbox":"be",
-        "cbauth":"^4.0.0",
+        "cbauth":"^5.0.0",
         "BCrypt":"^2.5.0-snapshot",
         "jwt-cfml":"^1.0.0",
         "cbcsrf":"^2.0.0+21"
