@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.5.0
+
+* `Feature` : Upgraded to `cbAuth` @ 5.x
+
 ## 2.4.0
 
 * `Feature` : We now include the `cbcsrf` module to allow for protections of cross site request forgery vectors. Please see all the features included in this module here: https://github.com/coldbox-modules/cbcsrf
