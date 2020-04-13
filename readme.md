@@ -39,11 +39,15 @@ You can then continue to configure the firewall in your `config/Coldbox.cfc`.
 
 ## Settings
 
-Below are the security settings you can use for this module. Remember you must create the `cbsecurity` struct in your `ColdBox.cfc`:
+Below are the security settings you can use for this module. Remember you must create the `cbsecurity` and `cbauth` structs in your `ColdBox.cfc`:
 
 ```js
 moduleSettings = {
 
+cbauth = {
+	// This is the path to your user object that contains the credential validation methods
+	userServiceClass = "entities.user"
+},
 cbsecurity = {
 	// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
 	"invalidAuthenticationEvent"	: "",
