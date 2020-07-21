@@ -581,7 +581,7 @@ component accessors="true" singleton {
 	 * @return { allow:boolean, type:authentication|authorization }
 	 */
 	struct function ruleValidator( required rule, required controller ){
-		return validateSecurity( arguments.rule.roles );
+		return validateSecurity( arguments.rule.permissions );
 	}
 
 	/**
