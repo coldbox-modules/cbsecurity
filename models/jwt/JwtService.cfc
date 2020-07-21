@@ -400,7 +400,7 @@ component accessors="true" singleton {
 		}
 
 		// Verify that this token has not been invalidated in the storage?
-		if ( !getTokenStorage().exists( decodedToken.jti ) && variables.settings.jwt.tokenStorage.enabled ) {
+		if ( variables.settings.jwt.tokenStorage.enabled && !getTokenStorage().exists( decodedToken.jti )  ) {
 			if ( variables.log.canWarn() ) {
 				variables.log.warn( "Token rejected, it was not found in token storage", decodedToken );
 			}
