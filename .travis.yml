@@ -58,8 +58,9 @@ install:
   - box config set endpoints.forgebox.APIToken=$FORGEBOX_API_TOKEN > /dev/null
 
 script:
-  # Set Current Version
+  # Set Current Version and Travis Tag
   - TARGET_VERSION=`cat $TRAVIS_BUILD_DIR/box.json | jq '.version' -r`
+  - TRAVIS_TAG=${TARGET_VERSION}
   - echo "Starting build for ${MODULE_ID} v${TARGET_VERSION}"
   # Replace version so builder can issue it
   - box package set version=@build.version@+@build.number@
@@ -78,7 +79,7 @@ script:
   # Build Project
   - box task run taskfile=build/Build target=run :version=${TARGET_VERSION} :projectName=${MODULE_ID} :buildID=${TRAVIS_BUILD_NUMBER} :branch=${TRAVIS_BRANCH}
   # Cat results for debugging
-  - cat build/results.json
+  #- cat build/results.json
 
 after_failure:
   - cd $TRAVIS_BUILD_DIR/test-harness
@@ -121,9 +122,26 @@ deploy:
     upload-dir: coldbox-modules/$MODULE_ID/$TARGET_VERSION
     acl: public_read
 
+  # Github Release only on Master
+  - provider: releases
+    api_key: ${GITHUB_TOKEN}
+    on:
+      branch:
+        - master
+      condition: "$ENGINE = lucee@5"
+    skip_cleanup: true
+    edge: true
+    file_glob: true
+    file: $TRAVIS_BUILD_DIR/.artifacts/$MODULE_ID/**/*
+    release_notes_file: changelog-latest.md
+    name: v${TRAVIS_TAG}
+    tag_name: v${TRAVIS_TAG}
+    overwrite: true
+
+# Once API Docs and Binaries are deployed to S3 Publish to ForgeBox
 after_deploy:
   # Move to build out artifact
   - cd ${TRAVIS_BUILD_DIR}/.tmp/${MODULE_ID}
   - cat box.json
-  # Only publish once
+  # Only publish once using the lucee matrix
   - if [ ${ENGINE} = 'lucee@5' ]; then box forgebox publish; fi

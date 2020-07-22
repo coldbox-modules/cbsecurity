@@ -33,9 +33,9 @@
         "cbcsrf":"^2.0.0"
     },
     "scripts":{
-        "toMaster":"recipe build/toMaster.boxr",
+        "release":"recipe build/release.boxr",
         "format":"cfformat run handlers/,interceptors/,models/,test-harness/tests/specs",
-        "format:watch":"cfformat watch handlers/,interceptors/,models/,test-harness/tests/specs",
+        "format:watch":"cfformat watch handlers/,interceptors/,models/,test-harness/tests/specs ./.cfformat.json",
         "format:check":"cfformat check handlers/,interceptors/,models/,test-harness/tests/specs"
     }
 }
