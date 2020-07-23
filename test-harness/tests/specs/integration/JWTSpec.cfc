@@ -156,7 +156,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 			// The unique identifier of the token
 			"jti"    : hash( timestamp & userId ),
 			// Get the user scopes for the JWT token
-			"scopes" : [],
+			"scope" : [],
 			"role"   : "admin"
 		};
 
