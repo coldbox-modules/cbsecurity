@@ -39,7 +39,7 @@ component accessors="true" singleton {
 		"iat",
 		"sub",
 		"exp",
-		"scopes"
+		"scope"
 	];
 
 	// Default JWT Settings
@@ -189,7 +189,7 @@ component accessors="true" singleton {
 			// The unique identifier of the token
 			"jti"    : hash( timestamp & arguments.user.getId() ),
 			// Get the user scopes for the JWT token
-			"scopes" : arguments.user.getJwtScopes()
+			"scope" : arguments.user.getJwtScopes().toList(" ")
 		};
 
 		// Append user custom claims with override, they take prescedence
@@ -712,7 +712,7 @@ component accessors="true" singleton {
 			if ( listLen( arguments.permissions ) ) {
 				// Check if the user has the right permissions?
 				results.allow = (
-					tokenHasScopes( arguments.permissions, payload.scopes )
+					tokenHasScopes( arguments.permissions, payload.scope )
 					||
 					variables.cbSecurity
 						.getAuthService()
@@ -731,6 +731,8 @@ component accessors="true" singleton {
 
 	/**
 	 * Verify if the jwt token has the appropriate scopes
+	 * @permission
+	 * @scopes a space delimited string of scopes
 	 */
 	private function tokenHasScopes( required permission, required scopes ){
 		if ( isSimpleValue( arguments.permission ) ) {
@@ -739,7 +741,7 @@ component accessors="true" singleton {
 
 		return arguments.permission
 			.filter( function( item ){
-				return ( scopes.findNoCase( item ) );
+				return ( scopes.listfindNoCase( item, " " ) );
 			} )
 			.len();
 	}
