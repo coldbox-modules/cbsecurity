@@ -96,8 +96,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// Process Module Rules
 		arguments.settings.rules = variables.rulesLoader.normalizeRules( arguments.settings.rules, module );
 
-		// Append them
-		arrayAppend(
+		// prepend them so the don't interfere with MAIN rules
+		arrayPrepend(
 			getProperty( "rules" ),
 			arguments.settings.rules,
 			true
