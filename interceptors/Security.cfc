@@ -97,11 +97,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		arguments.settings.rules = variables.rulesLoader.normalizeRules( arguments.settings.rules, module );
 
 		// prepend them so the don't interfere with MAIN rules
-		arrayPrepend(
-			getProperty( "rules" ),
-			arguments.settings.rules,
-			true
-		);
+		// one by one as I don't see a way to prepend the whole array at once
+		for ( var i = arguments.settings.rules.len(), i >= 1; i-- ){
+			arrayPrepend(
+				getProperty( "rules" ),
+				arguments.settings.rules[i]
+			);
+		}
 
 		// Log it
 		log.info( "+ Registered module (#arguments.module#) with cbSecurity" );
