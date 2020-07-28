@@ -98,7 +98,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// prepend them so the don't interfere with MAIN rules
 		// one by one as I don't see a way to prepend the whole array at once
-		for ( var i = arguments.settings.rules.len(), i >= 1; i-- ){
+		for ( var i = arguments.settings.rules.len(); i >= 1; i-- ){
 			arrayPrepend(
 				getProperty( "rules" ),
 				arguments.settings.rules[i]
