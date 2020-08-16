@@ -12,6 +12,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	property name="rulesLoader"    inject="rulesLoader@cbSecurity";
 	property name="handlerService" inject="coldbox:handlerService";
 	property name="cbSecurity"		inject="@cbSecurity";
+	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
 
 	/**
 	 * The reference to the security validator for this interceptor
@@ -27,6 +28,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Configure the security firewall
 	 */
 	function configure(){
+		variables.onInvalidEventHandlerBean = javacast( "null", "" );
+        if ( len( variables.invalidEventHandler ) ) {
+            variables.onInvalidEventHandlerBean = handlerService.getHandlerBean( variables.invalidEventHandler );
+        }
+		
 		// init the security modules dictionary
 		variables.securityModules = {};
 
@@ -222,6 +228,19 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	){
 		// Get handler bean for the current event
 		var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
+		
+		if ( isInvalidEventHandlerBean( handlerBean ) ) {
+            // ColdBox tries to detect invalid event handler loops by keeping
+            // track of the last invalid event to fire.  If that invalid event
+            // fires twice, it throws a hard exception to prevent infinite loops.
+            // Unfortunately for us, just attempting to get a handler bean
+            // starts the invalid event handling.  Here, if we got the invalid
+            // event handler bean back, we reset the `_lastInvalidEvent` so
+            // ColdBox can handle the invalid event properly.
+            request._lastInvalidEvent = variables.invalidEventHandler;
+            return;
+        }
+		
 		if ( handlerBean.getHandler() == "" ) {
 			return;
 		}
@@ -702,5 +721,18 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		return len( CGI.REMOTE_ADDR ) ? CGI.REMOTE_ADDR : "127.0.0.1";
 	}
+	
+	private boolean function isInvalidEventHandlerBean( required handlerBean ) {
+        if ( isNull( variables.onInvalidEventHandlerBean ) ) {
+            return false;
+        }
+
+        return (
+            variables.onInvalidEventHandlerBean.getInvocationPath() == arguments.handlerBean.getInvocationPath() &&
+            variables.onInvalidEventHandlerBean.getHandler() == arguments.handlerBean.getHandler() &&
+            variables.onInvalidEventHandlerBean.getMethod() == arguments.handlerBean.getMethod() &&
+            variables.onInvalidEventHandlerBean.getModule() == arguments.handlerBean.getModule()
+        );
+    }
 
 }
