@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright since 2016 by Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
@@ -227,9 +227,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required currentEvent
 	){
 		// Get handler bean for the current event
-		var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
+        var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
 		
-		if ( isInvalidEventHandlerBean( handlerBean ) ) {
+		if ( 
+            listGetAt( controller.getColdboxSettings().version, 1, "." ) == 5 && 
+            isInvalidEventHandlerBean( handlerBean ) 
+        ) {
             // ColdBox tries to detect invalid event handler loops by keeping
             // track of the last invalid event to fire.  If that invalid event
             // fires twice, it throws a hard exception to prevent infinite loops.
