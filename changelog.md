@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## [2.7.0] => 2020-SEP-
+
+### Fixed
+
+* Not loading rules by source file detection due to invalid setting check
+
+----
+
 ## [2.6.0] => 2020-JUL-22
 
 ### Added
