@@ -133,7 +133,7 @@ deploy:
     edge: true
     file_glob: true
     file: $TRAVIS_BUILD_DIR/.artifacts/$MODULE_ID/**/*
-    release_notes_file: changelog-latest.md
+    release_notes_file: $TRAVIS_BUILD_DIR/changelog-latest.md
     name: v${TRAVIS_TAG}
     tag_name: v${TRAVIS_TAG}
     overwrite: true
