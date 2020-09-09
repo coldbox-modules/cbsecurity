@@ -51,6 +51,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Load up the validator
 		registerValidator( getInstance( getProperty( "validator" ) ) );
+
+		// Coldbox version 5 (and lower) needs a little extra invalid event handler checking. 
+		variables.enableInvalidHandlerCheck = ( listGetAt( controller.getColdboxSettings().version, 1, "." ) <= 5 );
 	}
 
 	/**
@@ -229,8 +232,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// Get handler bean for the current event
         var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
 		
+		// Are we running Coldbox 5 or older?
+		// is an onInvalidHandlerBean configured?
+		// is the current handlerBean the configured onInvalidEventHandlerBean?
 		if ( 
-            listGetAt( controller.getColdboxSettings().version, 1, "." ) == 5 && 
+            variables.enableInvalidHandlerCheck && 
+            !isNull( variables.onInvalidEventHandlerBean ) && 
             isInvalidEventHandlerBean( handlerBean ) 
         ) {
             // ColdBox tries to detect invalid event handler loops by keeping
@@ -725,11 +732,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		return len( CGI.REMOTE_ADDR ) ? CGI.REMOTE_ADDR : "127.0.0.1";
 	}
 	
+	/**
+	 * Returns true of the passed handlerBean matches Coldbox's configured invalid event handler.
+	 *
+	 * @handlerBean the current handler bean to check against
+	 */
 	private boolean function isInvalidEventHandlerBean( required handlerBean ) {
-        if ( isNull( variables.onInvalidEventHandlerBean ) ) {
-            return false;
-        }
-
         return (
             variables.onInvalidEventHandlerBean.getInvocationPath() == arguments.handlerBean.getInvocationPath() &&
             variables.onInvalidEventHandlerBean.getHandler() == arguments.handlerBean.getHandler() &&
