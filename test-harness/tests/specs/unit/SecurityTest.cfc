@@ -13,8 +13,14 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				// setup properties
 				setup();
 				variables.wirebox = new coldbox.system.ioc.Injector();
-				mockController.$( "getAppHash", hash( "appHash" ) ).$( "getAppRootPath", expandPath( "/root" ) );
-				security = interceptor;
+                mockController
+                    .$( "getAppHash", hash( "appHash" ) )
+                    .$( "getAppRootPath", expandPath( "/root" ) )
+                    .$( "getColdboxSettings", {
+                        "version": "6.0.0"
+                    }, false  );
+                security = interceptor;
+                security.setInvalidEventHandler( '' );
 				settings = {
 					// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
 					"invalidAuthenticationEvent"  : "",
@@ -131,7 +137,32 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				expect( function(){
 					security.configure();
 				} ).toThrow( "Security.ValidatorMethodException" );
-			} );
+            } );
+
+            it( "does not enable invalid event handler processing on Coldbox versions 6+", function() {
+                security.setProperties( settings );
+				security
+					.$( "getInstance" )
+					.$args( settings.validator )
+					.$results( wirebox.getInstance( settings.validator ) );
+				security.configure();
+				expect( security.$getProperty( "enableInvalidHandlerCheck" ) ).toBeFalse();
+            } );
+            
+            it( "enables invalid event handler processing on Coldbox versions prior to 6", function() {
+                
+                mockController.$( "getColdboxSettings", {
+                    "version": "5.0.0"
+                }, false  );
+                
+                security.setProperties( settings );
+				security
+					.$( "getInstance" )
+					.$args( settings.validator )
+					.$results( wirebox.getInstance( settings.validator ) );
+				security.configure();
+				expect( security.$getProperty( "enableInvalidHandlerCheck" ) ).toBeTrue();
+            } );   
 
 			describe( "It can load many types of rules", function(){
 				beforeEach( function(currentSpec){
@@ -173,7 +204,8 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
 				} );
-			} );
+            } );
+            
 		} );
 	}
 

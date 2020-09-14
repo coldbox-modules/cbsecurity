@@ -39,7 +39,7 @@ component accessors="true" singleton {
 		"iat",
 		"sub",
 		"exp",
-		"scopes"
+		"scope"
 	];
 
 	// Default JWT Settings
@@ -189,7 +189,7 @@ component accessors="true" singleton {
 			// The unique identifier of the token
 			"jti"    : hash( timestamp & arguments.user.getId() ),
 			// Get the user scopes for the JWT token
-			"scopes" : arguments.user.getJwtScopes()
+			"scope" : arguments.user.getJwtScopes().toList(" ")
 		};
 
 		// Append user custom claims with override, they take prescedence
@@ -247,7 +247,7 @@ component accessors="true" singleton {
 
 		// Verify it
 		if ( isNull( oUser ) || !len( oUser.getId() ) ) {
-			// Announce the creation
+			// Announce the invalid user
 			variables.interceptorService.processState(
 				"cbSecurity_onJWTInvalidUser",
 				{
@@ -270,7 +270,7 @@ component accessors="true" singleton {
 			.getContext()
 			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
-		// Announce the creation
+		// Announce the valid authentication
 		variables.interceptorService.processState(
 			"cbSecurity_onJWTValidAuthentication",
 			{
@@ -297,7 +297,7 @@ component accessors="true" singleton {
 		// Invalidate the token, decode it first and use the jti claim
 		var results = getTokenStorage().clear( this.decode( arguments.token ).jti );
 
-		// Announce the creation
+		// Announce the token invalidation
 		variables.interceptorService.processState(
 			"cbSecurity_onJWTInvalidation",
 			{ token : arguments.token }
@@ -364,7 +364,7 @@ component accessors="true" singleton {
 					);
 				}
 
-				// Announce the creation
+				// Announce the invalid claims
 				variables.interceptorService.processState(
 					"cbSecurity_onJWTInvalidClaims",
 					{
@@ -387,7 +387,7 @@ component accessors="true" singleton {
 				variables.log.warn( "Token rejected, it has expired", decodedToken );
 			}
 
-			// Announce the creation
+			// Announce the token expiration
 			variables.interceptorService.processState(
 				"cbSecurity_onJWTExpiration",
 				{
@@ -400,12 +400,12 @@ component accessors="true" singleton {
 		}
 
 		// Verify that this token has not been invalidated in the storage?
-		if ( !getTokenStorage().exists( decodedToken.jti ) ) {
+		if ( variables.settings.jwt.tokenStorage.enabled && !getTokenStorage().exists( decodedToken.jti )  ) {
 			if ( variables.log.canWarn() ) {
 				variables.log.warn( "Token rejected, it was not found in token storage", decodedToken );
 			}
 
-			// Announce the creation
+			// Announce the rejection, token not found in storage
 			variables.interceptorService.processState(
 				"cbSecurity_onJWTStorageRejection",
 				{
@@ -424,7 +424,7 @@ component accessors="true" singleton {
 		// Log
 		if ( variables.log.canDebug() ) {
 			variables.log.debug(
-				"Token is valid, not expired and found in storage, inflating to PRC",
+				"Token is valid, not expired and found in (enabled) storage, inflating to PRC",
 				decodedToken
 			);
 		}
@@ -435,7 +435,7 @@ component accessors="true" singleton {
 			.setPrivateValue( "jwt_token", jwtToken )
 			.setPrivateValue( "jwt_payload", decodedToken );
 
-		// Announce the creation
+		// Announce the valid parsing
 		variables.interceptorService.processState(
 			"cbSecurity_onJWTValidParsing",
 			{
@@ -581,7 +581,7 @@ component accessors="true" singleton {
 	 * @return { allow:boolean, type:authentication|authorization }
 	 */
 	struct function ruleValidator( required rule, required controller ){
-		return validateSecurity( arguments.rule.roles );
+		return validateSecurity( arguments.rule.permissions );
 	}
 
 	/**
@@ -712,7 +712,7 @@ component accessors="true" singleton {
 			if ( listLen( arguments.permissions ) ) {
 				// Check if the user has the right permissions?
 				results.allow = (
-					tokenHasScopes( arguments.permissions, payload.scopes )
+					tokenHasScopes( arguments.permissions, payload.scope )
 					||
 					variables.cbSecurity
 						.getAuthService()
@@ -731,6 +731,8 @@ component accessors="true" singleton {
 
 	/**
 	 * Verify if the jwt token has the appropriate scopes
+	 * @permission
+	 * @scopes a space delimited string of scopes
 	 */
 	private function tokenHasScopes( required permission, required scopes ){
 		if ( isSimpleValue( arguments.permission ) ) {
@@ -739,7 +741,7 @@ component accessors="true" singleton {
 
 		return arguments.permission
 			.filter( function( item ){
-				return ( scopes.findNoCase( item ) );
+				return ( scopes.listfindNoCase( item, " " ) );
 			} )
 			.len();
 	}

@@ -1,23 +1,71 @@
-# CHANGELOG
+# Changelog
 
-## 2.5.0
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+----
+
+## [2.7.0] => 2020-SEP-14
+
+### Added
+
+* Contributed module rules are now pre-pended instead of appended. (@wpdebruin)
+
+
+### Fixed
+
+* Not loading rules by source file detection due to invalid setting check
+* Don't trigger ColdBox's invalid event looping protection. It also auto-senses between ColdBox 6 and 5 (@homestar9)
+* Fixed token scopes according to JWT spec, it is called `scope` and it is a space separated list. This doesn't change the User interface for it. (@wpdebruin)
+* Update token storages so no token rejection anymore when storage is not enabled. (@wpdebruin)
+
+
+----
+
+## [2.6.0] => 2020-JUL-22
+
+### Added
+
+* New build layout based on new module layout
+* Auto github publishing release notes
+* More formatting goodness and watcher
+
+### Fixed
+
+* JWT Validator now passing `permissions` instead of `roles`
+* Token Storage checking was being done even if disabled
+
+
+----
+
+## [2.5.0] => 2020-APR-03
 
 * `Feature` : Upgraded to `cbAuth` @ 5.x
 
-## 2.4.0
+----
+
+## [2.4.0] => 2020-APR-02
 
 * `Feature` : We now include the `cbcsrf` module to allow for protections of cross site request forgery vectors. Please see all the features included in this module here: https://github.com/coldbox-modules/cbcsrf
 
-## 2.3.0
+----
+
+## [2.3.0] => 2020-MAR-30
 
 * `Feature` Introduction of the cbSecurity model: https://coldbox-security.ortusbooks.com/intro/release-history/whats-new-with-2.3.0
 * `Task` : Cfformatting everywhere
 
-## 2.2.1
+----
+
+## [2.2.1] => 2020-FEB-26
 
 * `bug` : `verify` should pass `verify=true` into the jwt library for proper verification
 
-## 2.2.0
+----
+
+## [2.2.0] => 2020-FEB-12
 
 * `Feature` : Migrated from the jwt to the `jwtcfml` (https://forgebox.io/view/jwt-cfml) library to expand encoding/decoding capabilities to support `RS` and `ES` algorithms:
   * HS256
@@ -37,11 +85,15 @@
 * `Improve` : More cfformating goodness!
 * `Bug` : Invalidation of tokens was not happening due to not using the actual key for the storage
 
-## 2.1.0
+----
+
+## [2.1.0] => 2019-OCT-02
 
 * `Feature` : cbauth upgraded to version 4
 
-## 2.0.0
+----
+
+## [2.0.0] => 2019-SEP-25
 
 ### New Features
 
@@ -118,33 +170,33 @@ settings = {
   * If the `filepath` has `json` or `xml` in it, we will use that as the source style
 * `rulesFile` removed you can now use the `rules` setting.
 
-## 1.3.0
+## [1.3.0]
 
 * Travis integration
 * DocBox updates
 * Build process updates
 
-## 1.2.0
+## [1.2.0]
 
 * Updated documentation
 * Updated doc references
 * New docs build process
 * Update root builder dependencies
 
-## 1.1.0
+## [1.1.0]
 
 * Updated documentation
 * Ability for interceptor to auto-register via new `cbsecurity` settings in master config.
 
-## 1.0.2
+## [1.0.2]
 
 * Removed `getPlugin()` deprecated calls to new approach.
 * https://ortussolutions.atlassian.net/browse/CCM-26 cbsecurity ocm rules not ColdBox 4 compat 
 
-## 1.0.1
+## [1.0.1]
 
 * Fixed missing `$throw()` method to native `throw()` method.
 
-## 1.0.0
+## [1.0.0]
 
 * Created first module version

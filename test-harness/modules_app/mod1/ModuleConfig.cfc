@@ -34,8 +34,8 @@ component {
 				"invalidAuthorizationEvent"  : "mod1:secure.auth",
 				// You can define your security rules here or externally via a source
 				"rules"                      : [
-					{ "secureList" : "mod1:home" },
-					{ "secureList" : "mod1/modOverride", "match" : "url", "action" : "override" }
+					{ "secureList" : "mod1/modOverride", "match" : "url", "action" : "override" },
+					{ "secureList" : "mod1:home" }
 				]
 			}
 		};
