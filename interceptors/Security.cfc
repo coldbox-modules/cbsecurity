@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Copyright since 2016 by Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
@@ -12,6 +12,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	property name="rulesLoader"    inject="rulesLoader@cbSecurity";
 	property name="handlerService" inject="coldbox:handlerService";
 	property name="cbSecurity"		inject="@cbSecurity";
+	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
 
 	/**
 	 * The reference to the security validator for this interceptor
@@ -27,6 +28,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Configure the security firewall
 	 */
 	function configure(){
+		variables.onInvalidEventHandlerBean = javacast( "null", "" );
+        if ( len( variables.invalidEventHandler ) ) {
+            variables.onInvalidEventHandlerBean = handlerService.getHandlerBean( variables.invalidEventHandler );
+        }
+		
 		// init the security modules dictionary
 		variables.securityModules = {};
 
@@ -45,6 +51,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Load up the validator
 		registerValidator( getInstance( getProperty( "validator" ) ) );
+
+		// Coldbox version 5 (and lower) needs a little extra invalid event handler checking. 
+		variables.enableInvalidHandlerCheck = ( listGetAt( controller.getColdboxSettings().version, 1, "." ) <= 5 );
 	}
 
 	/**
@@ -96,12 +105,14 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// Process Module Rules
 		arguments.settings.rules = variables.rulesLoader.normalizeRules( arguments.settings.rules, module );
 
-		// Append them
-		arrayAppend(
-			getProperty( "rules" ),
-			arguments.settings.rules,
-			true
-		);
+		// prepend them so the don't interfere with MAIN rules
+		// one by one as I don't see a way to prepend the whole array at once
+		for ( var i = arguments.settings.rules.len(); i >= 1; i-- ){
+			arrayPrepend(
+				getProperty( "rules" ),
+				arguments.settings.rules[i]
+			);
+		}
 
 		// Log it
 		log.info( "+ Registered module (#arguments.module#) with cbSecurity" );
@@ -221,7 +232,27 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required currentEvent
 	){
 		// Get handler bean for the current event
-		var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
+        var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
+		
+		// Are we running Coldbox 5 or older?
+		// is an onInvalidHandlerBean configured?
+		// is the current handlerBean the configured onInvalidEventHandlerBean?
+		if ( 
+            variables.enableInvalidHandlerCheck && 
+            !isNull( variables.onInvalidEventHandlerBean ) && 
+            isInvalidEventHandlerBean( handlerBean ) 
+        ) {
+            // ColdBox tries to detect invalid event handler loops by keeping
+            // track of the last invalid event to fire.  If that invalid event
+            // fires twice, it throws a hard exception to prevent infinite loops.
+            // Unfortunately for us, just attempting to get a handler bean
+            // starts the invalid event handling.  Here, if we got the invalid
+            // event handler bean back, we reset the `_lastInvalidEvent` so
+            // ColdBox can handle the invalid event properly.
+            request._lastInvalidEvent = variables.invalidEventHandler;
+            return;
+        }
+		
 		if ( handlerBean.getHandler() == "" ) {
 			return;
 		}
@@ -702,5 +733,19 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		return len( CGI.REMOTE_ADDR ) ? CGI.REMOTE_ADDR : "127.0.0.1";
 	}
+	
+	/**
+	 * Returns true of the passed handlerBean matches Coldbox's configured invalid event handler.
+	 *
+	 * @handlerBean the current handler bean to check against
+	 */
+	private boolean function isInvalidEventHandlerBean( required handlerBean ) {
+        return (
+            variables.onInvalidEventHandlerBean.getInvocationPath() == arguments.handlerBean.getInvocationPath() &&
+            variables.onInvalidEventHandlerBean.getHandler() == arguments.handlerBean.getHandler() &&
+            variables.onInvalidEventHandlerBean.getMethod() == arguments.handlerBean.getMethod() &&
+            variables.onInvalidEventHandlerBean.getModule() == arguments.handlerBean.getModule()
+        );
+    }
 
 }

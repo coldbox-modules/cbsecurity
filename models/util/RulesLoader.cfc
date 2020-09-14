@@ -77,11 +77,11 @@ component accessors="true" singleton {
 					break;
 				}
 				default: {
-					arguments.settings.rulesFile = arguments.settings.rulesSource;
-					if ( findNoCase( "json", arguments.settings.rulesSource ) ) {
+					arguments.settings.rulesFile = arguments.settings.rules;
+					if ( findNoCase( "json", arguments.settings.rulesFile ) ) {
 						arguments.settings.rulesSource = "json";
 					}
-					if ( findNoCase( "xml", arguments.settings.rulesSource ) ) {
+					if ( findNoCase( "xml", arguments.settings.rulesFile ) ) {
 						arguments.settings.rulesSource = "xml";
 					}
 				}
