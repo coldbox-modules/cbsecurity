@@ -159,7 +159,12 @@ component accessors="true" singleton {
 	 * Shortcut function to our authentication services to check if we are logged in
 	 */
 	boolean function isLoggedIn(){
-		return cbSecurity.getAuthService().isLoggedIn();
+		try {
+			authenticate();
+			return true;
+		} catch ( any e ) {
+			return false;
+		}
 	}
 
 	/**
@@ -707,7 +712,7 @@ component accessors="true" singleton {
 		}
 
 		// Are we logged in?
-		if ( variables.cbSecurity.getAuthService().isLoggedIn() ) {
+		if ( isLoggedIn() ) {
 			// Do we have any permissions to validate?
 			if ( listLen( arguments.permissions ) ) {
 				// Check if the user has the right permissions?
