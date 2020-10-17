@@ -145,10 +145,10 @@ component accessors="true" singleton {
 		//store in request scope so getUser() will be immediate valid
 		variables.requestService
 			.getContext()
-			.setValue( variables.settings.jwt.customAuthHeader, myToken )
+			.setValue( variables.settings.jwt.customAuthHeader, myToken );
 
 		// Create it
-		return myToken:
+		return myToken;
 	}
 
 	/**
