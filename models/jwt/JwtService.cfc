@@ -140,8 +140,15 @@ component accessors="true" singleton {
 			.getAuthService()
 			.authenticate( arguments.username, arguments.password );
 
+		var myToken = fromUser( oUser, arguments.customClaims );
+
+		//store in request scope so getUser() will be immediate valid
+		variables.requestService
+			.getContext()
+			.setValue( variables.settings.jwt.customAuthHeader, myToken )
+
 		// Create it
-		return fromUser( oUser, arguments.customClaims );
+		return myToken:
 	}
 
 	/**
