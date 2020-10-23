@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## [2.8.0] =>
+
+### Added
+
+* Added storage of the authenticated user into the `prc` scope when using `attempt()` to be consistent with API calls
+
+----
+
 ## [2.7.0] => 2020-SEP-14
 
 ### Added

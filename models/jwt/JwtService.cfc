@@ -136,11 +136,18 @@ component accessors="true" singleton {
 		required password,
 		struct customClaims = {}
 	){
+		// Authenticate via the auth service wired up
+		// If it fails an exception is thrown
 		var oUser = cbSecurity
 			.getAuthService()
 			.authenticate( arguments.username, arguments.password );
 
-		// Create it
+		// Store User in ColdBox data bus
+		variables.requestService
+			.getContext()
+			.setPrivateValue( variables.settings.prcUserVariable, oUser );
+
+		// Create the token and return it
 		return fromUser( oUser, arguments.customClaims );
 	}
 
