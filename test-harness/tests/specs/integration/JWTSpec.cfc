@@ -20,6 +20,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 			beforeEach( function(currentSpec){
 				// Setup as a new ColdBox request for this suite, VERY IMPORTANT. ELSE EVERYTHING LOOKS LIKE THE SAME REQUEST.
 				setup();
+				// Get the Service
+				variables.jwtService = getInstance( "jwtService@cbSecurity" );
 			} );
 
 			given( "no jwt token and accessing a secure api call", function(){
@@ -87,11 +89,11 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				} );
 			} );
 
-			given( "an valid jwt token but it is not in the storage", function(){
+			given( "a valid jwt token but it is not in the storage", function(){
 				then( "it should block with no authorization", function(){
-					var thisToken = getInstance( "jwtService@cbSecurity" ).attempt( "test", "test" );
+					var thisToken = variables.jwtService.attempt( "test", "test" );
 
-					getInstance( "jwtService@cbSecurity" )
+					variables.jwtService
 						.getTokenStorage()
 						.clearAll();
 					getRequestContext().setValue( "x-auth-token", thisToken );
@@ -110,7 +112,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					var thisToken = getInvalidUserToken();
 					getRequestContext().setValue( "x-auth-token", thisToken.token );
 
-					getInstance( "jwtService@cbSecurity" )
+					variables.jwtService
 						.getTokenStorage()
 						.set(
 							key 		= thisToken.payload.jti,
@@ -130,20 +132,34 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 			given( "a valid jwt token in all senses", function(){
 				then( "it should allow the call", function(){
-					var thisToken = getInstance( "jwtService@cbSecurity" ).attempt( "test", "test" );
+					var thisToken = variables.jwtService.attempt( "test", "test" );
 					getRequestContext().setValue( "x-auth-token", thisToken );
 
 					var event = execute( route = "/api/secure", renderResults = true );
 					expect( event.getCurrentEvent() ).toBe( "api:secure.index" );
 				} );
 			} );
+
+
+			story( "I want to invalidate all tokens in the storage", function(){
+				given( "a valid jwt token and a invalidate all is issued", function(){
+					then( "the storage should be empty", function(){
+						var thisToken = variables.jwtService.attempt( "test", "test" );
+						expect( variables.jwtService.getTokenStorage().size() ).toBeGT( 0 );
+
+						variables.jwtService.invalidateAll();
+						expect( variables.jwtService.getTokenStorage().size() ).toBe( 0 );
+					} );
+				} );
+			} );
+
 		} );
 	}
 
 	private function getInvalidUserToken(){
 		var timestamp = now();
 		var userId    = 123;
-		var service   = getInstance( "jwtService@cbsecurity" );
+		var service   = variables.jwtService;
 		var payload   = {
 			// Issuing authority
 			"iss"    : service.getSettings().jwt.issuer,

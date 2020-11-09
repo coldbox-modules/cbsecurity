@@ -138,7 +138,7 @@ component accessors="true" singleton {
 	){
 		// Authenticate via the auth service wired up
 		// If it fails an exception is thrown
-		var oUser = cbSecurity
+		var oUser = variables.cbSecurity
 			.getAuthService()
 			.authenticate( arguments.username, arguments.password );
 
@@ -159,14 +159,14 @@ component accessors="true" singleton {
 	 */
 	function logout(){
 		invalidate( this.getToken() );
-		cbSecurity.getAuthService().logout();
+		variables.cbSecurity.getAuthService().logout();
 	}
 
 	/**
 	 * Shortcut function to our authentication services to check if we are logged in
 	 */
 	boolean function isLoggedIn(){
-		return cbSecurity.getAuthService().isLoggedIn();
+		return variables.cbSecurity.getAuthService().isLoggedIn();
 	}
 
 	/**
@@ -314,6 +314,29 @@ component accessors="true" singleton {
 	}
 
 	/**
+	 * Invalidates all tokens in the connected storage provider
+	 *
+	 * @async Run the clearing asynchronously or not, default is false
+	 */
+	JwtService function invalidateAll( boolean async=false ){
+		if ( variables.log.canInfo() ) {
+			variables.log.info( "Token invalidation request issued for all tokens" );
+		}
+
+		// Clear all via storage
+		getTokenStorage().clearAll( arguments.async );
+
+		// Announce the token invalidation
+		variables.interceptorService.processState( "cbSecurity_onJWTInvalidateAllTokens" );
+
+		if ( variables.log.canInfo() ) {
+			variables.log.info( "All tokens cleared via token storage clear all" );
+		}
+
+		return this;
+	}
+
+	/**
 	 * Verifies if the passed in token exists in the storage provider
 	 *
 	 * @token The token to check
@@ -328,9 +351,11 @@ component accessors="true" singleton {
 
 	/**
 	 * Try's to get a jwt token from the authorization header or the custom header
-	 * defined in the configuration. If it is a valid token and it decodes we will then
-	 * continue to validat the subject it represents.  Once those are satisfied, then it will
+	 * defined in the configuration or passed in by you. If it is a valid token and it decodes we will then
+	 * continue to validate the subject it represents.  Once those are satisfied, then it will
 	 * store it in the `prc` as `prc.jwt_token` and the payload as `prc.jwt_payload`.
+	 *
+	 * @token The token to parse and validate, if not passed we call the discoverToken() method for you.
 	 *
 	 * @throws TokenExpiredException If the token has expired or no longer in the storage (invalidated)
 	 * @throws TokenInvalidException If the token doesn't verify decoding
@@ -338,23 +363,22 @@ component accessors="true" singleton {
 	 *
 	 * @returns The payload for convenience
 	 */
-	struct function parseToken(){
-		var jwtToken = discoverToken();
+	struct function parseToken( string token = discoverToken() ){
 
 		// Did we find an incoming token
-		if ( !len( jwtToken ) ) {
+		if ( !len( arguments.token ) ) {
 			if ( variables.log.canDebug() ) {
-				variables.log.debug( "Token not found anywhere" );
+				variables.log.debug( "Token empty or not found anywhere (headers, url, form)" );
 			}
 
 			throw(
-				message = "Token not found in authorization header or the custom header or the request collection",
+				message = "Token not found in authorization header or the custom header or the request collection or not passed in",
 				type    = "TokenNotFoundException"
 			);
 		}
 
 		// Decode it
-		var decodedToken  = decode( jwtToken );
+		var decodedToken  = decode( arguments.token );
 		var decodedClaims = decodedToken.keyArray();
 
 		// Verify the required claims
@@ -375,7 +399,7 @@ component accessors="true" singleton {
 				variables.interceptorService.processState(
 					"cbSecurity_onJWTInvalidClaims",
 					{
-						token   : jwtToken,
+						token   : arguments.token,
 						payload : decodedToken
 					}
 				);
@@ -398,7 +422,7 @@ component accessors="true" singleton {
 			variables.interceptorService.processState(
 				"cbSecurity_onJWTExpiration",
 				{
-					token   : jwtToken,
+					token   : arguments.token,
 					payload : decodedToken
 				}
 			);
@@ -416,7 +440,7 @@ component accessors="true" singleton {
 			variables.interceptorService.processState(
 				"cbSecurity_onJWTStorageRejection",
 				{
-					token   : jwtToken,
+					token   : arguments.token,
 					payload : decodedToken
 				}
 			);
@@ -436,22 +460,22 @@ component accessors="true" singleton {
 			);
 		}
 
-		// Store it
+		// Store it on the PRC scope values
 		variables.requestService
 			.getContext()
-			.setPrivateValue( "jwt_token", jwtToken )
+			.setPrivateValue( "jwt_token", arguments.token )
 			.setPrivateValue( "jwt_payload", decodedToken );
 
 		// Announce the valid parsing
 		variables.interceptorService.processState(
 			"cbSecurity_onJWTValidParsing",
 			{
-				token   : jwtToken,
+				token   : arguments.token,
 				payload : decodedToken
 			}
 		);
 
-		// Authenticate the payload
+		// Authenticate the payload, because a token MUST be valid before usage
 		authenticate();
 
 		// Return it
@@ -669,7 +693,12 @@ component accessors="true" singleton {
 	/****************************** PRIVATE ******************************/
 
 	/**
-	 * Try to discover the jwt token from many incoming resources
+	 * Try to discover the jwt token from many incoming resources:
+	 * - The custom auth header: x-auth-token
+	 * - URL/FORM: x-auth-token
+	 * - Authorization Header
+	 *
+	 * @return The discovered token or an empty string
 	 */
 	private string function discoverToken(){
 		var event = variables.requestService.getContext();
