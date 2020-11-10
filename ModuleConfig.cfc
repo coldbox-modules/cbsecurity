@@ -119,7 +119,8 @@ component {
 				"cbSecurity_onJWTInvalidClaims",
 				"cbSecurity_onJWTExpiration",
 				"cbSecurity_onJWTStorageRejection",
-				"cbSecurity_onJWTValidParsing"
+				"cbSecurity_onJWTValidParsing",
+				"cbSecurity_onJWTInvalidateAllTokens"
 			]
 		};
 

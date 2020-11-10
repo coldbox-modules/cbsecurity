@@ -51,7 +51,7 @@ cbauth = {
 cbsecurity = {
 	// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
 	"invalidAuthenticationEvent"	: "",
-	// Default Auhtentication Action: override or redirect when a user has not logged in
+	// Default Authentication Action: override or redirect when a user has not logged in
 	"defaultAuthenticationAction"	: "redirect",
 	// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
 	"invalidAuthorizationEvent"		: "",
@@ -134,7 +134,7 @@ Using the default configuration, this module will register the `Security` interc
 
 The interceptor will intercept all calls to your application via the `preProcess()` interception point.  Each request will then be validated against any registered security rules and then validated against any handler/action security annotations (if active) via a Security Validator.  Also, if the request is made to a module, each module has the capability to have it's own separate validator apart from the global one.
 
-> **Info** You can deactive annotation driven security via the `handlerAnnotationSecurity` setting.
+> **Info** You can deactivate annotation driven security via the `handlerAnnotationSecurity` setting.
 
 ### How does validation happen?
 
@@ -327,7 +327,7 @@ component{
 
 ### Authorization Context
 
-You can also give the annotation some value, which can be anything you like: A list of roles, a role, a list of permissions, metadata, etc.  Whatever it is, this is the **authorization context** and the security validator must be able to not only authenticate but authorize the context or an invalid authorization will occurr.
+You can also give the annotation some value, which can be anything you like: A list of roles, a role, a list of permissions, metadata, etc.  Whatever it is, this is the **authorization context** and the security validator must be able to not only authenticate but authorize the context or an invalid authorization will occur.
 
 ```js
 // Secure this handler
@@ -417,7 +417,7 @@ private function permissionValidator( permissions, controller, rule ){
 
 ## Interceptions
 
-When invalid access or authorizations occurr the interceptor will announce the following events:
+When invalid access or authorizations occur the interceptor will announce the following events:
 
 - `cbSecurity_onInvalidAuthentication`
 - `cbSecurity_onInvalidAuthorization`

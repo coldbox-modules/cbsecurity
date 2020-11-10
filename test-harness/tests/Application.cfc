@@ -32,12 +32,15 @@ component {
 
 	// request start
 	public boolean function onRequestStart( String targetPage ){
-		return true;
-	}
 
-	function onRequestEnd(){
-		structDelete( application, "wirebox" );
+		// Cleanup
+		if( !isNull( application.cbController ) ){
+			application.cbController.getLoaderService().processShutdown();
+		}
 		structDelete( application, "cbController" );
+		structDelete( application, "wirebox" );
+
+		return true;
 	}
 
 }
