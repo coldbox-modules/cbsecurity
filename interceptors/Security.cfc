@@ -99,11 +99,19 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		param arguments.settings.defaultAuthorizationAction  = "";
 		param arguments.settings.validator                   = "";
 
+		// Verify setting configurations
+		variables.rulesLoader.rulesSourceChecks( arguments.settings );
+
 		// Store configuration in this firewall
 		variables.securityModules[ arguments.module ] = arguments.settings;
 
 		// Process Module Rules
 		arguments.settings.rules = variables.rulesLoader.normalizeRules( arguments.settings.rules, module );
+
+		// Load Rules if we have a ruleSource
+		if ( arguments.settings.rulesSource.len() ) {
+			arguments.settings.rules = variables.rulesLoader.loadRules( arguments.settings );
+		}
 
 		// prepend them so the don't interfere with MAIN rules
 		// one by one as I don't see a way to prepend the whole array at once
