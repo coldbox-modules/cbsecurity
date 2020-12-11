@@ -204,7 +204,55 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
 				} );
-            } );
+			} );
+			
+			describe( "module setting load", function() {
+				beforeEach( function(currentSpec){
+					settings.rules = [];
+					settings.validator = "tests.resources.security";
+					security.$property( propertyName = "securityModules", mock = {} );
+					security.$property( propertyName = "log", mock = { info : function() {} });
+					security
+						.$( "getInstance" )
+						.$args( settings.validator )
+						.$results( wirebox.getInstance( settings.validator ) );
+					security.setProperties( settings );
+				} );
+
+				it( "can load JSON Rules based on module settings", function(){
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 0 );
+					var source = expandPath( "/tests/resources/security.json.cfm" );
+					mockController.$( "locateFilePath", source );
+
+					// initiate cbSecurity's module registration rule parsing
+					security.registerModule( "myTestModule", { rules : source } );
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 2 );
+				} );
+
+				it( "can load XML Rules based on module settings", function(){
+					var source   = expandPath( "/tests/resources/security.xml.cfm" );
+					mockController.$( "locateFilePath", source );
+
+					// initiate cbSecurity's module registration rule parsing
+					security.registerModule( "myTestModule", { rules : source } );
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 3 );
+				} );
+
+				it( "can load model Rules based on module settings", function(){
+					var moduleSettings = {
+						rules           : "model",
+						rulesModel      : "tests.resources.security",
+						rulesModelMethod: "getSecurityRules"
+					};
+
+					// initiate cbSecurity's module registration rule parsing
+					security.registerModule( "myTestModule", moduleSettings );
+
+					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
+				} );
+			});
             
 		} );
 	}

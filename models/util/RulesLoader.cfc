@@ -63,6 +63,7 @@ component accessors="true" singleton {
 	 */
 	function rulesSourceChecks( required settings ){
 		param arguments.settings.rulesSource = "";
+		param arguments.settings.rules = [];
 
 		// Auto detect rules source
 		if ( isSimpleValue( arguments.settings.rules ) ) {

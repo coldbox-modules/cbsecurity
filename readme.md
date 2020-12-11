@@ -433,7 +433,7 @@ You will receive the following data in the `interceptData` struct:
 
 ## Security Visualizer
 
-This module also ships with a security visualizer that will document all your security rules and your settings in a nice panel.  In order to activate it you must add the `enableSecurityVisualizer` setting to your config and mark it as `true`.  Once enabled you can navigate to: `/cbsecurity` and you will be presentd with the visualizer.
+This module also ships with a security visualizer that will document all your security rules and your settings in a nice panel.  In order to activate it you must add the `enableSecurityVisualizer` setting to your config and mark it as `true`.  Once enabled you can navigate to: `/cbsecurity` and you will be presented with the visualizer.
 
 > **Important** The visualizer is disabled by default and if it detects an environment of production, it will disable itself.
 

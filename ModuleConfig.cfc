@@ -110,7 +110,7 @@ component {
 			customInterceptionPoints = [
 				// Validator Events
 				"cbSecurity_onInvalidAuthentication",
-				"cbSecurity_onInvalidAuhtorization",
+				"cbSecurity_onInvalidAuthorization",
 				// JWT Events
 				"cbSecurity_onJWTCreation",
 				"cbSecurity_onJWTInvalidation",

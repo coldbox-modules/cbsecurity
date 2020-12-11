@@ -166,6 +166,15 @@ component accessors="true" singleton {
 	 * Shortcut function to our authentication services to check if we are logged in
 	 */
 	boolean function isLoggedIn(){
+		// We try to authenticate because we need the JWT to be validated for the request
+		// There are ocassions where the user could have logged out but the token is still active
+		// Or the inverse, where there is no more token passed and user still logged in in session.
+		try{
+			authenticate();
+		} catch( any e ){
+			return false;
+		}
+
 		return variables.cbSecurity.getAuthService().isLoggedIn();
 	}
 
