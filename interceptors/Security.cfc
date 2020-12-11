@@ -460,7 +460,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			variables.validator = arguments.validator;
 		} else {
 			throw(
-				message = "Validator object does not have a 'userValidator()' and `annotationValidator()' methods. I can only register objects with these interface methods.",
+				message = "Validator object requires either a 'ruleValidator()' or `annotationValidator()' method. I can only register objects with these interface methods.",
 				type    = "Security.ValidatorMethodException"
 			);
 		}
