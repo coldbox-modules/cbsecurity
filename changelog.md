@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* The `isLoggedIn()` method now makes sure that a jwt is in place and valid, before determining if you are logged in or not.
 * Migrated all automated tests to `focal` and `mysql8` in preparation for latest updates
 * Add support for JSON/XML/model rules source when loading rules from modules.  Each module can now load rules not only inline but from the documented external sources.
 * Ensure non-configured `rules` default to empty array
