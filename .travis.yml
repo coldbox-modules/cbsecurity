@@ -1,4 +1,6 @@
 language: java
+os: "linux"
+dist: focal
 
 notifications:
   slack:
@@ -18,16 +20,8 @@ branches:
   - development
   - master
 
-dist: trusty
-
-sudo: required
-
-addons:
-  apt:
-    packages:
-    - mysql-server-5.6
-    - mysql-client-core-5.6
-    - mysql-client-5.6
+services:
+  - mysql
 
 before_install:
   # CommandBox Keys
@@ -48,6 +42,10 @@ before_script:
   - printf "DB_DATABASE=cbsecurity\n" >> test-harness/.env
   - printf "DB_USER=root\n" >> test-harness/.env
   - printf "DB_PASSWORD=\n" >> test-harness/.env
+  - printf "DB_BUNDLEVERSION=8.0.19\n" >> test-harness/.env
+  - printf "DB_BUNDLENAME=com.mysql.cj\n" >> test-harness/.env
+  # MySQL 8
+  - printf "DB_CLASS=com.mysql.cj.jdbc.Driver\n" >> test-harness/.env
 
 install:
   # Install Commandbox
