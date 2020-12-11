@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## [2.10.0] => 2020-DEC-
+
+### Added
+
+* Moved the registration of the validator from the `configure()` to the `afterAspectsLoad()` interception point to allow for modules to declare the validator if needed.
+
+----
+
 ## [2.9.0] => 2020-DEC-11
 
 ### Fixed

@@ -32,7 +32,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
         if ( len( variables.invalidEventHandler ) ) {
             variables.onInvalidEventHandlerBean = handlerService.getHandlerBean( variables.invalidEventHandler );
         }
-		
+
 		// init the security modules dictionary
 		variables.securityModules = {};
 
@@ -49,10 +49,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			setProperty( "rules", variables.rulesLoader.loadRules( getProperties() ) );
 		}
 
-		// Load up the validator
-		registerValidator( getInstance( getProperty( "validator" ) ) );
-
-		// Coldbox version 5 (and lower) needs a little extra invalid event handler checking. 
+		// Coldbox version 5 (and lower) needs a little extra invalid event handler checking.
 		variables.enableInvalidHandlerCheck = ( listGetAt( controller.getColdboxSettings().version, 1, "." ) <= 5 );
 	}
 
@@ -66,6 +63,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		prc,
 		buffer
 	){
+
+		// Register the validator
+		registerValidator( getInstance( getProperty( "validator" ) ) );
+
 		// Register cbSecurity modules so we can incorporate them.
 		controller
 			.getSetting( "modules" )
@@ -241,14 +242,14 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	){
 		// Get handler bean for the current event
         var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
-		
+
 		// Are we running Coldbox 5 or older?
 		// is an onInvalidHandlerBean configured?
 		// is the current handlerBean the configured onInvalidEventHandlerBean?
-		if ( 
-            variables.enableInvalidHandlerCheck && 
-            !isNull( variables.onInvalidEventHandlerBean ) && 
-            isInvalidEventHandlerBean( handlerBean ) 
+		if (
+            variables.enableInvalidHandlerCheck &&
+            !isNull( variables.onInvalidEventHandlerBean ) &&
+            isInvalidEventHandlerBean( handlerBean )
         ) {
             // ColdBox tries to detect invalid event handler loops by keeping
             // track of the last invalid event to fire.  If that invalid event
@@ -260,7 +261,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
             request._lastInvalidEvent = variables.invalidEventHandler;
             return;
         }
-		
+
 		if ( handlerBean.getHandler() == "" ) {
 			return;
 		}
@@ -741,7 +742,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		return len( CGI.REMOTE_ADDR ) ? CGI.REMOTE_ADDR : "127.0.0.1";
 	}
-	
+
 	/**
 	 * Returns true of the passed handlerBean matches Coldbox's configured invalid event handler.
 	 *
