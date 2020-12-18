@@ -8,7 +8,7 @@
 component singleton {
 
 	// Injection
-	property name="cbauth" inject="authenticationService@cbauth";
+	property name="cbSecurity" inject="CBSecurity@cbSecurity";
 
 	/**
 	 * This function is called once an incoming event matches a security rule.
@@ -54,10 +54,10 @@ component singleton {
 		};
 
 		// Are we logged in?
-		if ( variables.cbauth.isLoggedIn() ) {
+		if ( variables.cbSecurity.getAuthService().isLoggedIn() ) {
 			// Do we have any permissions?
 			if ( listLen( arguments.permissions ) ) {
-				results.allow = variables.cbauth.getUser().hasPermission( arguments.permissions );
+				results.allow = variables.cbSecurity.getAuthService().getUser().hasPermission( arguments.permissions );
 				results.type  = "authorization";
 			} else {
 				// We are satisfied!

@@ -18,7 +18,13 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
                     .$( "getAppRootPath", expandPath( "/root" ) )
                     .$( "getColdboxSettings", {
                         "version": "6.0.0"
-                    }, false  );
+					}, false  );
+					
+				mockController
+					.$( "getSetting" )
+					.$args( "modules" )
+					.$results( [] );
+
                 security = interceptor;
                 security.setInvalidEventHandler( '' );
 				settings = {
@@ -114,7 +120,8 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 					.$args( settings.validator )
 					.$results( wirebox.getInstance( settings.validator ) );
 
-				security.configure();
+				security.afterAspectsLoad();
+
 				expect(
 					security.getValidator(
 						createMock( "coldbox.system.web.context.RequestContext" ).$( "getCurrentModule", "" )
@@ -135,7 +142,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 					.$results( createStub() );
 
 				expect( function(){
-					security.configure();
+					security.afterAspectsLoad();
 				} ).toThrow( "Security.ValidatorMethodException" );
             } );
 
