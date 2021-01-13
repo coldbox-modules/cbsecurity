@@ -2,7 +2,7 @@
  * Copyright since 2016 by Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
- * This is the core validator which leverages CF Security via cflogin and cfloginuser
+ * This is the core validator which leverages CBAuth
  * https://helpx.adobe.com/coldfusion/developing-applications/developing-cfml-applications/securing-applications/using-coldfusion-security-tags-and-functions.html
  */
 component singleton {
