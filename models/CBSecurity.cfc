@@ -416,7 +416,7 @@ component singleton accessors="true" {
 	 * @items One, a list or an array
 	 */
 	private function arrayWrap( required items ){
-		return isArray( arguments.items ) ? items : items.listToArray();
+		return isArray( arguments.items ) ? items : listToArray( items );
 	}
 
 }
