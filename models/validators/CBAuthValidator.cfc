@@ -57,7 +57,7 @@ component singleton {
 		if ( variables.cbSecurity.getAuthService().isLoggedIn() ) {
 			// Do we have any permissions?
 			if ( listLen( arguments.permissions ) ) {
-				results.allow = variables.cbSecurity.getAuthService().getUser().hasPermission( arguments.permissions );
+				results.allow = variables.cbSecurity.has( arguments.permissions );
 				results.type  = "authorization";
 			} else {
 				// We are satisfied!
