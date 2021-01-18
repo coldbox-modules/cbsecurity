@@ -556,13 +556,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @return { allow:boolean, type:string(authentication|authorization)}
 	 */
 	private struct function verifySecuredAnnotation( required securedValue, required event ){
-		// If no value, then default it to true
-		if ( !len( arguments.securedValue ) ) {
-			arguments.securedValue = true;
-		}
 
 		// Are we securing?
-		if ( isBoolean( arguments.securedValue ) && !arguments.securedValue ) {
+		if ( len( arguments.securedValue ) && isBoolean( arguments.securedValue ) && !arguments.securedValue ) {
 			return {
 				"allow" : true,
 				"type"  : "authentication"
