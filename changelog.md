@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * Moved the registration of the validator from the `configure()` to the `afterAspectsLoad()` interception point to allow for modules to declare the validator if needed.
+* Moved handler bean to `afterAspectsLoad()` to allow for module based invalid events to work.
 
 ----
 

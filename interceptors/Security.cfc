@@ -28,11 +28,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Configure the security firewall
 	 */
 	function configure(){
-		variables.onInvalidEventHandlerBean = javacast( "null", "" );
-        if ( len( variables.invalidEventHandler ) ) {
-            variables.onInvalidEventHandlerBean = handlerService.getHandlerBean( variables.invalidEventHandler );
-        }
-
 		// init the security modules dictionary
 		variables.securityModules = {};
 
@@ -83,6 +78,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				// Register Module
 				registerModule( arguments.module, arguments.config.settings.cbSecurity );
 			} );
+
+		// Once ColdBox has loaded, load up the invalid event bean
+		variables.onInvalidEventHandlerBean = javacast( "null", "" );
+        if ( len( variables.invalidEventHandler ) ) {
+            variables.onInvalidEventHandlerBean = handlerService.getHandlerBean( variables.invalidEventHandler );
+        }
 	}
 
 	/**
