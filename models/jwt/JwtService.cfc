@@ -759,10 +759,7 @@ component accessors="true" singleton {
 				results.allow = (
 					tokenHasScopes( arguments.permissions, payload.scope )
 					||
-					variables.cbSecurity
-						.getAuthService()
-						.getUser()
-						.hasPermission( arguments.permissions )
+					variables.cbSecurity.has( arguments.permissions )
 				);
 				results.type = "authorization";
 			} else {
