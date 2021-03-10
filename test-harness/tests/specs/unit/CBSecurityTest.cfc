@@ -301,6 +301,22 @@ component extends="coldbox.system.testing.BaseModelTest" model="cbsecurity.model
 						cbsecurity.secureWhen( function( user ){ return false; } );
 					});
 				});
+				describe( "secureSameUser() method", function(){
+					it( "can secure if the logged in user is not the user passed", function(){
+                        mockUser.$( "getId", 1 );
+                        var testUser = createStub().$( "getId", 2 );
+
+						expect( function(){
+							cbsecurity.secureSameUser( testUser );
+						}).toThrow( "NotAuthorized" );
+					});
+
+					it( "can allow if the logged in user is the user passed", function(){
+                        mockUser.$( "getId", 1 );
+                        var testUser = createStub().$( "getId", 1 );
+						cbsecurity.secureSameUser( testUser );
+					});
+				});
 			});
 
 		});

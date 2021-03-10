@@ -258,9 +258,33 @@ component singleton accessors="true" {
 		}
 		if ( results ) {
 			throw( type = "NotAuthorized", message = arguments.message );
+        }
+        return this;
+    }
+
+	/**
+	 * Verifies that the passed in user object must be the same as the authenticated user.
+	 * Equality is done by evaluating the `getid()` method on both objects.
+	 * If the equality check fails, a `NotAuthorized` exception is thrown.
+	 *
+	 * @throws NoUserLoggedIn
+	 * @throws NotAuthorized
+	 *
+	 * @user The user to test for equality
+	 * @message The error message to throw in the exception
+	 */
+	CBSecurity function secureSameUser(
+		required user,
+		message = variables.DEFAULT_ERROR_MESSAGE
+	){
+		if ( !sameUser( arguments.user ) ) {
+			throw(
+				type    = "NotAuthorized",
+				message = arguments.message
+			);
 		}
 		return this;
-	}
+    }
 
 	/**
 	 * Alias proxy if somebody is coming from cbguard, proxies to the secure() method
