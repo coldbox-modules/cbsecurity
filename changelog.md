@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## [2.11.0] => 2021-MAR-10
+
+### Added
+
+* Add a `secureSameUser` method to throw when passed a different user #29 (https://github.com/coldbox-modules/cbsecurity/pull/29)
+
+----
+
 ## [2.10.0] => 2021-FEB-12
 
 ### Added
