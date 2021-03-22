@@ -1,6 +1,6 @@
 {
     "name":"ColdBox Security",
-    "version":"2.12.0",
+    "version":"2.11.1",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbsecurity/@build.version@/cbsecurity-@build.version@.zip",
     "author":"Ortus Solutions.com <info@ortussolutions.com>",
     "slug":"cbsecurity",
@@ -24,7 +24,8 @@
     ],
     "ignore":[
         "**/.*",
-        "tests",
+        "test-harness/**",
+		"modules/**",
         "*/.md"
     ],
     "dependencies":{
