@@ -737,7 +737,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			return headers[ "X-Forwarded-For" ];
 		}
 
-		return len( CGI.REMOTE_ADDR ) ? CGI.REMOTE_ADDR : "127.0.0.1";
+		return len( CGI.REMOTE_ADDR ) ? trim( listFirst( CGI.REMOTE_ADDR ) ) : "127.0.0.1";
 	}
 
 	/**

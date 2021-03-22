@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## [2.11.1] => 2021-MAR-10
+
+### Fixed
+
+* Fix `getRealIP()` to only return originating user's source IP, if the forwarded ip is a list
+
+----
+
 ## [2.11.0] => 2021-MAR-10
 
 ### Added
