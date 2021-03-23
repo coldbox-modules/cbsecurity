@@ -729,15 +729,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	private function getRealIP(){
 		var headers = getHTTPRequestData().headers;
 
-		// Very balanced headers
-		if ( structKeyExists( headers, "x-cluster-client-ip" ) ) {
-			return headers[ "x-cluster-client-ip" ];
+		// When going through a proxy, the IP can be a delimtied list, thus we take the last one in the list
+		
+		if ( structKeyExists( headers, "x-cluster-client-ip" ) ){
+			return trim( listLast( headers[ "x-cluster-client-ip" ] ) );
 		}
-		if ( structKeyExists( headers, "X-Forwarded-For" ) ) {
-			return headers[ "X-Forwarded-For" ];
+		if ( structKeyExists( headers, "X-Forwarded-For" ) ){
+			return trim( listFirst( headers[ "X-Forwarded-For" ] ) );
 		}
 
-		return len( CGI.REMOTE_ADDR ) ? trim( listFirst( CGI.REMOTE_ADDR ) ) : "127.0.0.1";
+		return len( cgi.remote_addr ) ? trim( listFirst( cgi.remote_addr ) ) : "127.0.0.1";
 	}
 
 	/**
