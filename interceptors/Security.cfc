@@ -9,9 +9,9 @@
 component accessors="true" extends="coldbox.system.Interceptor" {
 
 	// DI
-	property name="rulesLoader"    inject="rulesLoader@cbSecurity";
-	property name="handlerService" inject="coldbox:handlerService";
-	property name="cbSecurity"		inject="@cbSecurity";
+	property name="rulesLoader"         inject="rulesLoader@cbSecurity";
+	property name="handlerService"      inject="coldbox:handlerService";
+	property name="cbSecurity"          inject="@cbSecurity";
 	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
 
 	/**
@@ -36,16 +36,28 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// If we added our own rules, then normalize them.
 		if ( arrayLen( getProperty( "rules" ) ) ) {
-			setProperty( "rules", variables.rulesLoader.normalizeRules( getProperty( "rules" ) ) );
+			setProperty(
+				"rules",
+				variables.rulesLoader.normalizeRules( getProperty( "rules" ) )
+			);
 		}
 
 		// Load Rules if we have a ruleSource
 		if ( getProperty( "rulesSource" ).len() ) {
-			setProperty( "rules", variables.rulesLoader.loadRules( getProperties() ) );
+			setProperty(
+				"rules",
+				variables.rulesLoader.loadRules( getProperties() )
+			);
 		}
 
 		// Coldbox version 5 (and lower) needs a little extra invalid event handler checking.
-		variables.enableInvalidHandlerCheck = ( listGetAt( controller.getColdboxSettings().version, 1, "." ) <= 5 );
+		variables.enableInvalidHandlerCheck = (
+			listGetAt(
+				controller.getColdboxSettings().version,
+				1,
+				"."
+			) <= 5
+		);
 	}
 
 	/**
@@ -58,7 +70,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		prc,
 		buffer
 	){
-
 		// Register the validator
 		registerValidator( getInstance( getProperty( "validator" ) ) );
 
@@ -70,20 +81,26 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				return (
 					arguments.config.settings.keyExists( "cbSecurity" )
 					&&
-					!structKeyExists( variables.securityModules, arguments.module )
+					!structKeyExists(
+						variables.securityModules,
+						arguments.module
+					)
 				);
 			} )
 			// Register module settings
 			.each( function( module, config ){
 				// Register Module
-				registerModule( arguments.module, arguments.config.settings.cbSecurity );
+				registerModule(
+					arguments.module,
+					arguments.config.settings.cbSecurity
+				);
 			} );
 
 		// Once ColdBox has loaded, load up the invalid event bean
 		variables.onInvalidEventHandlerBean = javacast( "null", "" );
-        if ( len( variables.invalidEventHandler ) ) {
-            variables.onInvalidEventHandlerBean = handlerService.getHandlerBean( variables.invalidEventHandler );
-        }
+		if ( len( variables.invalidEventHandler ) ) {
+			variables.onInvalidEventHandlerBean = handlerService.getHandlerBean( variables.invalidEventHandler );
+		}
 	}
 
 	/**
@@ -92,7 +109,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @module The module to register
 	 * @settings The module cbSecurity settings
 	 */
-	Security function registerModule( required string module, required struct settings ){
+	Security function registerModule(
+		required string module,
+		required struct settings
+	){
 		// Param settings
 		param arguments.settings.rules                       = [];
 		param arguments.settings.invalidAuthenticationEvent  = "";
@@ -117,10 +137,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// prepend them so the don't interfere with MAIN rules
 		// one by one as I don't see a way to prepend the whole array at once
-		for ( var i = arguments.settings.rules.len(); i >= 1; i-- ){
+		for ( var i = arguments.settings.rules.len(); i >= 1; i-- ) {
 			arrayPrepend(
 				getProperty( "rules" ),
-				arguments.settings.rules[i]
+				arguments.settings.rules[ i ]
 			);
 		}
 
@@ -148,9 +168,15 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	){
 		// Is this a cbSecurity Module & not registered
 		if (
-			structKeyExists( arguments.interceptData.moduleConfig.settings, "cbSecurity" )
+			structKeyExists(
+				arguments.interceptData.moduleConfig.settings,
+				"cbSecurity"
+			)
 			&&
-			!structKeyExists( variables.securityModules, arguments.interceptData.moduleName )
+			!structKeyExists(
+				variables.securityModules,
+				arguments.interceptData.moduleName
+			)
 		) {
 			registerModule(
 				arguments.interceptData.moduleName,
@@ -176,9 +202,17 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		buffer
 	){
 		// Is the module registered?
-		if ( structKeyExists( variables.securityModules, arguments.interceptData.moduleName ) ) {
+		if (
+			structKeyExists(
+				variables.securityModules,
+				arguments.interceptData.moduleName
+			)
+		) {
 			// Delete registration
-			structDelete( variables.securityModules, arguments.interceptData.moduleName );
+			structDelete(
+				variables.securityModules,
+				arguments.interceptData.moduleName
+			);
 			// Delete rules
 			setProperty(
 				"rules",
@@ -242,26 +276,26 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required currentEvent
 	){
 		// Get handler bean for the current event
-        var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
+		var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
 
 		// Are we running Coldbox 5 or older?
 		// is an onInvalidHandlerBean configured?
 		// is the current handlerBean the configured onInvalidEventHandlerBean?
 		if (
-            variables.enableInvalidHandlerCheck &&
-            !isNull( variables.onInvalidEventHandlerBean ) &&
-            isInvalidEventHandlerBean( handlerBean )
-        ) {
-            // ColdBox tries to detect invalid event handler loops by keeping
-            // track of the last invalid event to fire.  If that invalid event
-            // fires twice, it throws a hard exception to prevent infinite loops.
-            // Unfortunately for us, just attempting to get a handler bean
-            // starts the invalid event handling.  Here, if we got the invalid
-            // event handler bean back, we reset the `_lastInvalidEvent` so
-            // ColdBox can handle the invalid event properly.
-            request._lastInvalidEvent = variables.invalidEventHandler;
-            return;
-        }
+			variables.enableInvalidHandlerCheck &&
+			!isNull( variables.onInvalidEventHandlerBean ) &&
+			isInvalidEventHandlerBean( handlerBean )
+		) {
+			// ColdBox tries to detect invalid event handler loops by keeping
+			// track of the last invalid event to fire.  If that invalid event
+			// fires twice, it throws a hard exception to prevent infinite loops.
+			// Unfortunately for us, just attempting to get a handler bean
+			// starts the invalid event handling.  Here, if we got the invalid
+			// event handler bean back, we reset the `_lastInvalidEvent` so
+			// ColdBox can handle the invalid event properly.
+			request._lastInvalidEvent = variables.invalidEventHandler;
+			return;
+		}
 
 		if ( handlerBean.getHandler() == "" ) {
 			return;
@@ -278,7 +312,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			arguments.event
 		);
 		if ( !handlerResults.allow ) {
-			arguments.event.setPrivateValue( "cbSecurity_validatorResults", handlerResults );
+			arguments.event.setPrivateValue(
+				"cbSecurity_validatorResults",
+				handlerResults
+			);
 			return processInvalidAnnotationAccess(
 				arguments.event,
 				handlerResults,
@@ -287,7 +324,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		if ( log.canDebug() ) {
-			log.debug( "User handler annotation access succeeded", handlerResults );
+			log.debug(
+				"User handler annotation access succeeded",
+				handlerResults
+			);
 		}
 
 		// Verify we can access Action
@@ -296,7 +336,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			arguments.event
 		);
 		if ( !actionResults.allow ) {
-			arguments.event.setPrivateValue( "cbSecurity_validatorResults", actionResults );
+			arguments.event.setPrivateValue(
+				"cbSecurity_validatorResults",
+				actionResults
+			);
 			return processInvalidAnnotationAccess(
 				arguments.event,
 				actionResults,
@@ -325,7 +368,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// Log Block
 		if ( log.canWarn() ) {
 			log.warn(
-				"Invalid #arguments.validatorResults.type# by User (#getRealIp()#), blocked access to event=#arguments.event.getCurrentEvent()# via annotation (#arguments.type#) security"
+				"Invalid #arguments.validatorResults.type# by User (#variables.cbSecurity.getRealIp()#), blocked access to event=#arguments.event.getCurrentEvent()# via annotation (#arguments.type#) security"
 			);
 		}
 
@@ -334,14 +377,17 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Announce the block event
 		var iData = {
-			"ip"               : getRealIp(), // The offending IP
+			"ip"               : variables.cbSecurity.getRealIp(), // The offending IP
 			"rule"             : {}, // An empty rule, since it is by annotation security
 			"settings"         : getProperties(), // All the config settings, just in case
 			"validatorResults" : arguments.validatorResults,
 			"annotationType"   : arguments.type,
 			"processActions"   : true // Boolean indicator if the invalid actions should process or not
 		};
-		announceInterception( state = "cbSecurity_onInvalid#arguments.validatorResults.type#", interceptData = iData );
+		announceInterception(
+			state         = "cbSecurity_onInvalid#arguments.validatorResults.type#",
+			interceptData = iData
+		);
 
 		// Are we processing the invalid actions?
 		if ( iData.processActions ) {
@@ -388,7 +434,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				// Verify if user is logged in and in a secure state
 				var validatorResults = getValidator( arguments.event ).ruleValidator( thisRule, variables.controller );
 				// Verify type, else default to "authentication"
-				if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
+				if (
+					!reFindNoCase(
+						"(authentication|authorization)",
+						validatorResults.type
+					)
+				) {
 					validatorResults.type = "authentication";
 				}
 
@@ -397,7 +448,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					// Log Block
 					if ( log.canWarn() ) {
 						log.warn(
-							"Invalid #validatorResults.type# by User (#getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#",
+							"Invalid #validatorResults.type# by User (#variables.cbSecurity.getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#",
 							validatorResults
 						);
 					}
@@ -408,11 +459,14 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					// Save the matched rule in the prc
 					arguments.event
 						.setPrivateValue( "cbSecurity_matchedRule", thisRule )
-						.setPrivateValue( "cbSecurity_validatorResults", validatorResults );
+						.setPrivateValue(
+							"cbSecurity_validatorResults",
+							validatorResults
+						);
 
 					// Announce the block event
 					var iData = {
-						"ip"               : getRealIp(), // The offending IP
+						"ip"               : variables.cbSecurity.getRealIp(), // The offending IP
 						"rule"             : thisRule, // The broken rule
 						"validatorResults" : validatorResults,
 						"settings"         : getProperties(), // All the config settings, just in case
@@ -465,7 +519,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		if (
 			structKeyExists( arguments.validator, "ruleValidator" )
 			||
-			structKeyExists( arguments.validator, "annotationValidator" )
+			structKeyExists(
+				arguments.validator,
+				"annotationValidator"
+			)
 		) {
 			variables.validator = arguments.validator;
 		} else {
@@ -489,7 +546,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			currentModule.len()
 			&&
 			// Does the module have cbSecurity overrides?
-			structKeyExists( variables.securityModules, currentModule )
+			structKeyExists(
+				variables.securityModules,
+				currentModule
+			)
 			&&
 			// Does the setting have value?
 			variables.securityModules[ currentModule ][ "validator" ].len()
@@ -523,7 +583,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			currentModule.len()
 			&&
 			// Does the module have cbSecurity overrides?
-			structKeyExists( variables.securityModules, currentModule )
+			structKeyExists(
+				variables.securityModules,
+				currentModule
+			)
 			&&
 			// Does the setting have value?
 			variables.securityModules[ currentModule ][ arguments.property ].len()
@@ -540,7 +603,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Debug
 		if ( log.canDebug() ) {
-			log.debug( "Using global #arguments.property# setting", getProperty( arguments.property ) );
+			log.debug(
+				"Using global #arguments.property# setting",
+				getProperty( arguments.property )
+			);
 		}
 
 		// Return global property
@@ -556,8 +622,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 *
 	 * @return { allow:boolean, type:string(authentication|authorization)}
 	 */
-	private struct function verifySecuredAnnotation( required securedValue, required event ){
-
+	private struct function verifySecuredAnnotation(
+		required securedValue,
+		required event
+	){
 		// Are we securing?
 		if ( len( arguments.securedValue ) && isBoolean( arguments.securedValue ) && !arguments.securedValue ) {
 			return {
@@ -573,7 +641,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		);
 
 		// Verify type, else default to "authentication"
-		if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
+		if (
+			!reFindNoCase(
+				"(authentication|authorization)",
+				validatorResults.type
+			)
+		) {
 			validatorResults.type = "authentication";
 		}
 		return validatorResults;
@@ -707,15 +780,28 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @currentEvent The current event
 	 * @patternList The list pattern to test
 	 */
-	private boolean function isInPattern( required currentEvent, required patternList ){
+	private boolean function isInPattern(
+		required currentEvent,
+		required patternList
+	){
 		//  Loop Over Patterns
 		for ( var pattern in arguments.patternList ) {
 			//  Using Regex
 			if ( getProperty( "useRegex" ) ) {
-				if ( reFindNoCase( trim( pattern ), arguments.currentEvent ) ) {
+				if (
+					reFindNoCase(
+						trim( pattern ),
+						arguments.currentEvent
+					)
+				) {
 					return true;
 				}
-			} else if ( findNoCase( trim( pattern ), arguments.currentEvent ) ) {
+			} else if (
+				findNoCase(
+					trim( pattern ),
+					arguments.currentEvent
+				)
+			) {
 				return true;
 			}
 		}
@@ -724,35 +810,17 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	}
 
 	/**
-	 * Get Real IP, by looking at clustered, proxy headers and locally.
-	 */
-	private function getRealIP(){
-		var headers = getHTTPRequestData().headers;
-
-		// When going through a proxy, the IP can be a delimtied list, thus we take the last one in the list
-		
-		if ( structKeyExists( headers, "x-cluster-client-ip" ) ){
-			return trim( listLast( headers[ "x-cluster-client-ip" ] ) );
-		}
-		if ( structKeyExists( headers, "X-Forwarded-For" ) ){
-			return trim( listFirst( headers[ "X-Forwarded-For" ] ) );
-		}
-
-		return len( cgi.remote_addr ) ? trim( listFirst( cgi.remote_addr ) ) : "127.0.0.1";
-	}
-
-	/**
 	 * Returns true of the passed handlerBean matches Coldbox's configured invalid event handler.
 	 *
 	 * @handlerBean the current handler bean to check against
 	 */
-	private boolean function isInvalidEventHandlerBean( required handlerBean ) {
-        return (
-            variables.onInvalidEventHandlerBean.getInvocationPath() == arguments.handlerBean.getInvocationPath() &&
-            variables.onInvalidEventHandlerBean.getHandler() == arguments.handlerBean.getHandler() &&
-            variables.onInvalidEventHandlerBean.getMethod() == arguments.handlerBean.getMethod() &&
-            variables.onInvalidEventHandlerBean.getModule() == arguments.handlerBean.getModule()
-        );
-    }
+	private boolean function isInvalidEventHandlerBean( required handlerBean ){
+		return (
+			variables.onInvalidEventHandlerBean.getInvocationPath() == arguments.handlerBean.getInvocationPath() &&
+			variables.onInvalidEventHandlerBean.getHandler() == arguments.handlerBean.getHandler() &&
+			variables.onInvalidEventHandlerBean.getMethod() == arguments.handlerBean.getMethod() &&
+			variables.onInvalidEventHandlerBean.getModule() == arguments.handlerBean.getModule()
+		);
+	}
 
 }
