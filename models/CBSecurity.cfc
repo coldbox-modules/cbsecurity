@@ -189,9 +189,15 @@ component singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secure( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
+	CBSecurity function secure(
+		required permissions,
+		message = variables.DEFAULT_ERROR_MESSAGE
+	){
 		if ( !has( arguments.permissions ) ) {
-			throw( type = "NotAuthorized", message = arguments.message );
+			throw(
+				type    = "NotAuthorized",
+				message = arguments.message
+			);
 		}
 		return this;
 	}
@@ -206,9 +212,15 @@ component singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secureAll( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
+	CBSecurity function secureAll(
+		required permissions,
+		message = variables.DEFAULT_ERROR_MESSAGE
+	){
 		if ( !all( arguments.permissions ) ) {
-			throw( type = "NotAuthorized", message = arguments.message );
+			throw(
+				type    = "NotAuthorized",
+				message = arguments.message
+			);
 		}
 		return this;
 	}
@@ -223,9 +235,15 @@ component singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secureNone( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
+	CBSecurity function secureNone(
+		required permissions,
+		message = variables.DEFAULT_ERROR_MESSAGE
+	){
 		if ( !none( arguments.permissions ) ) {
-			throw( type = "NotAuthorized", message = arguments.message );
+			throw(
+				type    = "NotAuthorized",
+				message = arguments.message
+			);
 		}
 		return this;
 	}
@@ -250,17 +268,23 @@ component singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secureWhen( required context, message = variables.DEFAULT_ERROR_MESSAGE ){
+	CBSecurity function secureWhen(
+		required context,
+		message = variables.DEFAULT_ERROR_MESSAGE
+	){
 		var results = arguments.context;
 		// Check if udf/lambda
 		if ( isCustomFunction( arguments.context ) || isClosure( arguments.context ) ) {
 			results = arguments.context( getAuthService().getUser() );
 		}
 		if ( results ) {
-			throw( type = "NotAuthorized", message = arguments.message );
-        }
-        return this;
-    }
+			throw(
+				type    = "NotAuthorized",
+				message = arguments.message
+			);
+		}
+		return this;
+	}
 
 	/**
 	 * Verifies that the passed in user object must be the same as the authenticated user.
@@ -284,7 +308,7 @@ component singleton accessors="true" {
 			);
 		}
 		return this;
-    }
+	}
 
 	/**
 	 * Alias proxy if somebody is coming from cbguard, proxies to the secure() method
@@ -323,9 +347,15 @@ component singleton accessors="true" {
 	){
 		arguments.permissions = arrayWrap( arguments.permissions );
 		if ( has( arguments.permissions ) ) {
-			arguments.success( getAuthService().getUser(), arguments.permissions );
+			arguments.success(
+				getAuthService().getUser(),
+				arguments.permissions
+			);
 		} else if ( !isNull( arguments.fail ) ) {
-			arguments.fail( getAuthService().getUser(), arguments.permissions );
+			arguments.fail(
+				getAuthService().getUser(),
+				arguments.permissions
+			);
 		}
 		return this;
 	}
@@ -356,9 +386,15 @@ component singleton accessors="true" {
 	){
 		arguments.permissions = arrayWrap( arguments.permissions );
 		if ( all( arguments.permissions ) ) {
-			arguments.success( getAuthService().getUser(), arguments.permissions );
+			arguments.success(
+				getAuthService().getUser(),
+				arguments.permissions
+			);
 		} else if ( !isNull( arguments.fail ) ) {
-			arguments.fail( getAuthService().getUser(), arguments.permissions );
+			arguments.fail(
+				getAuthService().getUser(),
+				arguments.permissions
+			);
 		}
 		return this;
 	}
@@ -389,9 +425,15 @@ component singleton accessors="true" {
 	){
 		arguments.permissions = arrayWrap( arguments.permissions );
 		if ( none( arguments.permissions ) ) {
-			arguments.success( getAuthService().getUser(), arguments.permissions );
+			arguments.success(
+				getAuthService().getUser(),
+				arguments.permissions
+			);
 		} else if ( !isNull( arguments.fail ) ) {
-			arguments.fail( getAuthService().getUser(), arguments.permissions );
+			arguments.fail(
+				getAuthService().getUser(),
+				arguments.permissions
+			);
 		}
 		return this;
 	}
@@ -404,12 +446,16 @@ component singleton accessors="true" {
 	 * @successView The view to set in the request context if the permissions pass
 	 * @failView The view to set in the request context if the permissions fails, optional
 	 */
-	function secureViewProxy( required permissions, required successView, failView ){
+	function secureViewProxy(
+		required permissions,
+		required successView,
+		failView
+	){
 		arguments.event = this;
 		controller
 			.getWireBox()
 			.getInstance( dsl = "@cbSecurity" )
-			.secureView( argumentCollection=arguments );
+			.secureView( argumentCollection = arguments );
 		return this;
 	}
 
@@ -422,12 +468,35 @@ component singleton accessors="true" {
 	 * @successView The view to set in the request context if the permissions pass
 	 * @failView The view to set in the request context if the permissions fails, optional
 	 */
-	function secureView( required event, required permissions, required successView, failView ){
-		if( has( arguments.permissions ) ){
+	function secureView(
+		required event,
+		required permissions,
+		required successView,
+		failView
+	){
+		if ( has( arguments.permissions ) ) {
 			arguments.event.setView( arguments.successView );
-		} else if ( !isNull( arguments.failView ) ){
+		} else if ( !isNull( arguments.failView ) ) {
 			arguments.event.setView( arguments.failView );
 		}
+	}
+
+	/**
+	 * Get Real IP, by looking at clustered, proxy headers and locally.
+	 */
+	string function getRealIP(){
+		var headers = getHTTPRequestData( false ).headers;
+
+		// When going through a proxy, the IP can be a delimtied list, thus we take the last one in the list
+
+		if ( structKeyExists( headers, "x-cluster-client-ip" ) ) {
+			return trim( listLast( headers[ "x-cluster-client-ip" ] ) );
+		}
+		if ( structKeyExists( headers, "X-Forwarded-For" ) ) {
+			return trim( listFirst( headers[ "X-Forwarded-For" ] ) );
+		}
+
+		return len( cgi.remote_addr ) ? trim( listFirst( cgi.remote_addr ) ) : "127.0.0.1";
 	}
 
 	/***************************************************************/
