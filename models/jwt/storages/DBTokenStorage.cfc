@@ -168,6 +168,7 @@ component accessors="true" singleton {
 	 * @token The token to store
 	 * @expiration The token expiration
 	 * @payload The payload
+	 * @isRefreshToken The refresh token flag
 	 *
 	 * @return JWTStorage
 	 */
@@ -175,7 +176,8 @@ component accessors="true" singleton {
 		required key,
 		required token,
 		required expiration,
-		required payload
+		required payload,
+		isRefreshToken = false
 	){
 		queryExecute(
 			"INSERT INTO #getTable()# (#variables.COLUMNS#)
@@ -185,7 +187,8 @@ component accessors="true" singleton {
 					:token,
 					:expiration,
 					:issued,
-					:subject
+					:subject,
+					:isRefreshToken
 				)
 			",
 			{
@@ -212,6 +215,10 @@ component accessors="true" singleton {
 				subject : {
 					cfsqltype : "varchar",
 					value     : arguments.payload.sub
+				},
+				isRefreshToken : {
+					cfsqltype : "boolean",
+					value     : arguments.isRefreshToken
 				}
 			},
 			{ datasource : variables.properties.dsn }
