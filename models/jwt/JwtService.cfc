@@ -50,6 +50,8 @@ component accessors="true" singleton {
 		"secretKey"           : "",
 		// The Custom header to inspect for tokens
 		"customAuthHeader"    : "x-auth-token",
+		// The Custom header to inspect for refresh tokens
+		"customRefreshHeader" : "x-refresh-token",
 		// The expiration in minutes for the jwt tokens
 		"expiration"          : 60,
 		// If true, enables refresh tokens, longer lived tokens (not implemented yet)
@@ -128,13 +130,16 @@ component accessors="true" singleton {
 	 * @username The username to use
 	 * @password The password to use
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
+	 * @isRefreshToken The boolean flag to represent a refresh token
 	 *
 	 * @throws InvalidCredentials
 	 */
 	string function attempt(
 		required username,
 		required password,
-		struct customClaims = {}
+		struct customClaims = {},
+		boolean isRefreshToken = false
+
 	){
 		// Authenticate via the auth service wired up
 		// If it fails an exception is thrown
@@ -148,7 +153,7 @@ component accessors="true" singleton {
 			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
 		// Create the token and return it
-		return fromUser( oUser, arguments.customClaims );
+		return fromUser( oUser, arguments.customClaims, arguments.isRefreshToken );
 	}
 
 	/**
@@ -184,8 +189,9 @@ component accessors="true" singleton {
 	 *
 	 * @user The user to generate the token for, must implement IAuth and IJwtSubject
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
+	 * @isRefreshToken The boolean flag to create a refresh token
 	 */
-	string function fromUser( required user, struct customClaims = {} ){
+	string function fromUser( required user, struct customClaims = {}, required isRefreshToken ){
 		var timestamp = now();
 		var payload   = {
 			// Issuing authority
@@ -194,11 +200,11 @@ component accessors="true" singleton {
 			"iat" : toEpoch( timestamp ),
 			// The subject identifier
 			"sub" : arguments.user.getId(),
-			// The token expiration
+			// The token expiration( token or refresh token )
 			"exp" : toEpoch(
 				dateAdd(
 					"n",
-					variables.settings.jwt.expiration,
+					arguments.isRefreshToken ? variables.settings.jwt.refreshExpiration : variables.settings.jwt.expiration,
 					timestamp
 				)
 			),
@@ -231,7 +237,8 @@ component accessors="true" singleton {
 				key        = payload.jti,
 				token      = jwtToken,
 				expiration = variables.settings.jwt.expiration,
-				payload    = payload
+				payload    = payload,
+				isRefreshToken = arguments.isRefreshToken
 			);
 		}
 
@@ -491,6 +498,30 @@ component accessors="true" singleton {
 		return decodedToken;
 	}
 
+
+	/**
+	 * Try's to get a jwt token from the authorization header or the custom header
+	 * defined in the configuration or passed in by you. If it is a valid token and it decodes we will then
+	 * continue to validate the subject it represents.  Once those are satisfied, then it will
+	 * store it in the `prc` as `prc.jwt_token` and the payload as `prc.jwt_payload`.
+	 *
+	 * @token The token to parse and validate, if not passed we call the discoverToken() method for you.
+	 *
+	 * @throws TokenExpiredException If the token has expired or no longer in the storage (invalidated)
+	 * @throws TokenInvalidException If the token doesn't verify decoding
+	 * @throws TokenNotFoundException If the token cannot be found in the headers
+	 *
+	 * @returns The payload for convenience
+	 */
+	function parseRefreshToken( string token = discoverRefreshToken() ){
+
+		// Store it on the PRC scope values
+		variables.requestService
+			.getContext()
+			.setPrivateValue( "jwt_refresh_token", "arguments.token ")
+			.setPrivateValue( "jwt_refresh_payload", "decodedToken" );
+	}
+
 	/**
 	 * Get the stored token from `prc.jwt_token`, if it doesn't exist, it tries to parse it via `parseToken()`,
 	 * if not token is set then this will be an empty string.
@@ -498,6 +529,7 @@ component accessors="true" singleton {
 	string function getToken(){
 		var event = variables.requestService.getContext();
 
+		// writeDump(event.getPrivateValue( "jwt_refresh_token" ) ); abort;
 		if ( !event.privateValueExists( "jwt_token" ) ) {
 			parseToken();
 		}
@@ -524,8 +556,8 @@ component accessors="true" singleton {
 	 */
 	struct function getPayload(){
 		var event = variables.requestService.getContext();
-
 		if ( !event.privateValueExists( "jwt_payload" ) ) {
+			parseRefreshToken();
 			parseToken();
 		}
 
@@ -711,7 +743,7 @@ component accessors="true" singleton {
 	 */
 	private string function discoverToken(){
 		var event = variables.requestService.getContext();
-
+		// writeDump( event.getContext() ); abort;
 		// Discover api token from headers using a custom header or the incoming RC
 		var jwtToken = event.getHTTPHeader(
 			header       = variables.settings.jwt.customAuthHeader,
@@ -721,6 +753,36 @@ component accessors="true" singleton {
 		// If we found it, return it, else try other headers
 		if ( jwtToken.len() ) {
 			return jwtToken;
+		}
+
+		// Authorization Header
+		return event
+			.getHTTPHeader( header = "Authorization", defaultValue = "" )
+			.replaceNoCase( "Bearer", "" )
+			.trim();
+	}
+
+	/**
+	 * Try to discover the jwt token from many incoming resources:
+	 * - The custom auth header: x-auth-token
+	 * - URL/FORM: x-auth-token
+	 * - Authorization Header
+	 *
+	 * @return The discovered token or an empty string
+	 */
+	private string function discoverRefreshToken(){
+		var event = variables.requestService.getContext();
+
+		// Discover api refresh token from headers using a custom header or the incoming RC
+
+		var refreshToken = event.getHTTPHeader(
+			header       = variables.settings.jwt.customRefreshHeader,
+			defaultValue = event.getValue( name = variables.settings.jwt.customRefreshHeader, defaultValue = "" )
+		);
+
+		// If we found it, return it, else try other headers
+		if ( refreshToken.len() ) {
+			return refreshToken;
 		}
 
 		// Authorization Header

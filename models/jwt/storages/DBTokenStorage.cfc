@@ -44,7 +44,11 @@ component accessors="true" singleton {
 	 */
 	property name="keyPrefix";
 
-	variables.COLUMNS = "id,cacheKey,token,expiration,issued,subject";
+
+	/**
+	 * Entity columns 
+	 */
+	variables.COLUMNS = "id,cacheKey,token,expiration,issued,subject,isRefreshToken";
 
 	/**
 	 * Constructor
@@ -168,6 +172,7 @@ component accessors="true" singleton {
 	 * @token The token to store
 	 * @expiration The token expiration
 	 * @payload The payload
+	 * @isRefreshToken The refresh token flag
 	 *
 	 * @return JWTStorage
 	 */
@@ -175,8 +180,10 @@ component accessors="true" singleton {
 		required key,
 		required token,
 		required expiration,
-		required payload
+		required payload,
+		required isRefreshToken
 	){
+		// writeDump( variables.COLUMNS ); abort;
 		queryExecute(
 			"INSERT INTO #getTable()# (#variables.COLUMNS#)
 				VALUES (
@@ -185,7 +192,8 @@ component accessors="true" singleton {
 					:token,
 					:expiration,
 					:issued,
-					:subject
+					:subject,
+					:isRefreshToken
 				)
 			",
 			{
@@ -212,6 +220,10 @@ component accessors="true" singleton {
 				subject : {
 					cfsqltype : "varchar",
 					value     : arguments.payload.sub
+				},
+				isRefreshToken : {
+					cfsqltype : "tinyint",
+					value     :  arguments.isRefreshToken
 				}
 			},
 			{ datasource : variables.properties.dsn }
@@ -266,7 +278,7 @@ component accessors="true" singleton {
 
 		// select entry
 		var q = queryExecute(
-			"SELECT cacheKey, token, expiration, issued
+			"SELECT cacheKey, token, expiration, issued, isRefreshToken
 				FROM #getTable()#
 				WHERE cacheKey = ?
 			",
@@ -280,7 +292,8 @@ component accessors="true" singleton {
 				"token"      : q.token,
 				"cacheKey"   : q.cacheKey,
 				"expiration" : q.expiration,
-				"issued"     : q.issued
+				"issued"     : q.issued,
+				"isRefreshToken" : q.isRefreshToken
 			};
 		}
 
@@ -304,7 +317,7 @@ component accessors="true" singleton {
 		queryExecute(
 			"DELETE
 			   FROM #getTable()#
-			  WHERE cacheKey = ?
+			  WHERE cacheKey = ?v    
 			",
 			[ arguments.key ],
 			{
@@ -422,6 +435,7 @@ component accessors="true" singleton {
 							expiration #getDateTimeColumnType()# NOT NULL,
 							issued #getDateTimeColumnType()# NOT NULL,
 							token #getTextColumnType()# NOT NULL,
+							isRefreshToken TINYINT NOT NULL DEFAULT 0,
 							subject VARCHAR(255) NOT NULL,
 							PRIMARY KEY (id)
 						)",

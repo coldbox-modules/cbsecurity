@@ -64,7 +64,8 @@ component accessors="true" singleton {
 		required key,
 		required token,
 		required expiration,
-		required payload
+		required payload,
+		required isRefreshToken
 	){
 		variables.cache.set(
 			buildKey( arguments.key ),
@@ -72,7 +73,8 @@ component accessors="true" singleton {
 				token      : arguments.token,
 				expiration : jwtService.fromEpoch( arguments.payload.exp ),
 				issued     : jwtService.fromEpoch( arguments.payload.iat ),
-				payload    : arguments.payload
+				payload    : arguments.payload,
+				isRefreshToken : arguments.isRefreshToken
 			},
 			arguments.expiration
 		);
