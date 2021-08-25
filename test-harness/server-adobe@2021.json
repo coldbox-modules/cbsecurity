@@ -1,12 +1,12 @@
 {
-    "name":"cbsecurity-lucee@5",
+    "name":"cbsecurity-adobe@2021",
     "app":{
-        "serverHomeDirectory":".engine/lucee5",
-        "cfengine":"lucee@5"
+        "serverHomeDirectory":".engine/adobe2021",
+        "cfengine":"adobe@2021"
     },
     "web":{
         "http":{
-            "port":"0"
+            "port":"60299"
         },
         "rewrites":{
             "enable":"true"

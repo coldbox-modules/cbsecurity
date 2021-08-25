@@ -190,11 +190,11 @@ component accessors="true" singleton {
 		var payload   = {
 			// Issuing authority
 			"iss" : variables.settings.jwt.issuer,
-			// Token creation
+			// Token creation time
 			"iat" : toEpoch( timestamp ),
-			// The subject identifier
+			// The subject identifier: user id
 			"sub" : arguments.user.getId(),
-			// The token expiration
+			// The token expiration according to our settings
 			"exp" : toEpoch(
 				dateAdd(
 					"n",
