@@ -6,7 +6,7 @@
     },
     "web":{
         "http":{
-            "port":"0"
+            "port":"60299"
         },
         "rewrites":{
             "enable":"true"
