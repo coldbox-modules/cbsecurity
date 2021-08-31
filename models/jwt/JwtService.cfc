@@ -11,13 +11,13 @@ component accessors="true" singleton {
 	/** DI **/
 	/*********************************************************************************************/
 
-	property name="jwt"                inject="provider:jwt@jwtcfml";
-	property name="wirebox"            inject="wirebox";
-	property name="settings"           inject="coldbox:moduleSettings:cbSecurity";
+	property name="jwt" inject="provider:jwt@jwtcfml";
+	property name="wirebox" inject="wirebox";
+	property name="settings" inject="coldbox:moduleSettings:cbSecurity";
 	property name="interceptorService" inject="coldbox:interceptorService";
-	property name="requestService"     inject="coldbox:requestService";
-	property name="log"                inject="logbox:logger:{this}";
-	property name="cbsecurity"         inject="@cbSecurity";
+	property name="requestService" inject="coldbox:requestService";
+	property name="log" inject="logbox:logger:{this}";
+	property name="cbsecurity" inject="@cbSecurity";
 
 	/*********************************************************************************************/
 	/** PROPERTIES **/
@@ -33,35 +33,37 @@ component accessors="true" singleton {
 	/*********************************************************************************************/
 
 	// Required Claims
-	variables.REQUIRED_CLAIMS = [
-		"jti",
-		"iss",
-		"iat",
-		"sub",
-		"exp",
-		"scope"
-	];
+	variables.REQUIRED_CLAIMS = [ "jti", "iss", "iat", "sub", "exp", "scope" ];
 
 	// Default JWT Settings
 	variables.DEFAULT_SETTINGS = {
 		// The jwt token issuer claim -> iss
-		"issuer"              : "",
+		"issuer"                     : "",
 		// The jwt secret encoding key
-		"secretKey"           : "",
+		"secretKey"                  : "",
 		// The Custom header to inspect for tokens
-		"customAuthHeader"    : "x-auth-token",
+		"customAuthHeader"           : "x-auth-token",
 		// The expiration in minutes for the jwt tokens
-		"expiration"          : 60,
-		// If true, enables refresh tokens, longer lived tokens (not implemented yet)
-		"enableRefreshTokens" : false,
+		"expiration"                 : 60,
+		// If true, enables refresh tokens, token creation methods will return a struct instead
+		// of just the access token. e.g. { access_token: "", refresh_token : "" }
+		"enableRefreshTokens"        : false,
 		// The default expiration for refresh tokens, defaults to 30 days
-		"refreshExpiration"   : 43200,
+		"refreshExpiration"          : 10080,
+		// The Custom header to inspect for refresh tokens
+		"customRefreshHeader"        : "x-refresh-token",
+		// If enabled, the JWT validator will inspect the request for refresh tokens and expired access tokens
+		// It will then automatically refresh them for you and return them back as
+		// response headers in the same request according to the customRefreshHeader and customAuthHeader
+		"enableAutoRefreshValidator" : false,
+		// Enable the POST > /cbsecurity/refreshtoken API endpoint
+		"enableRefreshEndpoint"      : true,
 		// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
-		"algorithm"           : "HS512",
+		"algorithm"                  : "HS512",
 		// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
-		"requiredClaims"      : [],
+		"requiredClaims"             : [],
 		// The token storage settings
-		"tokenStorage"        : {
+		"tokenStorage"               : {
 			// enable or not, default is true
 			"enabled"    : true,
 			// A cache key prefix to use when storing the tokens
@@ -123,15 +125,18 @@ component accessors="true" singleton {
 
 	/**
 	 * Attempt to authenticate a user with the auth service and if succesful return a jwt token
-	 * using the information in the authenticated user.
+	 * using the information in the authenticated user. If refresh tokens are enabled then you will
+	 * get a struct of <code>{ access_token : "", refresh_token : "" }</code>
 	 *
 	 * @username The username to use
 	 * @password The password to use
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
 	 *
 	 * @throws InvalidCredentials
+	 *
+	 * @return An access token if the enableRefreshTokens setting is false, else a struct with the access and refresh token: { access_token : "", refresh_token : "" }
 	 */
-	string function attempt(
+	any function attempt(
 		required username,
 		required password,
 		struct customClaims = {}
@@ -147,18 +152,18 @@ component accessors="true" singleton {
 			.getContext()
 			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
-		// Create the token and return it
+		// Create the token(s) and return it
 		return fromUser( oUser, arguments.customClaims );
 	}
 
 	/**
-	 * Logout a user and invalidate their token
+	 * Logout a user and invalidate their access token
 	 *
 	 * @user
 	 * @customClaims
 	 */
 	function logout(){
-		invalidate( this.getToken() );
+		this.invalidate( this.getToken() );
 		variables.cbSecurity.getAuthService().logout();
 	}
 
@@ -169,9 +174,9 @@ component accessors="true" singleton {
 		// We try to authenticate because we need the JWT to be validated for the request
 		// There are ocassions where the user could have logged out but the token is still active
 		// Or the inverse, where there is no more token passed and user still logged in in session.
-		try{
-			authenticate();
-		} catch( any e ){
+		try {
+			this.authenticate();
+		} catch ( any e ) {
 			return false;
 		}
 
@@ -179,101 +184,62 @@ component accessors="true" singleton {
 	}
 
 	/**
-	 * Create a token according to the passed user object and custom claims.
+	 * Create an access or an access/refresh token(s) according to the passed user object and custom claims.
 	 * We are assuming the user is a valid and authenticated user.
+	 *
+	 * If the setting enableRefreshTokens is true, then we will return a struct of tokens:
+	 * <code>{ access_token : "", refresh_token : "" }</code>
 	 *
 	 * @user The user to generate the token for, must implement IAuth and IJwtSubject
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
+	 *
+	 * @return An access token if the enableRefreshTokens setting is false, else a struct with the access and refresh token: { access_token : "", refresh_token : "" }
 	 */
-	string function fromUser( required user, struct customClaims = {} ){
-		var timestamp = now();
-		var payload   = {
-			// Issuing authority
-			"iss" : variables.settings.jwt.issuer,
-			// Token creation time
-			"iat" : toEpoch( timestamp ),
-			// The subject identifier: user id
-			"sub" : arguments.user.getId(),
-			// The token expiration according to our settings
-			"exp" : toEpoch(
-				dateAdd(
-					"n",
-					variables.settings.jwt.expiration,
-					timestamp
+	any function fromUser( required user, struct customClaims = {} ){
+		// Refresh token and access token
+		if ( variables.settings.jwt.enableRefreshTokens ) {
+			return {
+				"access_token" : generateToken(
+					user        : arguments.user,
+					customClaims: arguments.customClaims
+				),
+				"refresh_token" : generateToken(
+					user        : arguments.user,
+					customClaims: arguments.customClaims,
+					refresh     : true
 				)
-			),
-			// The unique identifier of the token
-			"jti"    : hash( timestamp & arguments.user.getId() ),
-			// Get the user scopes for the JWT token
-			"scope" : arguments.user.getJwtScopes().toList(" ")
-		};
-
-		// Append user custom claims with override, they take prescedence
-		structAppend(
-			payload,
-			arguments.user.getJwtCustomClaims(),
-			true
-		);
-
-		// Append incoming custom claims with override, they take prescedence
-		structAppend(
-			payload,
-			arguments.customClaims,
-			true
-		);
-
-		// Create the token for the user
-		var jwtToken = this.encode( payload );
-
-		// Store it with the expiration as well if enabled
-		if ( variables.settings.jwt.tokenStorage.enabled ) {
-			getTokenStorage().set(
-				key        = payload.jti,
-				token      = jwtToken,
-				expiration = variables.settings.jwt.expiration,
-				payload    = payload
-			);
+			};
 		}
 
-		// Announce the creation
-		variables.interceptorService.processState(
-			"cbSecurity_onJWTCreation",
-			{
-				token   : jwtToken,
-				payload : payload,
-				user    : arguments.user
-			}
-		);
-
-		// Return it
-		return jwtToken;
+		// Access token only.
+		return generateToken( user: arguments.user, customClaims: arguments.customClaims );
 	}
 
 	/**
-	 * Calls the auth service using the parsed token or optional passed token, to get the user by subject claim else throw an exception
+	 * Authenticates a payload that is passed in or auto-discovered if not passed. This will return the user the payload represents
+	 * via the `sub` claim
+	 *
+	 * @payload The authentication payload to authenticate, by default we auto discover it
+	 *
+	 * @throws InvalidUser if user is not found
 	 *
 	 * @returns User object that implements IAuth and IJwtSubject
-	 * @throws InvalidUser if user is not found
 	 */
-	function authenticate(){
+	function authenticate( payload = getPayload() ){
 		// Get the User it represents
 		var oUser = variables.cbSecurity
 			.getUserService()
-			.retrieveUserById( getPayload().sub );
+			.retrieveUserById( isNull( arguments.payload.sub ) ? "" : arguments.payload.sub );
 
 		// Verify it
 		if ( isNull( oUser ) || !len( oUser.getId() ) ) {
 			// Announce the invalid user
 			variables.interceptorService.processState(
 				"cbSecurity_onJWTInvalidUser",
-				{
-					token   : this.getToken(),
-					payload : this.getPayload()
-				}
+				{ payload : arguments.payload }
 			);
-
 			throw(
-				message = "The user (#getPayload().sub#) was not found by the user service",
+				message = "The user was not found by the user service",
 				type    = "InvalidTokenUser"
 			);
 		}
@@ -289,11 +255,7 @@ component accessors="true" singleton {
 		// Announce the valid authentication
 		variables.interceptorService.processState(
 			"cbSecurity_onJWTValidAuthentication",
-			{
-				token   : this.getToken(),
-				payload : this.getPayload(),
-				user    : oUser
-			}
+			{ payload : arguments.payload, user : oUser }
 		);
 
 		// Return the user
@@ -327,7 +289,7 @@ component accessors="true" singleton {
 	 *
 	 * @async Run the clearing asynchronously or not, default is false
 	 */
-	JwtService function invalidateAll( boolean async=false ){
+	JwtService function invalidateAll( boolean async = false ){
 		if ( variables.log.canInfo() ) {
 			variables.log.info( "Token invalidation request issued for all tokens" );
 		}
@@ -354,6 +316,47 @@ component accessors="true" singleton {
 		return getTokenStorage().exists( this.decode( arguments.token ).jti );
 	}
 
+	/**
+	 * Manually refresh tokens by passing a valid refresh token and returning two new tokens:
+	 * <code>{ access_token : "", refresh_token : "" }</code>
+	 *
+	 * @refreshToken A refresh token
+	 *
+	 * @throws RefreshTokensNotActive If the setting enableRefreshTokens is false
+	 * @throws TokenExpiredException If the token has expired or no longer in the storage (invalidated)
+	 * @throws TokenInvalidException If the token doesn't verify decoding
+	 * @throws TokenNotFoundException If the token cannot be found in the headers
+	 *
+	 * @return A struct of { access_token : "", refresh_token : "" }
+	 */
+	struct function refreshToken( token = discoverRefreshToken() ){
+		if ( !variables.settings.jwt.enableRefreshTokens ) {
+			throw(
+				type   : "RefreshTokensNotActive",
+				message: "You cannot use refresh token methods because this feature has been disabled. Enable it using the `jwt.enableRefreshTokens` setting"
+			);
+		}
+
+		// Parse and validate token
+		var payload = parseToken(
+			token         : arguments.token,
+			storeInContext: false,
+			authenticate  : false
+		);
+
+		// Authenticate and make sure the subject is valid
+		var oUser = authenticate( payload: payload );
+
+		// Build new tokens according to validated user
+		var results = fromUser( oUser );
+
+		// Invalidate the refresh token
+		invalidate( arguments.token );
+
+		// Return new token set
+		return results;
+	}
+
 	/************************************************************************************/
 	/****************************** PARSING + COLDBOX INTEGRATION METHODS ***************/
 	/************************************************************************************/
@@ -365,6 +368,8 @@ component accessors="true" singleton {
 	 * store it in the `prc` as `prc.jwt_token` and the payload as `prc.jwt_payload`.
 	 *
 	 * @token The token to parse and validate, if not passed we call the discoverToken() method for you.
+	 * @storeInContext By default, the token will be stored in the request context
+	 * @authenticate By default, the token will be authenticated, you can disable it and do manual authentication.
 	 *
 	 * @throws TokenExpiredException If the token has expired or no longer in the storage (invalidated)
 	 * @throws TokenInvalidException If the token doesn't verify decoding
@@ -372,8 +377,11 @@ component accessors="true" singleton {
 	 *
 	 * @returns The payload for convenience
 	 */
-	struct function parseToken( string token = discoverToken() ){
-
+	struct function parseToken(
+		string token           = discoverToken(),
+		boolean storeInContext = true,
+		boolean authenticate   = true
+	){
 		// Did we find an incoming token
 		if ( !len( arguments.token ) ) {
 			if ( variables.log.canDebug() ) {
@@ -407,10 +415,7 @@ component accessors="true" singleton {
 				// Announce the invalid claims
 				variables.interceptorService.processState(
 					"cbSecurity_onJWTInvalidClaims",
-					{
-						token   : arguments.token,
-						payload : decodedToken
-					}
+					{ token : arguments.token, payload : decodedToken }
 				);
 
 				throw(
@@ -420,9 +425,13 @@ component accessors="true" singleton {
 			}
 		} );
 
-
 		// Verify Expiration first
-		if ( dateCompare( ( isDate( decodedToken.exp ) ? decodedToken.exp : fromEpoch( decodedToken.exp ) ), now() ) < 0 ) {
+		if (
+			dateCompare(
+				( isDate( decodedToken.exp ) ? decodedToken.exp : fromEpoch( decodedToken.exp ) ),
+				now()
+			) < 0
+		) {
 			if ( variables.log.canWarn() ) {
 				variables.log.warn( "Token rejected, it has expired", decodedToken );
 			}
@@ -430,28 +439,29 @@ component accessors="true" singleton {
 			// Announce the token expiration
 			variables.interceptorService.processState(
 				"cbSecurity_onJWTExpiration",
-				{
-					token   : arguments.token,
-					payload : decodedToken
-				}
+				{ token : arguments.token, payload : decodedToken }
 			);
 
 			throw( message = "Token has expired", type = "TokenExpiredException" );
 		}
 
 		// Verify that this token has not been invalidated in the storage?
-		if ( variables.settings.jwt.tokenStorage.enabled && !getTokenStorage().exists( decodedToken.jti )  ) {
+		if (
+			variables.settings.jwt.tokenStorage.enabled && !getTokenStorage().exists(
+				decodedToken.jti
+			)
+		) {
 			if ( variables.log.canWarn() ) {
-				variables.log.warn( "Token rejected, it was not found in token storage", decodedToken );
+				variables.log.warn(
+					"Token rejected, it was not found in token storage",
+					decodedToken
+				);
 			}
 
 			// Announce the rejection, token not found in storage
 			variables.interceptorService.processState(
 				"cbSecurity_onJWTStorageRejection",
-				{
-					token   : arguments.token,
-					payload : decodedToken
-				}
+				{ token : arguments.token, payload : decodedToken }
 			);
 
 			throw(
@@ -469,23 +479,26 @@ component accessors="true" singleton {
 			);
 		}
 
-		// Store it on the PRC scope values
-		variables.requestService
-			.getContext()
-			.setPrivateValue( "jwt_token", arguments.token )
-			.setPrivateValue( "jwt_payload", decodedToken );
+		// Store if enabled
+		if ( arguments.storeInContext ) {
+			// Store it on the PRC scope values
+			variables.requestService
+				.getContext()
+				.setPrivateValue( "jwt_token", arguments.token )
+				.setPrivateValue( "jwt_payload", decodedToken );
 
-		// Announce the valid parsing
-		variables.interceptorService.processState(
-			"cbSecurity_onJWTValidParsing",
-			{
-				token   : arguments.token,
-				payload : decodedToken
-			}
-		);
+			// Announce the valid parsing
+			variables.interceptorService.processState(
+				"cbSecurity_onJWTValidParsing",
+				{ token : arguments.token, payload : decodedToken }
+			);
+		}
 
-		// Authenticate the payload, because a token MUST be valid before usage
-		authenticate();
+		// Authenticate if enabled
+		if ( arguments.authenticate ) {
+			// Authenticate the payload, because a token MUST be valid before usage
+			this.authenticate( payload: decodedToken );
+		}
 
 		// Return it
 		return decodedToken;
@@ -678,11 +691,15 @@ component accessors="true" singleton {
 		// Build the appropriate driver
 		switch ( variables.settings.jwt.tokenstorage.driver ) {
 			case "cachebox": {
-				variables.tokenStorage = variables.wirebox.getInstance( "CacheTokenStorage@cbsecurity" );
+				variables.tokenStorage = variables.wirebox.getInstance(
+					"CacheTokenStorage@cbsecurity"
+				);
 				break;
 			}
 			case "db": {
-				variables.tokenStorage = variables.wirebox.getInstance( "DBTokenStorage@cbsecurity" );
+				variables.tokenStorage = variables.wirebox.getInstance(
+					"DBTokenStorage@cbsecurity"
+				);
 				break;
 			}
 			default: {
@@ -702,6 +719,83 @@ component accessors="true" singleton {
 	/****************************** PRIVATE ******************************/
 
 	/**
+	 * Generate an access or refresh token bound to the passed user and custom claims.
+	 *
+	 * @user The user to generate the token for, must implement IAuth and IJwtSubject
+	 * @customClaims A struct of custom claims to add to the jwt token if successful.
+	 *
+	 * @return An access or refresh token
+	 */
+	private function generateToken(
+		required user,
+		struct customClaims = {},
+		boolean refresh     = false
+	){
+		var timestamp = now();
+		var payload   = {
+			// Issuing authority
+			"iss" : variables.settings.jwt.issuer,
+			// Token creation time
+			"iat" : toEpoch( timestamp ),
+			// The subject identifier: user id
+			"sub" : arguments.user.getId(),
+			// The token expiration according to our settings: access or refresh token expiration
+			"exp" : toEpoch(
+				dateAdd(
+					"n",
+					arguments.refresh ? variables.settings.jwt.refreshExpiration : variables.settings.jwt.expiration,
+					timestamp
+				)
+			),
+			// The unique identifier of the token
+			"jti"   : hash( timestamp & arguments.user.getId() ),
+			// Get the user scopes for the JWT token
+			"scope" : arguments.user.getJwtScopes().toList( " " )
+		};
+
+		// Add custom claim if this is a refresh token
+		if ( arguments.refresh ) {
+			payload[ "cbsecurity_refresh" ] = true;
+		}
+
+		// Append user custom claims with override, they take prescedence
+		structAppend(
+			payload,
+			arguments.user.getJwtCustomClaims(),
+			true
+		);
+
+		// Append incoming custom claims with override, they take prescedence
+		structAppend( payload, arguments.customClaims, true );
+
+		// Create the token for the user
+		var jwtToken = this.encode( payload );
+
+		// Store it with the expiration as well if enabled
+		if ( variables.settings.jwt.tokenStorage.enabled ) {
+			getTokenStorage().set(
+				key        = payload.jti,
+				token      = jwtToken,
+				expiration = variables.settings.jwt.expiration,
+				payload    = payload
+			);
+		}
+
+		// Announce the creation
+		variables.interceptorService.processState(
+			"cbSecurity_onJWTCreation",
+			{
+				token   : jwtToken,
+				payload : payload,
+				user    : arguments.user,
+				refresh : arguments.refresh
+			}
+		);
+
+		return jwtToken;
+	}
+
+	/**
 	 * Try to discover the jwt token from many incoming resources:
 	 * - The custom auth header: x-auth-token
 	 * - URL/FORM: x-auth-token
@@ -715,7 +809,10 @@ component accessors="true" singleton {
 		// Discover api token from headers using a custom header or the incoming RC
 		var jwtToken = event.getHTTPHeader(
 			header       = variables.settings.jwt.customAuthHeader,
-			defaultValue = event.getValue( name = variables.settings.jwt.customAuthHeader, defaultValue = "" )
+			defaultValue = event.getValue(
+				name         = variables.settings.jwt.customAuthHeader,
+				defaultValue = ""
+			)
 		);
 
 		// If we found it, return it, else try other headers
@@ -730,6 +827,25 @@ component accessors="true" singleton {
 			.trim();
 	}
 
+	/**
+	 * Try to discover the jwt refresh token from many incoming resources:
+	 * - The custom auth header: x-refresh-token
+	 * - URL/FORM: x-refresh-token
+	 *
+	 * @return The discovered refresh token or an empty string
+	 */
+	private string function discoverRefreshToken(){
+		var event = variables.requestService.getContext();
+
+		// Discover api token from headers using a custom header or the incoming RC
+		return event.getHTTPHeader(
+			header       = variables.settings.jwt.customRefreshHeader,
+			defaultValue = event.getValue(
+				name         = variables.settings.jwt.customRefreshHeader,
+				defaultValue = ""
+			)
+		);
+	}
 
 	/**
 	 * Validate Security for the jwt token

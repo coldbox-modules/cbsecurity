@@ -13,7 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Adobe 2021 Support
 * Migration to github actions from travis
+* Refresh tokens support
 
+### Improvements
+
+* Detect on `authenticate` if the payload is empty and throw the appropriate exceptions
 
 ----
 

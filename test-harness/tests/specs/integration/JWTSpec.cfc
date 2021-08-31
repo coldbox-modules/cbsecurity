@@ -17,11 +17,55 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 	function run(){
 		describe( "JWT Security Services", function(){
-			beforeEach( function(currentSpec){
+			beforeEach( function( currentSpec ){
 				// Setup as a new ColdBox request for this suite, VERY IMPORTANT. ELSE EVERYTHING LOOKS LIKE THE SAME REQUEST.
 				setup();
 				// Get the Service
-				variables.jwtService = getInstance( "jwtService@cbSecurity" );
+				variables.jwtService  = getInstance( "jwtService@cbSecurity" );
+				variables.userService = getInstance( "UserService" );
+			} );
+
+			feature( "CBSecurity refresh tokens", function(){
+				beforeEach( function( currentSpec ){
+					variables.jwtService.getSettings().jwt.enableRefreshTokens = true;
+				} );
+				afterEach( function( currentSpec ){
+					variables.jwtService.getSettings().jwt.enableRefreshTokens = false;
+				} );
+
+				it( "can generate both access and refresh tokens with a valid user", function(){
+					var oUser  = variables.userService.retrieveUserByUsername( "test" );
+					var tokens = variables.jwtService.fromUser( oUser );
+					expect( tokens )
+						.toBeStruct()
+						.toHaveKey( "access_token" )
+						.toHaveKey( "refresh_token" );
+				} );
+
+				it( "can discover refresh tokens via the rc", function(){
+					var token = "eyJ0eXAiOiJKV1QihbGciOiJIUzUxMiJ9.eyJpYXQiOjE1Njg5MDMyODIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvaW5kZXguY2ZtLyIsInN1YiI6MCwiZXhwIjoxNTY4OTA2ODgyLCJqdGkiOiIzRDUyMjUzNDM3Mjk4NjlCQkUzMjQxRUEzNjVEMUJDMyJ9.aCJrcD4TV0ei9lGpmrn0I2WQLrvSUx64BXPJYVi7BzZ2U-yS5ejg";
+					getRequestContext().setValue( "x-refresh-token", token );
+					makePublic( variables.jwtService, "discoverRefreshToken" );
+					expect( variables.jwtService.discoverRefreshToken() ).toBe( token );
+				} );
+
+				it( "can discover refresh tokens and produce an empty result when none passed", function(){
+					getRequestContext().setValue( "x-refresh-token", "" );
+					makePublic( variables.jwtService, "discoverRefreshToken" );
+					expect( variables.jwtService.discoverRefreshToken() ).toBeEmpty();
+				} );
+
+				it( "can refresh tokens via the refreshToken() method", function(){
+					var oUser  = variables.userService.retrieveUserByUsername( "test" );
+					var tokens = variables.jwtService.fromUser( oUser );
+
+					var newTokens = variables.jwtService.refreshToken( tokens.refresh_token );
+					expect( newTokens )
+						.toBeStruct()
+						.toHaveKey( "access_token" )
+						.toHaveKey( "refresh_token" );
+					expect( variables.jwtService.isTokenInStorage( tokens.refresh_token ) ).toBeFalse();
+				} );
 			} );
 
 			given( "no jwt token and accessing a secure api call", function(){
@@ -93,9 +137,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				then( "it should block with no authorization", function(){
 					var thisToken = variables.jwtService.attempt( "test", "test" );
 
-					variables.jwtService
-						.getTokenStorage()
-						.clearAll();
+					variables.jwtService.getTokenStorage().clearAll();
 					getRequestContext().setValue( "x-auth-token", thisToken );
 					var event = execute( route = "/api/secure", renderResults = true );
 
@@ -115,10 +157,10 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					variables.jwtService
 						.getTokenStorage()
 						.set(
-							key 		= thisToken.payload.jti,
-							token 		= thisToken.token,
-							expiration 	= 2,
-							payload		= thisToken.payload
+							key        = thisToken.payload.jti,
+							token      = thisToken.token,
+							expiration = 2,
+							payload    = thisToken.payload
 						);
 					var event = execute( route = "/api/secure", renderResults = true );
 
@@ -140,7 +182,6 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				} );
 			} );
 
-
 			story( "I want to invalidate all tokens in the storage", function(){
 				given( "a valid jwt token and a invalidate all is issued", function(){
 					then( "the storage should be empty", function(){
@@ -152,7 +193,6 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					} );
 				} );
 			} );
-
 		} );
 	}
 
@@ -162,18 +202,18 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 		var service   = variables.jwtService;
 		var payload   = {
 			// Issuing authority
-			"iss"    : service.getSettings().jwt.issuer,
+			"iss"   : service.getSettings().jwt.issuer,
 			// Token creation
-			"iat"    : service.toEpoch( timestamp ),
+			"iat"   : service.toEpoch( timestamp ),
 			// The subject identifier
-			"sub"    : 123,
+			"sub"   : 123,
 			// The token expiration
-			"exp"    : service.toEpoch( dateAdd( "n", 1, timestamp ) ),
+			"exp"   : service.toEpoch( dateAdd( "n", 1, timestamp ) ),
 			// The unique identifier of the token
-			"jti"    : hash( timestamp & userId ),
+			"jti"   : hash( timestamp & userId ),
 			// Get the user scopes for the JWT token
 			"scope" : [],
-			"role"   : "admin"
+			"role"  : "admin"
 		};
 
 		return { "token" : service.encode( payload ), "payload" : payload };
