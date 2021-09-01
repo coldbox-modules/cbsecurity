@@ -268,6 +268,11 @@ component accessors="true" singleton {
 	 * @token The token to invalidate
 	 */
 	boolean function invalidate( required token ){
+		// If not enabled, skip out
+		if ( !variables.settings.jwt.tokenStorage.enabled ) {
+			return false;
+		}
+
 		if ( variables.log.canInfo() ) {
 			variables.log.info( "Token invalidation request issued for :#arguments.token#" );
 		}
@@ -290,6 +295,11 @@ component accessors="true" singleton {
 	 * @async Run the clearing asynchronously or not, default is false
 	 */
 	JwtService function invalidateAll( boolean async = false ){
+		// If not enabled, skip out
+		if ( !variables.settings.jwt.tokenStorage.enabled ) {
+			return false;
+		}
+
 		if ( variables.log.canInfo() ) {
 			variables.log.info( "Token invalidation request issued for all tokens" );
 		}
@@ -313,6 +323,10 @@ component accessors="true" singleton {
 	 * @token The token to check
 	 */
 	boolean function isTokenInStorage( required token ){
+		// If not enabled, skip out
+		if ( !variables.settings.jwt.tokenStorage.enabled ) {
+			return false;
+		}
 		return getTokenStorage().exists( this.decode( arguments.token ).jti );
 	}
 
@@ -350,7 +364,7 @@ component accessors="true" singleton {
 		// Build new tokens according to validated user
 		var results = fromUser( oUser );
 
-		// Invalidate the refresh token
+		// Invalidate the refresh token: Token Rotation
 		invalidate( arguments.token );
 
 		// Return new token set
@@ -848,11 +862,12 @@ component accessors="true" singleton {
 	}
 
 	/**
-	 * Validate Security for the jwt token
+	 * Validate Security for the jwt token called by an annotation or rule validation event
 	 *
 	 * @permissions The permissions we want to validate in the scopes
 	 */
 	private function validateSecurity( required permissions ){
+		// Prepare results packet
 		var results = {
 			"allow"    : false,
 			"type"     : "authentication",
@@ -862,7 +877,35 @@ component accessors="true" singleton {
 		try {
 			// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
 			var payload = getPayload();
-		} catch ( Any e ) {
+		}
+		// Access Token Has Expired
+		catch ( TokenExpiredException e ) {
+			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
+			var refreshToken = discoverRefreshToken();
+			if ( variabels.settings.jwt.autoRefreshValidator && len( refreshToken ) ) {
+				// Refresh tokens
+				var newTokens = refreshToken( refreshToken );
+				// Setup payload for current request
+				payload       = parseToken( newTokens.access_token );
+				// Send back as headers now that they are refreshed
+				variables.requestService
+					.getContext()
+					.setHTTPHeader(
+						name : variables.settings.jwt.customAuthHeader,
+						value: newTokens.access_token
+					)
+					.setHTTPHeader(
+						name : variables.settings.jwt.customRefreshHeader,
+						value: newTokens.refresh_token
+					);
+			} else {
+				// Error out as normal
+				results.messages = e.type & ":" & e.message;
+				return results;
+			}
+		}
+		// All other exceptions
+		catch ( Any e ) {
 			results.messages = e.type & ":" & e.message;
 			return results;
 		}

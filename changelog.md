@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Adobe 2021 Support
 * Migration to github actions from travis
 * Refresh tokens support
+* Refresh token endpoint /cbsecurity/refreshtToken
+* Manual refresh token method: `refreshToken( token )`
+* Auto refresh token header interceptions
+
+### Fixed
+
+* If `variables.settings.jwt.tokenStorage.enabled` is disabled all invalidations failed, make sure if the storage is disabled to not throw storage exceptions.
 
 ### Improvements
 
