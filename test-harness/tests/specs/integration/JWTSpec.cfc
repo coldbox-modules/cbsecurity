@@ -3,17 +3,32 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
-		structDelete( application, "cbController" );
+		clearFrameworks();
 		super.beforeAll();
-		// do your own stuff here
 
+		// Fixtures
 		variables.expired_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE1NjkyNzI0NjQsInJvbGUiOiJhZG1pbiIsInNjb3BlcyI6W10sImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvIiwic3ViIjoxMjMsImV4cCI6MTU2OTI3MjQ2NSwianRpIjoiRTRDNEM3MDdFNjA1MzQwRDkxRDNCMDBCMkI4NTdFNDMifQ.N2rT_b_Xp8e9Hw0O7yVork6Fg8aC7RKf0Fv-Bmu7Iv5CVvFrmk1gkF_oKeXmcl22MiwhB2oQJhMNZiFa5OfSKw";
 		variables.invalid_token = "eyJ0eXAiOiJKV1QihbGciOiJIUzUxMiJ9.eyJpYXQiOjE1Njg5MDMyODIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvaW5kZXguY2ZtLyIsInN1YiI6MCwiZXhwIjoxNTY4OTA2ODgyLCJqdGkiOiIzRDUyMjUzNDM3Mjk4NjlCQkUzMjQxRUEzNjVEMUJDMyJ9.aCJrcD4TV0ei9lGpmrn0I2WQLrvSUx64BXPJYVi7BzZ2U-yS5ejg";
+		// Setup Services
+		variables.jwtService    = getInstance( "jwtService@cbSecurity" );
+		variables.userService   = getInstance( "UserService" );
+		// Setup Cache Storage For Easier Testing
+		variables.jwtService.getSettings().jwt.tokenStorage.enabled = true;
+		variables.jwtService.getSettings().jwt.tokenStorage.driver = "cachebox";
+		variables.jwtService.getSettings().jwt.tokenStorage.properties = { "cacheName" : "default" };
+		// Recreate Token Storage
+		variables.jwtService.getTokenStorage( force: true );
 	}
 
 	function afterAll(){
 		// do your own stuff here
 		super.afterAll();
+		clearFrameworks();
+	}
+
+	function clearFrameworks(){
+		structDelete( application, "cbController" );
+		structDelete( application, "wirebox" );
 	}
 
 	/*********************************** BDD SUITES ***********************************/
@@ -23,9 +38,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 			beforeEach( function( currentSpec ){
 				// Setup as a new ColdBox request for this suite, VERY IMPORTANT. ELSE EVERYTHING LOOKS LIKE THE SAME REQUEST.
 				setup();
-				// Get the Service
-				variables.jwtService  = getInstance( "jwtService@cbSecurity" );
-				variables.userService = getInstance( "UserService" );
+				variables.jwtService.getTokenStorage().clearAll();
 			} );
 
 			feature( "CBSecurity refresh tokens", function(){
@@ -36,11 +49,9 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					variables.jwtService.getSettings().jwt.enableRefreshTokens = false;
 				} );
 
-
 				story( "I can auto refresh tokens by using the autoRefreshValidator setting and the JWT Validator", function(){
 					beforeEach( function( currentSpec ){
 						variables.jwtService.getSettings().jwt.enableAutoRefreshValidator = true;
-						variables.jwtService.getSettings().jwt.tokenStorage.enabled = false;
 						makePublic( variables.jwtService, "validateSecurity" );
 					} );
 					afterEach( function( currentSpec ){
@@ -58,7 +69,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							getRequestContext().setValue( "x-auth-token", variables.expired_token );
 							var results = variables.jwtService.validateSecurity( "" );
 							expect( results.allow ).toBeFalse();
-							expect( results.messages ).toInclude( "TokenInvalidException" );
+							expect( results.messages ).toInclude( "TokenExpiredException" );
 						} );
 					} );
 					given( "Auto refresh is on and an expired access token is sent with a good refresh token", function(){
@@ -70,7 +81,6 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							getRequestContext().setValue( "x-refresh-token", tokens.refresh_token );
 
 							var results = variables.jwtService.validateSecurity( "" );
-							writeDump( var = results );
 							expect( results.allow ).toBeTrue();
 						} );
 					} );
@@ -132,6 +142,45 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					} );
 				} );
 
+				story( "I want to refresh tokens manually via the refreshToken() method", function(){
+					given( "a valid refresh token", function(){
+						then( "it should create new access and refresh tokens and invalidate the old refresh token", function(){
+							var oUser     = variables.userService.retrieveUserByUsername( "test" );
+							var tokens    = variables.jwtService.fromUser( oUser );
+							var newTokens = variables.jwtService.refreshToken(
+								tokens.refresh_token
+							);
+							expect( newTokens )
+								.toBeStruct()
+								.toHaveKey( "access_token" )
+								.toHaveKey( "refresh_token" );
+							expect( variables.jwtService.isTokenInStorage( tokens.refresh_token ) ).toBeFalse();
+							expect(
+								variables.jwtService.isTokenInStorage( newTokens.access_token )
+							).toBeTrue();
+							expect(
+								variables.jwtService.isTokenInStorage( newTokens.refresh_token )
+							).toBeTrue();
+						} );
+					} );
+					given( "an invalid refresh token", function(){
+						then( "an exception should be thrown", function(){
+							expect( function(){
+								var newTokens = variables.jwtService.refreshToken( "1234" );
+							} ).toThrow();
+						} );
+					} );
+					given( "an expired refresh token", function(){
+						then( "an exception should be thrown", function(){
+							expect( function(){
+								var newTokens = variables.jwtService.refreshToken(
+									variables.expired_token
+								);
+							} ).toThrow();
+						} );
+					} );
+				} );
+
 				it( "can generate both access and refresh tokens with a valid user", function(){
 					var oUser  = variables.userService.retrieveUserByUsername( "test" );
 					var tokens = variables.jwtService.fromUser( oUser );
@@ -152,18 +201,6 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					getRequestContext().setValue( "x-refresh-token", "" );
 					makePublic( variables.jwtService, "discoverRefreshToken" );
 					expect( variables.jwtService.discoverRefreshToken() ).toBeEmpty();
-				} );
-
-				it( "can refresh tokens via the refreshToken() method", function(){
-					var oUser  = variables.userService.retrieveUserByUsername( "test" );
-					var tokens = variables.jwtService.fromUser( oUser );
-
-					var newTokens = variables.jwtService.refreshToken( tokens.refresh_token );
-					expect( newTokens )
-						.toBeStruct()
-						.toHaveKey( "access_token" )
-						.toHaveKey( "refresh_token" );
-					expect( variables.jwtService.isTokenInStorage( tokens.refresh_token ) ).toBeFalse();
 				} );
 			} );
 

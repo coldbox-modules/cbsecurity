@@ -707,11 +707,13 @@ component accessors="true" singleton {
 	/**
 	 * Get the appropriate token storage provider
 	 *
+	 * @force If true, it will rebuild the storage using the settings, else it does lazy loading checks
+	 *
 	 * @return cbsecurity.interfaces.jwt.IJwtStorage
 	 */
-	function getTokenStorage(){
-		// If loaded, use it!
-		if ( !isNull( variables.tokenStorage ) ) {
+	function getTokenStorage( boolean force = false ){
+		// If loaded, use it! Unless force = true
+		if ( !isNull( variables.tokenStorage ) && !arguments.force ) {
 			return variables.tokenStorage;
 		}
 
@@ -775,7 +777,7 @@ component accessors="true" singleton {
 				)
 			),
 			// The unique identifier of the token
-			"jti"   : hash( timestamp & arguments.user.getId() ),
+			"jti"   : hash( timestamp & arguments.user.getId() & getTickCount() & rand( "SHA1PRNG" ) ),
 			// Get the user scopes for the JWT token
 			"scope" : arguments.user.getJwtScopes().toList( " " )
 		};
