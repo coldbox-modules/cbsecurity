@@ -56,11 +56,4 @@ component accessors="true" {
 			.len();
 	}
 
-	/**
-	 * Shortcut to verify it the user is logged in or not.
-	 */
-	boolean function isLoggedIn(){
-		return auth.isLoggedIn();
-	}
-
 }

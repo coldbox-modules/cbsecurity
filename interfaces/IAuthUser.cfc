@@ -19,9 +19,4 @@ interface{
      */
     boolean function hasPermission( required permission );
 
-    /**
-     * Shortcut to verify it the user is logged in or not.
-     */
-    boolean function isLoggedIn();
-
 }
