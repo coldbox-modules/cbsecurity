@@ -33,6 +33,64 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					variables.jwtService.getSettings().jwt.enableRefreshTokens = false;
 				} );
 
+				story( "I can refresh tokens via the /refreshtoken endpoint", function(){
+					given( "The endpoint is disabled", function(){
+						then( "it should 404 a response", function(){
+							variables.jwtService.getSettings().jwt.enableRefreshEndpoint = false;
+							var event = this.post( "/cbsecurity/refreshtoken" );
+							expect( event.getResponse().getStatusCode() ).toBe(
+								404,
+								event.getResponse().getMessagesString()
+							);
+						} );
+					} );
+					given( "An activated endpoint but no refresh tokens passed", function(){
+						then( "it should 400 a response", function(){
+							variables.jwtService.getSettings().jwt.enableRefreshEndpoint = true;
+							var event = this.post( "/cbsecurity/refreshtoken" );
+							expect( event.getResponse().getStatusCode() ).toBe(
+								400,
+								event.getResponse().getMessagesString()
+							);
+						} );
+					} );
+					given( "An activated endpoint and a valid refresh token", function(){
+						then( "it should 200 a response with new refresh tokens", function(){
+							var oUser  = variables.userService.retrieveUserByUsername( "test" );
+							var tokens = variables.jwtService.fromUser( oUser );
+							variables.jwtService.getSettings().jwt.enableRefreshEndpoint = true;
+
+							var event = this.post(
+								"/cbsecurity/refreshtoken",
+								{ "x-refresh-token" : tokens.refresh_token }
+							);
+							expect( event.getResponse().getStatusCode() ).toBe(
+								200,
+								event.getResponse().getMessagesString()
+							);
+							expect( event.getResponse().getData() )
+								.toBeStruct()
+								.toHaveKey( "access_token" )
+								.toHaveKey( "refresh_token" );
+						} );
+					} );
+					given( "An activated endpoint and an invalid refresh token", function(){
+						then( "it should kick me out", function(){
+							variables.jwtService.getSettings().jwt.enableRefreshEndpoint = true;
+							var event = this.post(
+								"/cbsecurity/refreshtoken",
+								{
+									"x-refresh-token" : "eyJ0eXAiOiJKV1QihbGciOiJIUzUxMiJ9.eyJpYXQiOjE1Njg5MDMyODIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvaW5kZXguY2ZtLyIsInN1YiI6MCwiZXhwIjoxNTY4OTA2ODgyLCJqdGkiOiIzRDUyMjUzNDM3Mjk4NjlCQkUzMjQxRUEzNjVEMUJDMyJ9.aCJrcD4TV0ei9lGpmrn0I2WQLrvSUx64BXPJYVi7BzZ2U-yS5ejg"
+								}
+							);
+							expect( event.getResponse().getStatusCode() ).toBe(
+								401,
+								event.getResponse().getMessagesString()
+							);
+						} );
+					} );
+				} );
+
 				it( "can generate both access and refresh tokens with a valid user", function(){
 					var oUser  = variables.userService.retrieveUserByUsername( "test" );
 					var tokens = variables.jwtService.fromUser( oUser );

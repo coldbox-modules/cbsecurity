@@ -107,7 +107,8 @@ component {
 			}
 		};
 
-		// Visualizer Route
+		// CBSecurity Routes
+		router.post( "/refreshtoken" ).to( "Home.refreshToken" );
 		router.route( "/" ).to( "Home.index" );
 
 		// Security Interceptions

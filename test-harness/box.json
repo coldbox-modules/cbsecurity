@@ -9,7 +9,8 @@
         "cbauth":"^5.0.0",
         "BCrypt":"^2.0.0",
         "jwt-cfml":"^1.0.0",
-        "cbcsrf":"^2.0.0+21"
+        "cbcsrf":"^2.0.0+21",
+        "route-visualizer":"^1.4.0+24"
     },
     "devDependencies":{
         "testbox":"*",
