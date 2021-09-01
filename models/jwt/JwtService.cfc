@@ -613,7 +613,8 @@ component accessors="true" singleton {
 	 *
 	 * @token The token to decode
 	 *
-	 * @throws InvalidToken
+	 * @throws TokenInvalidException - When the token cannot be decoded
+	 * @throws TokenExpiredException - When the token has expired
 	 */
 	struct function decode( required token ){
 		try {
@@ -623,6 +624,18 @@ component accessors="true" singleton {
 				algorithms = variables.settings.jwt.algorithm,
 				claims     = { "iss" : variables.settings.jwt.issuer }
 			);
+		} catch ( "jwtcfml.ExpiredSignature" e ) {
+			if ( variables.log.canWarn() ) {
+				variables.log.warn( "Token rejected, it has expired", arguments.token );
+			}
+
+			// Announce the token expiration
+			variables.interceptorService.processState(
+				"cbSecurity_onJWTExpiration",
+				{ token : arguments.token }
+			);
+
+			throw( type = "TokenExpiredException", message = "Token has expired" );
 		} catch ( any e ) {
 			throw(
 				message = "Cannot decode token: #e.message#",
@@ -876,16 +889,18 @@ component accessors="true" singleton {
 
 		try {
 			// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
+			// This takes care of authenticating the jwt tokens for us.
+			// getPayload() => parseToken() => authenticateToken()
 			var payload = getPayload();
 		}
 		// Access Token Has Expired
 		catch ( TokenExpiredException e ) {
 			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
 			var refreshToken = discoverRefreshToken();
-			if ( variabels.settings.jwt.autoRefreshValidator && len( refreshToken ) ) {
-				// Refresh tokens
-				var newTokens = refreshToken( refreshToken );
-				// Setup payload for current request
+			if ( variables.settings.jwt.enableAutoRefreshValidator && len( refreshToken ) ) {
+				// Try to Refresh the tokens
+				var newTokens = this.refreshToken( refreshToken );
+				// Setup payload + authenticate for current request
 				payload       = parseToken( newTokens.access_token );
 				// Send back as headers now that they are refreshed
 				variables.requestService

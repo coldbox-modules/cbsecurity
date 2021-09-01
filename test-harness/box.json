@@ -10,7 +10,8 @@
         "BCrypt":"^2.0.0",
         "jwt-cfml":"^1.0.0",
         "cbcsrf":"^2.0.0+21",
-        "route-visualizer":"^1.4.0+24"
+        "route-visualizer":"^1.4.0+24",
+        "testbox":"be"
     },
     "devDependencies":{
         "testbox":"*",

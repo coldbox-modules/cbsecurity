@@ -6,6 +6,9 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 		structDelete( application, "cbController" );
 		super.beforeAll();
 		// do your own stuff here
+
+		variables.expired_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE1NjkyNzI0NjQsInJvbGUiOiJhZG1pbiIsInNjb3BlcyI6W10sImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvIiwic3ViIjoxMjMsImV4cCI6MTU2OTI3MjQ2NSwianRpIjoiRTRDNEM3MDdFNjA1MzQwRDkxRDNCMDBCMkI4NTdFNDMifQ.N2rT_b_Xp8e9Hw0O7yVork6Fg8aC7RKf0Fv-Bmu7Iv5CVvFrmk1gkF_oKeXmcl22MiwhB2oQJhMNZiFa5OfSKw";
+		variables.invalid_token = "eyJ0eXAiOiJKV1QihbGciOiJIUzUxMiJ9.eyJpYXQiOjE1Njg5MDMyODIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvaW5kZXguY2ZtLyIsInN1YiI6MCwiZXhwIjoxNTY4OTA2ODgyLCJqdGkiOiIzRDUyMjUzNDM3Mjk4NjlCQkUzMjQxRUEzNjVEMUJDMyJ9.aCJrcD4TV0ei9lGpmrn0I2WQLrvSUx64BXPJYVi7BzZ2U-yS5ejg";
 	}
 
 	function afterAll(){
@@ -31,6 +34,46 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				} );
 				afterEach( function( currentSpec ){
 					variables.jwtService.getSettings().jwt.enableRefreshTokens = false;
+				} );
+
+
+				story( "I can auto refresh tokens by using the autoRefreshValidator setting and the JWT Validator", function(){
+					beforeEach( function( currentSpec ){
+						variables.jwtService.getSettings().jwt.enableAutoRefreshValidator = true;
+						variables.jwtService.getSettings().jwt.tokenStorage.enabled = false;
+						makePublic( variables.jwtService, "validateSecurity" );
+					} );
+					afterEach( function( currentSpec ){
+						variables.jwtService.getSettings().jwt.enableAutoRefreshValidator = false;
+					} );
+					given( "Auto refresh is on and no access or refresh token is sent", function(){
+						then( "the validation should fail", function(){
+							var results = variables.jwtService.validateSecurity( "" );
+							expect( results.allow ).toBeFalse();
+							expect( results.messages ).toInclude( "TokenNotFoundException" );
+						} );
+					} );
+					given( "Auto refresh is on and an expired access token is sent but no refresh token is sent", function(){
+						then( "the validation should fail", function(){
+							getRequestContext().setValue( "x-auth-token", variables.expired_token );
+							var results = variables.jwtService.validateSecurity( "" );
+							expect( results.allow ).toBeFalse();
+							expect( results.messages ).toInclude( "TokenInvalidException" );
+						} );
+					} );
+					given( "Auto refresh is on and an expired access token is sent with a good refresh token", function(){
+						then( "the validation should pass and we should return our two new tokens as headers", function(){
+							var oUser  = variables.userService.retrieveUserByUsername( "test" );
+							var tokens = variables.jwtService.fromUser( oUser );
+
+							getRequestContext().setValue( "x-auth-token", variables.expired_token );
+							getRequestContext().setValue( "x-refresh-token", tokens.refresh_token );
+
+							var results = variables.jwtService.validateSecurity( "" );
+							writeDump( var = results );
+							expect( results.allow ).toBeTrue();
+						} );
+					} );
 				} );
 
 				story( "I can refresh tokens via the /refreshtoken endpoint", function(){
@@ -79,9 +122,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							variables.jwtService.getSettings().jwt.enableRefreshEndpoint = true;
 							var event = this.post(
 								"/cbsecurity/refreshtoken",
-								{
-									"x-refresh-token" : "eyJ0eXAiOiJKV1QihbGciOiJIUzUxMiJ9.eyJpYXQiOjE1Njg5MDMyODIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvaW5kZXguY2ZtLyIsInN1YiI6MCwiZXhwIjoxNTY4OTA2ODgyLCJqdGkiOiIzRDUyMjUzNDM3Mjk4NjlCQkUzMjQxRUEzNjVEMUJDMyJ9.aCJrcD4TV0ei9lGpmrn0I2WQLrvSUx64BXPJYVi7BzZ2U-yS5ejg"
-								}
+								{ "x-refresh-token" : variables.invalid_token }
 							);
 							expect( event.getResponse().getStatusCode() ).toBe(
 								401,
@@ -101,7 +142,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				} );
 
 				it( "can discover refresh tokens via the rc", function(){
-					var token = "eyJ0eXAiOiJKV1QihbGciOiJIUzUxMiJ9.eyJpYXQiOjE1Njg5MDMyODIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvaW5kZXguY2ZtLyIsInN1YiI6MCwiZXhwIjoxNTY4OTA2ODgyLCJqdGkiOiIzRDUyMjUzNDM3Mjk4NjlCQkUzMjQxRUEzNjVEMUJDMyJ9.aCJrcD4TV0ei9lGpmrn0I2WQLrvSUx64BXPJYVi7BzZ2U-yS5ejg";
+					var token = variables.invalid_token;
 					getRequestContext().setValue( "x-refresh-token", token );
 					makePublic( variables.jwtService, "discoverRefreshToken" );
 					expect( variables.jwtService.discoverRefreshToken() ).toBe( token );
@@ -148,10 +189,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 			given( "an invalid jwt token and accessing a secure api call", function(){
 				then( "it should block with no authorization", function(){
-					getRequestContext().setValue(
-						"x-auth-token",
-						"eyJ0eXAiOiJKV1QihbGciOiJIUzUxMiJ9.eyJpYXQiOjE1Njg5MDMyODIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvaW5kZXguY2ZtLyIsInN1YiI6MCwiZXhwIjoxNTY4OTA2ODgyLCJqdGkiOiIzRDUyMjUzNDM3Mjk4NjlCQkUzMjQxRUEzNjVEMUJDMyJ9.aCJrcD4TV0ei9lGpmrn0I2WQLrvSUx64BXPJYVi7BzZ2U-yS5ejg"
-					);
+					getRequestContext().setValue( "x-auth-token", variables.invalid_token );
 					var event = execute( route = "/api/secure", renderResults = true );
 					expect( event.getCurrentEvent() ).toBe( "api:Home.onInvalidAuth" );
 					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
@@ -163,10 +201,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 			given( "a valid jwt token with no required claims and accessing a secure api call", function(){
 				then( "it should block with no authorization", function(){
-					getRequestContext().setValue(
-						"x-auth-token",
-						"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE1NjkyNzIwOTksInNjb3BlcyI6W10sImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvIiwic3ViIjoxMjMsImV4cCI6MTU2OTI3MjEwMCwianRpIjoiMTkzQ0NFNUIwNjRENUJEMERENjcxRTQ4N0EzNzI3Q0QifQ.QovEexPi5BCca_N_LHv9R2dUF-GOHbUKOSIzRT7udsHL0zGkkzkVeVPR1_ccxciGoJL_IZaI0AG9_gHKk2Yf9g"
-					);
+					getRequestContext().setValue( "x-auth-token", variables.invalid_token );
 					var event = execute( route = "/api/secure", renderResults = true );
 					expect( event.getCurrentEvent() ).toBe( "api:Home.onInvalidAuth" );
 					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
@@ -178,10 +213,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 			given( "a valid jwt token that's expired", function(){
 				then( "it should block with no authorization", function(){
-					getRequestContext().setValue(
-						"x-auth-token",
-						"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE1NjkyNzI0NjQsInJvbGUiOiJhZG1pbiIsInNjb3BlcyI6W10sImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvIiwic3ViIjoxMjMsImV4cCI6MTU2OTI3MjQ2NSwianRpIjoiRTRDNEM3MDdFNjA1MzQwRDkxRDNCMDBCMkI4NTdFNDMifQ.N2rT_b_Xp8e9Hw0O7yVork6Fg8aC7RKf0Fv-Bmu7Iv5CVvFrmk1gkF_oKeXmcl22MiwhB2oQJhMNZiFa5OfSKw"
-					);
+					getRequestContext().setValue( "x-auth-token", variables.expired_token );
 					var event = execute( route = "/api/secure", renderResults = true );
 					expect( event.getCurrentEvent() ).toBe( "api:Home.onInvalidAuth" );
 					expect( event.valueExists( "relocate_event" ) ).toBeFalse();
