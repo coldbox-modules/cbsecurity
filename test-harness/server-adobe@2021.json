@@ -1,8 +1,8 @@
 {
-    "name":"cbsecurity-adobe@2018",
+    "name":"cbsecurity-adobe@2021",
     "app":{
-        "serverHomeDirectory":".engine/adobe2018",
-        "cfengine":"adobe@2018"
+        "serverHomeDirectory":".engine/adobe2021",
+        "cfengine":"adobe@2021"
     },
     "web":{
         "http":{

@@ -5,15 +5,17 @@
     "private":true,
     "description":"",
     "dependencies":{
-        "coldbox":"^5.0.0",
-        "testbox":"be",
+        "coldbox":"^6.0.0",
         "cbauth":"^5.0.0",
-        "BCrypt":"^2.5.0-snapshot",
+        "BCrypt":"^2.0.0",
         "jwt-cfml":"^1.0.0",
-        "cbcsrf":"^2.0.0+21"
+        "cbcsrf":"^2.0.0+21",
+        "route-visualizer":"^1.4.0+24",
+        "testbox":"be"
     },
     "devDependencies":{
-        "route-visualizer":"^1.2.0+4"
+        "testbox":"*",
+        "route-visualizer":"*"
     },
     "installPaths":{
         "coldbox":"coldbox/",
@@ -28,8 +30,8 @@
         "runner":"http://localhost:60299/tests/runner.cfm"
     },
     "scripts":{
-        "format":"cfformat run config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --overwrite",
-        "format:watch":"cfformat run config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --watch",
-        "format:check":"cfformat run config/**.cfc,handlers/**.cfc,models/**.cfc,modules_app/**.cfc,tests/specs/**/*.cfc --check"
+        "cfpm":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\"' | run",
+        "cfpm:install":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\" install ${1}' | run",
+        "install:2021":"run-script cfpm:install zip,mysql,debugger"
     }
 }

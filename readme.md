@@ -7,6 +7,7 @@ This module will enhance your ColdBox applications by providing out of the box s
 - A security rule engine for incoming requests
 - Annotation driven security for handlers and actions
 - JWT (Json Web Tokens) generator, decoder and authentication services
+- Refresh and Access tokens
 - Pluggable with any Authentication service or can leverage [cbauth](https://github.com/elpete/cbauth) by default
 - Capability to distinguish between invalid authentication and invalid authorization and determine an outcome of the process.  
 - Ability to load/unload security rules from contributing modules. So you can create a nice HMVC hierarchy of security.
@@ -102,7 +103,15 @@ cbsecurity = {
 		// If true, enables refresh tokens, longer lived tokens (not implemented yet)
 		"enableRefreshTokens"     : false,
 		// The default expiration for refresh tokens, defaults to 30 days
-		"refreshExpiration"       : 43200,
+		"refreshExpiration"          : 10080,
+		// The Custom header to inspect for refresh tokens
+		"customRefreshHeader"        : "x-refresh-token",
+		// If enabled, the JWT validator will inspect the request for refresh tokens and expired access tokens
+		// It will then automatically refresh them for you and return them back as
+		// response headers in the same request according to the customRefreshHeader and customAuthHeader
+		"enableAutoRefreshValidator" : false,
+		// Enable the POST > /cbsecurity/refreshtoken API endpoint
+		"enableRefreshEndpoint"      : true,
 		// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
 		"algorithm"               : "HS512",
 		// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
@@ -443,7 +452,9 @@ This module also ships with a security visualizer that will document all your se
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
 www.coldbox.org | www.luismajano.com | www.ortussolutions.com
 ********************************************************************************
+
 ### HONOR GOES TO GOD ABOVE ALL
+
 Because of His grace, this project exists. If you don't like this, then don't read it, its not for you.
 
 >"Therefore being justified by faith, we have peace with God through our Lord Jesus Christ:
