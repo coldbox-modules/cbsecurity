@@ -16,7 +16,7 @@
  * cbsecure().secure();
  * </pre>
  */
-component singleton accessors="true" {
+component threadsafe singleton accessors="true" {
 
 	/*********************************************************************************************/
 	/** DI **/

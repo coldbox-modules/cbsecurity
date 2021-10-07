@@ -20,7 +20,7 @@
  * - subject : varchar 255
  *
  */
-component accessors="true" singleton {
+component accessors="true" singleton threadsafe{
 
 	// DI
 	property name="wirebox"    inject="wirebox";

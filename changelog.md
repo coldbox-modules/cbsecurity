@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
-## [2.13.0] => 2021-SEP-
+## [2.14.0] => 2021-OCT-07
+
+### Added
+
+* `threadsafe` annotation to all models to prevent invalid creations under load, since we don't use circular dependencies.
+
+----
+
+## [2.13.0] => 2021-SEP-02
 
 ### Added
 
