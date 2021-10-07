@@ -4,7 +4,7 @@
  * ---
  * Rule loader service
  */
-component accessors="true" singleton {
+component accessors="true" singleton threadsafe{
 
 	// DI
 	property name="controller" inject="coldbox";

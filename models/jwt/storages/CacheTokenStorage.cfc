@@ -4,7 +4,7 @@
  * ---
  * A CacheBox cache based token storage
  */
-component accessors="true" singleton {
+component accessors="true" singleton threadsafe{
 
 	// DI
 	property name="wirebox"    inject="wirebox";

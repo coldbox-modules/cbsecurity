@@ -5,7 +5,7 @@
  * This is the core validator which leverages CBAuth
  * https://helpx.adobe.com/coldfusion/developing-applications/developing-cfml-applications/securing-applications/using-coldfusion-security-tags-and-functions.html
  */
-component singleton {
+component singleton threadsafe{
 
 	// Injection
 	property name="cbSecurity" inject="CBSecurity@cbSecurity";

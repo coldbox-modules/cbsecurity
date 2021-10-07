@@ -5,7 +5,7 @@
  * This is the core validator which leverages CF Security via cflogin and cfloginuser
  * https://helpx.adobe.com/coldfusion/developing-applications/developing-cfml-applications/securing-applications/using-coldfusion-security-tags-and-functions.html
  */
-component singleton {
+component singleton threadsafe{
 
 	/**
 	 * This function is called once an incoming event matches a security rule.
