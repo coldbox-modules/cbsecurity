@@ -60,9 +60,16 @@ jobs:
 
       - name: Start ${{ matrix.cfengine }} Server
         working-directory: ./test-harness
-        run: |
-          box server start serverConfigFile="server-${{ matrix.cfengine }}.json" --noSaveSettings --debug
-          curl http://127.0.0.1:60299
+        run: box server start serverConfigFile="server-${{ matrix.cfengine }}.json" --noSaveSettings --debug
+
+      - name: CFPM Setup
+        if: ${{ matrix.cfengine == 'adobe@2021' }}
+        working-directory: ./test-harness
+        run: box run-script install:2021
+
+      - name: Prime ${{ matrix.cfengine }} server
+        working-directory: ./test-harness
+        run: curl http://127.0.0.1:60299
 
       - name: Run Tests
         working-directory: ./test-harness

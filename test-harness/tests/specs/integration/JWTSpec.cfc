@@ -163,6 +163,32 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							).toBeTrue();
 						} );
 					} );
+					given( "any custom claims", function(){
+						then( "it should pass them on to the new tokens", function(){
+							var oUser     = variables.userService.retrieveUserByUsername( "test" );
+							var tokens    = variables.jwtService.fromUser( oUser );
+							var newTokens = variables.jwtService.refreshToken(
+								tokens.refresh_token,
+								{ "foo" : "bar" }
+							);
+							expect( newTokens )
+								.toBeStruct()
+								.toHaveKey( "access_token" )
+								.toHaveKey( "refresh_token" );
+
+							var decodedAccessToken = variables.jwtService.decode(
+								newTokens.access_token
+							);
+							expect( decodedAccessToken ).toHaveKey( "foo" );
+							expect( decodedAccessToken.foo ).toBe( "bar" );
+							var decodedRefreshToken = variables.jwtService.decode(
+								newTokens.refresh_token
+							);
+							expect( decodedRefreshToken ).toHaveKey( "foo" );
+							expect( decodedRefreshToken.foo ).toBe( "bar" );
+						} );
+					} );
+
 					given( "an invalid refresh token", function(){
 						then( "an exception should be thrown", function(){
 							expect( function(){

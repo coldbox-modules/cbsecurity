@@ -14,10 +14,7 @@
  *	* eventArguments : The struct of args to pass to the event
  *	* renderResults : Render back the results of the event
  *******************************************************************************/
-component
-	extends="coldbox.system.testing.BaseTestCase"
-	appMapping="/root"
-{
+component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
@@ -36,7 +33,7 @@ component
 
 	function run(){
 		describe( "Security module", function(){
-			beforeEach( function(currentSpec){
+			beforeEach( function( currentSpec ){
 				// Setup as a new ColdBox request for this suite, VERY IMPORTANT. ELSE EVERYTHING LOOKS LIKE THE SAME REQUEST.
 				setup();
 				cbauth = getInstance( "authenticationService@cbauth" );
@@ -115,7 +112,9 @@ component
 
 					given( "a module unload call", function(){
 						then( "it should unload module rules if the module is unloaded", function(){
-							var security = getWireBox().getInstance( "interceptor-cbsecurity@global" );
+							var security = getWireBox().getInstance(
+								"interceptor-cbsecurity@global"
+							);
 							var oldRules = security.getProperty( "rules" );
 
 							// Issue unload
