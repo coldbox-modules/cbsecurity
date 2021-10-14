@@ -4,12 +4,12 @@
  * ---
  * A CacheBox cache based token storage
  */
-component accessors="true" singleton threadsafe{
+component accessors="true" singleton threadsafe {
 
 	// DI
-	property name="wirebox"    inject="wirebox";
-	property name="cachebox"   inject="cachebox";
-	property name="settings"   inject="coldbox:moduleSettings:cbSecurity";
+	property name="wirebox" inject="wirebox";
+	property name="cachebox" inject="cachebox";
+	property name="settings" inject="coldbox:moduleSettings:cbSecurity";
 	property name="jwtService" inject="JwtService@cbSecurity";
 
 	/**

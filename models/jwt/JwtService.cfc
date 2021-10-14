@@ -5,7 +5,7 @@
  * This is the JWT Services that will provide you with glorious JWT capabilities.
  * Learn more about Json Web Tokens here: https://jwt.io/
  */
-component accessors="true" singleton threadsafe{
+component accessors="true" singleton threadsafe {
 
 	/*********************************************************************************************/
 	/** DI **/

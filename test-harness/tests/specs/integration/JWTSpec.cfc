@@ -169,17 +169,21 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							var tokens    = variables.jwtService.fromUser( oUser );
 							var newTokens = variables.jwtService.refreshToken(
 								tokens.refresh_token,
-								{ "foo": "bar" }
+								{ "foo" : "bar" }
 							);
 							expect( newTokens )
 								.toBeStruct()
 								.toHaveKey( "access_token" )
 								.toHaveKey( "refresh_token" );
 
-							var decodedAccessToken = variables.jwtService.decode( newTokens.access_token );
+							var decodedAccessToken = variables.jwtService.decode(
+								newTokens.access_token
+							);
 							expect( decodedAccessToken ).toHaveKey( "foo" );
 							expect( decodedAccessToken.foo ).toBe( "bar" );
-							var decodedRefreshToken = variables.jwtService.decode( newTokens.refresh_token );
+							var decodedRefreshToken = variables.jwtService.decode(
+								newTokens.refresh_token
+							);
 							expect( decodedRefreshToken ).toHaveKey( "foo" );
 							expect( decodedRefreshToken.foo ).toBe( "bar" );
 						} );
