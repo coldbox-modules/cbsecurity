@@ -791,7 +791,7 @@ component accessors="true" singleton threadsafe {
 		// Append user custom claims with override, they take prescedence
 		structAppend(
 			payload,
-			arguments.user.getJwtCustomClaims(),
+			arguments.user.getJwtCustomClaims( payload ),
 			true
 		);
 
@@ -864,7 +864,7 @@ component accessors="true" singleton threadsafe {
 	 *
 	 * @return The discovered refresh token or an empty string
 	 */
-	private string function discoverRefreshToken(){
+	public string function discoverRefreshToken(){
 		var event = variables.requestService.getContext();
 
 		// Discover api token from headers using a custom header or the incoming RC
