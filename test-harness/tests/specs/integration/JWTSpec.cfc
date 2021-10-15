@@ -189,6 +189,23 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						} );
 					} );
 
+					given( "a getJwtCustomClaims method on user", function(){
+						then( "it should pass the current payload in to the function", function(){
+							var oUser  = variables.userService.retrieveUserByUsername( "test" );
+							var tokens = variables.jwtService.fromUser( oUser );
+							expect( tokens ).toBeStruct().toHaveKey( "access_token" );
+
+							var decodedAccessToken = variables.jwtService.decode(
+								tokens.access_token
+							);
+							expect( decodedAccessToken ).toHaveKey( "jti" );
+							expect( decodedAccessToken ).toHaveKey( "duplicatedJTI" );
+							expect( decodedAccessToken.duplicatedJTI ).toBe(
+								decodedAccessToken.jti
+							);
+						} );
+					} );
+
 					given( "an invalid refresh token", function(){
 						then( "an exception should be thrown", function(){
 							expect( function(){
