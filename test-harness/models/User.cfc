@@ -1,4 +1,4 @@
-component accessors="true" {
+component accessors="true" implements="cbsecurity.interfaces.jwt.IJwtSubject" {
 
 	property name="auth" inject="authenticationService@cbauth";
 
