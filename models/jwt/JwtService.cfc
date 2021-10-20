@@ -806,8 +806,12 @@ component accessors="true" singleton threadsafe {
 			getTokenStorage().set(
 				key        = payload.jti,
 				token      = jwtToken,
-				expiration = variables.settings.jwt.expiration,
-				payload    = payload
+				expiration = dateDiff(
+					"n",
+					fromEpoch( payload.iat ),
+					fromEpoch( payload.exp )
+				),
+				payload = payload
 			);
 		}
 

@@ -303,6 +303,36 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				} );
 			} );
 
+			given( "a valid jwt token put in to storage", function(){
+				then( "it should use the exp on the token for the storage timeout", function(){
+					var originalTokenStorage = duplicate( variables.jwtService.getTokenStorage() );
+					try {
+						variables.jwtService.getTokenStorage().clearAll();
+						var tokenStorageMock = prepareMock( variables.jwtService.getTokenStorage() );
+						tokenStorageMock.$( "set", tokenStorageMock );
+						var expirationSeconds = 100;
+						var expirationTime    = variables.jwtService.toEpoch(
+							dateAdd( "n", expirationSeconds, now() )
+						);
+						var thisToken = variables.jwtService.attempt(
+							"test",
+							"test",
+							{ "exp" : expirationTime }
+						);
+						var tokenStorageSetCallLog = tokenStorageMock.$callLog().set;
+						expect( tokenStorageSetCallLog ).toBeArray();
+						expect( tokenStorageSetCallLog ).toHaveLength( 1 );
+						expect( tokenStorageSetCallLog[ 1 ] ).toHaveKey( "expiration" );
+						expect( tokenStorageSetCallLog[ 1 ].expiration ).toBeCloseTo(
+							expirationSeconds,
+							1
+						);
+					} finally {
+						variables.jwtService.setTokenStorage( originalTokenStorage );
+					}
+				} );
+			} );
+
 			given( "a valid jwt token but it is not in the storage", function(){
 				then( "it should block with no authorization", function(){
 					var thisToken = variables.jwtService.attempt( "test", "test" );
