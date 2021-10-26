@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## [2.15.0] => 2021-NOV
+
+### Added
+
+* Pass custom claims from `refreshToken()` method when refreshing tokens
+* Pass in the current jwt payload in to `getJWTCustomClaims`
+
+### Fixed
+
+* Timeout in token storage is now the token timeout
+
+----
+
 ## [2.14.0] => 2021-OCT-07
 
 ### Added
