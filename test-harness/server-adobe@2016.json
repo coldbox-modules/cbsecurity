@@ -1,5 +1,5 @@
 {
-    "name":"adobe@2016",
+    "name":"cbsecurity-adobe@2016",
     "app":{
         "serverHomeDirectory":".engine/adobe2016",
         "cfengine":"adobe@2016"
