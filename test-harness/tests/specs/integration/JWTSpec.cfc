@@ -64,6 +64,17 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							expect( results.messages ).toInclude( "TokenNotFoundException" );
 						} );
 					} );
+					given( "Auto refresh is on and no access token is sent but a refresh token is sent", function(){
+						then( "the validation should pass and we should return our two new tokens as headers", function(){
+							var oUser  = variables.userService.retrieveUserByUsername( "test" );
+							var tokens = variables.jwtService.fromUser( oUser );
+
+							getRequestContext().setValue( "x-refresh-token", tokens.refresh_token );
+
+							var results = variables.jwtService.validateSecurity( "" );
+							expect( results.allow ).toBeTrue();
+						} );
+					} );
 					given( "Auto refresh is on and an expired access token is sent but no refresh token is sent", function(){
 						then( "the validation should fail", function(){
 							getRequestContext().setValue( "x-auth-token", variables.expired_token );
