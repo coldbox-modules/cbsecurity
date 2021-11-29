@@ -910,8 +910,7 @@ component accessors="true" singleton threadsafe {
 				results.messages = e.type & ":" & e.message;
 				return results;
 			}
-		}
-		catch ( TokenInvalidException e ) {
+		} catch ( TokenInvalidException e ) {
 			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
 			if ( variables.settings.jwt.enableAutoRefreshValidator && len( discoverRefreshToken() ) ) {
 				autoRefreshTokens();
@@ -920,8 +919,7 @@ component accessors="true" singleton threadsafe {
 				results.messages = e.type & ":" & e.message;
 				return results;
 			}
-		}
-		catch ( TokenNotFoundException e ) {
+		} catch ( TokenNotFoundException e ) {
 			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
 			if ( variables.settings.jwt.enableAutoRefreshValidator && len( discoverRefreshToken() ) ) {
 				autoRefreshTokens();
@@ -957,7 +955,7 @@ component accessors="true" singleton threadsafe {
 		return results;
 	}
 
-	private function autoRefreshTokens() {
+	private function autoRefreshTokens(){
 		// Try to Refresh the tokens
 		var newTokens = this.refreshToken( discoverRefreshToken() );
 		// Setup payload + authenticate for current request
