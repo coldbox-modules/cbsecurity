@@ -895,41 +895,60 @@ component accessors="true" singleton threadsafe {
 		};
 
 		try {
-			// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
-			// This takes care of authenticating the jwt tokens for us.
-			// getPayload() => parseToken() => authenticateToken()
-			var payload = getPayload();
+			try {
+				// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
+				// This takes care of authenticating the jwt tokens for us.
+				// getPayload() => parseToken() => authenticateToken()
+				var payload = getPayload();
+			}
+			// Access Token Has Expired
+			catch ( TokenExpiredException e ) {
+				// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
+				if (
+					variables.settings.jwt.enableAutoRefreshValidator && len(
+						discoverRefreshToken()
+					)
+				) {
+					autoRefreshTokens();
+				} else {
+					// Error out as normal
+					results.messages = e.type & ":" & e.message;
+					return results;
+				}
+			} catch ( TokenInvalidException e ) {
+				// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
+				if (
+					variables.settings.jwt.enableAutoRefreshValidator && len(
+						discoverRefreshToken()
+					)
+				) {
+					autoRefreshTokens();
+				} else {
+					// Error out as normal
+					results.messages = e.type & ":" & e.message;
+					return results;
+				}
+			} catch ( TokenNotFoundException e ) {
+				// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
+				if (
+					variables.settings.jwt.enableAutoRefreshValidator && len(
+						discoverRefreshToken()
+					)
+				) {
+					autoRefreshTokens();
+				} else {
+					// Error out as normal
+					results.messages = e.type & ":" & e.message;
+					return results;
+				}
+			}
+			// All other exceptions
+			catch ( Any e ) {
+				results.messages = e.type & ":" & e.message;
+				return results;
+			}
 		}
-		// Access Token Has Expired
-		catch ( TokenExpiredException e ) {
-			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
-			if ( variables.settings.jwt.enableAutoRefreshValidator && len( discoverRefreshToken() ) ) {
-				autoRefreshTokens();
-			} else {
-				// Error out as normal
-				results.messages = e.type & ":" & e.message;
-				return results;
-			}
-		} catch ( TokenInvalidException e ) {
-			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
-			if ( variables.settings.jwt.enableAutoRefreshValidator && len( discoverRefreshToken() ) ) {
-				autoRefreshTokens();
-			} else {
-				// Error out as normal
-				results.messages = e.type & ":" & e.message;
-				return results;
-			}
-		} catch ( TokenNotFoundException e ) {
-			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
-			if ( variables.settings.jwt.enableAutoRefreshValidator && len( discoverRefreshToken() ) ) {
-				autoRefreshTokens();
-			} else {
-				// Error out as normal
-				results.messages = e.type & ":" & e.message;
-				return results;
-			}
-		}
-		// All other exceptions
+		// All exceptions for refreshTokens
 		catch ( Any e ) {
 			results.messages = e.type & ":" & e.message;
 			return results;

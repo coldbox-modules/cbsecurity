@@ -95,6 +95,18 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							expect( results.allow ).toBeTrue();
 						} );
 					} );
+					given( "Auto refresh is on and an expired access token is sent with an expired refresh token", function(){
+						then( "the validation should fail", function(){
+							getRequestContext().setValue( "x-auth-token", variables.expired_token );
+							getRequestContext().setValue(
+								"x-refresh-token",
+								variables.expired_token
+							);
+
+							var results = variables.jwtService.validateSecurity( "" );
+							expect( results.allow ).toBeFalse();
+						} );
+					} );
 				} );
 
 				story( "I can refresh tokens via the /refreshtoken endpoint", function(){
