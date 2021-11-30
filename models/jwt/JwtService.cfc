@@ -909,9 +909,7 @@ component accessors="true" singleton threadsafe {
 					!variables.settings.jwt.enableAutoRefreshValidator ||
 					!len( refreshToken ) ||
 					!listFindNoCase(
-						"TokenExpiredException",
-						"TokenInvalidException",
-						"TokenNotFoundException",
+						"TokenExpiredException,TokenInvalidException,TokenNotFoundException",
 						e.type
 					)
 				) {
