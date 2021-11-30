@@ -894,58 +894,46 @@ component accessors="true" singleton threadsafe {
 			"messages" : ""
 		};
 
+		var payload = {};
+
 		try {
 			try {
 				// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
 				// This takes care of authenticating the jwt tokens for us.
 				// getPayload() => parseToken() => authenticateToken()
-				var payload = getPayload();
-			}
-			// Access Token Has Expired
-			catch ( TokenExpiredException e ) {
-				// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
+				payload = getPayload();
+			} catch ( any e ) {
+				// if we aren't trying to refresh, return the false response now.
+				var refreshToken = discoverRefreshToken();
 				if (
-					variables.settings.jwt.enableAutoRefreshValidator && len(
-						discoverRefreshToken()
+					!variables.settings.jwt.enableAutoRefreshValidator ||
+					!len( refreshToken ) ||
+					!listFindNoCase(
+						"TokenExpiredException",
+						"TokenInvalidException",
+						"TokenNotFoundException",
+						e.type
 					)
 				) {
-					autoRefreshTokens();
-				} else {
-					// Error out as normal
 					results.messages = e.type & ":" & e.message;
 					return results;
 				}
-			} catch ( TokenInvalidException e ) {
-				// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
-				if (
-					variables.settings.jwt.enableAutoRefreshValidator && len(
-						discoverRefreshToken()
+
+				// Try to Refresh the tokens
+				var newTokens = this.refreshToken( refreshToken );
+				// Setup payload + authenticate for current request
+				payload       = parseToken( newTokens.access_token );
+				// Send back as headers now that they are refreshed
+				variables.requestService
+					.getContext()
+					.setHTTPHeader(
+						name : variables.settings.jwt.customAuthHeader,
+						value: newTokens.access_token
 					)
-				) {
-					autoRefreshTokens();
-				} else {
-					// Error out as normal
-					results.messages = e.type & ":" & e.message;
-					return results;
-				}
-			} catch ( TokenNotFoundException e ) {
-				// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
-				if (
-					variables.settings.jwt.enableAutoRefreshValidator && len(
-						discoverRefreshToken()
-					)
-				) {
-					autoRefreshTokens();
-				} else {
-					// Error out as normal
-					results.messages = e.type & ":" & e.message;
-					return results;
-				}
-			}
-			// All other exceptions
-			catch ( Any e ) {
-				results.messages = e.type & ":" & e.message;
-				return results;
+					.setHTTPHeader(
+						name : variables.settings.jwt.customRefreshHeader,
+						value: newTokens.refresh_token
+					);
 			}
 		}
 		// All exceptions for refreshTokens
@@ -972,24 +960,6 @@ component accessors="true" singleton threadsafe {
 		}
 
 		return results;
-	}
-
-	private function autoRefreshTokens(){
-		// Try to Refresh the tokens
-		var newTokens = this.refreshToken( discoverRefreshToken() );
-		// Setup payload + authenticate for current request
-		payload       = parseToken( newTokens.access_token );
-		// Send back as headers now that they are refreshed
-		variables.requestService
-			.getContext()
-			.setHTTPHeader(
-				name : variables.settings.jwt.customAuthHeader,
-				value: newTokens.access_token
-			)
-			.setHTTPHeader(
-				name : variables.settings.jwt.customRefreshHeader,
-				value: newTokens.refresh_token
-			);
 	}
 
 	/**
