@@ -894,17 +894,29 @@ component accessors="true" singleton threadsafe {
 			"messages" : ""
 		};
 
+		var payload = {};
+
 		try {
-			// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
-			// This takes care of authenticating the jwt tokens for us.
-			// getPayload() => parseToken() => authenticateToken()
-			var payload = getPayload();
-		}
-		// Access Token Has Expired
-		catch ( TokenExpiredException e ) {
-			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
-			var refreshToken = discoverRefreshToken();
-			if ( variables.settings.jwt.enableAutoRefreshValidator && len( refreshToken ) ) {
+			try {
+				// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
+				// This takes care of authenticating the jwt tokens for us.
+				// getPayload() => parseToken() => authenticateToken()
+				payload = getPayload();
+			} catch ( any e ) {
+				// if we aren't trying to refresh, return the false response now.
+				var refreshToken = discoverRefreshToken();
+				if (
+					!variables.settings.jwt.enableAutoRefreshValidator ||
+					!len( refreshToken ) ||
+					!listFindNoCase(
+						"TokenExpiredException,TokenInvalidException,TokenNotFoundException",
+						e.type
+					)
+				) {
+					results.messages = e.type & ":" & e.message;
+					return results;
+				}
+
 				// Try to Refresh the tokens
 				var newTokens = this.refreshToken( refreshToken );
 				// Setup payload + authenticate for current request
@@ -920,13 +932,9 @@ component accessors="true" singleton threadsafe {
 						name : variables.settings.jwt.customRefreshHeader,
 						value: newTokens.refresh_token
 					);
-			} else {
-				// Error out as normal
-				results.messages = e.type & ":" & e.message;
-				return results;
 			}
 		}
-		// All other exceptions
+		// All exceptions for refreshTokens
 		catch ( Any e ) {
 			results.messages = e.type & ":" & e.message;
 			return results;
