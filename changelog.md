@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
-## [2.15.0] => 2021-NOV
+## [2.15.0] => 2021-DEC-10
 
 ### 🚀 Added
 
-* Pass custom claims from `refreshToken()` method when refreshing tokens
-* Pass in the current jwt payload in to `getJWTCustomClaims`
+* Pass custom claims from `refreshToken( token, customClaims)` method when refreshing tokens
+* Pass in the current jwt payload in to `getJWTCustomClaims( payload )`
 
 ### 🐛 Fixed
 
@@ -230,7 +230,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * If a rule is matched, we will store it in the `prc` as `cbSecurity_matchedRule` so you can see which security rule was used for processing invalid access actions.
 * If a rule is matched we will store the validator results in `prc` as `cbSecurity_validatorResults`
 * Ability for modules to register cbSecurity rules and setting overrides by registering a `settings.cbSecurity` key.
-* Ability for modules to override the `validator` setting. So each module can have their own security validator schema. 
+* Ability for modules to override the `validator` setting. So each module can have their own security validator schema.
 * New security rule visualizer for graphically seeing you rules and configuration.  Can be locked down via the `enableSecurityVisualizer` setting. Disabled by default.
 
 ```json
@@ -309,7 +309,7 @@ settings = {
 ## [1.0.2]
 
 * Removed `getPlugin()` deprecated calls to new approach.
-* https://ortussolutions.atlassian.net/browse/CCM-26 cbsecurity ocm rules not ColdBox 4 compat 
+* https://ortussolutions.atlassian.net/browse/CCM-26 cbsecurity ocm rules not ColdBox 4 compat
 
 ## [1.0.1]
 

@@ -7,7 +7,11 @@
 interface{
 
     /**
-     * A struct of custom claims to add to the JWT token
+     * A struct of custom claims to add to the JWT token when creating it
+	 *
+	 * @payload The actual payload structure that was used in the request
+	 *
+	 * @return A structure of custom claims
      */
     struct function getJwtCustomClaims( required struct payload );
 
