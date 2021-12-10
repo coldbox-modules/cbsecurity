@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Pass custom claims from `refreshToken( token, customClaims)` method when refreshing tokens
 * Pass in the current jwt payload in to `getJWTCustomClaims( payload )`
+* The auto refresh token features now will auto refresh not only on expired tokens, but on invalid and missing tokens as well. Thanks to @elpete
 
 ### :bug: Fixed
 
