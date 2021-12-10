@@ -34,9 +34,11 @@ component {
 	public boolean function onRequestStart( String targetPage ){
 
 		// Cleanup
-		if( !isNull( application.cbController ) ){
-			application.cbController.getLoaderService().processShutdown();
-		}
+		try {
+			if( !isNull( application.cbController ) ){
+				application.cbController.getLoaderService().processShutdown();
+			}
+		} catch ( any e ) {}
 		structDelete( application, "cbController" );
 		structDelete( application, "wirebox" );
 

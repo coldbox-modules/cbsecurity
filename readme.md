@@ -448,6 +448,24 @@ This module also ships with a security visualizer that will document all your se
 
 <img src="https://raw.githubusercontent.com/coldbox-modules/cbsecurity/development/test-harness/visualizer.png" class="img-responsive">
 
+## Running Tests and Contributing
+
+To run the tests, start one of the servers from the `/test-harness` directory.
+
+You will also need a MySQL database seeded with the `/test-harness/tests/resources/cbsecurity.sql` file.
+Docker makes this a cinch:
+
+```sh
+docker run -d \
+  --name=cbsecurity \
+  -p 3306:3306 \
+  -e MYSQL_ROOT_PASSWORD=mysql \
+  -e MYSQL_DATABASE=cbsecurity \
+  -v $(pwd)/test-harness/tests/resources/cbsecurity.sql:/docker-entrypoint-initdb.d/cbsecurity.sql \
+  mysql:5
+```
+
+Finally, run the tests by visiting the `/tests/runner.cfm` file on your server.
 ********************************************************************************
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
 www.coldbox.org | www.luismajano.com | www.ortussolutions.com

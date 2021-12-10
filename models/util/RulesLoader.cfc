@@ -4,11 +4,11 @@
  * ---
  * Rule loader service
  */
-component accessors="true" singleton threadsafe{
+component accessors="true" singleton threadsafe {
 
 	// DI
 	property name="controller" inject="coldbox";
-	property name="wirebox"    inject="wirebox";
+	property name="wirebox" inject="wirebox";
 
 	/**
 	 * Constructor
@@ -63,7 +63,7 @@ component accessors="true" singleton threadsafe{
 	 */
 	function rulesSourceChecks( required settings ){
 		param arguments.settings.rulesSource = "";
-		param arguments.settings.rules = [];
+		param arguments.settings.rules       = [];
 
 		// Auto detect rules source
 		if ( isSimpleValue( arguments.settings.rules ) ) {
@@ -111,14 +111,20 @@ component accessors="true" singleton threadsafe{
 			case "json": {
 				// Check if file property exists
 				if ( !arguments.settings[ "rulesFile" ].len() ) {
-					throw( message = "Please enter a valid rulesFile setting", type = "Security.RulesFileNotDefined" );
+					throw(
+						message = "Please enter a valid rulesFile setting",
+						type    = "Security.RulesFileNotDefined"
+					);
 				}
 				break;
 			}
 
 			case "db": {
 				if ( !arguments.settings[ "rulesDSN" ].len() ) {
-					throw( message = "Missing setting for DB source: rulesDSN ", type = "Security.RuleDSNNotDefined" );
+					throw(
+						message = "Missing setting for DB source: rulesDSN ",
+						type    = "Security.RuleDSNNotDefined"
+					);
 				}
 				if ( !arguments.settings[ "rulesTable" ].len() ) {
 					throw(
@@ -154,7 +160,9 @@ component accessors="true" singleton threadsafe{
 		var thisElement = "";
 
 		// Try to locate the file path
-		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
+		arguments.settings.rulesFile = variables.controller.locateFilePath(
+			arguments.settings.rulesFile
+		);
 
 		// Validate Location
 		if ( !len( arguments.settings.rulesFile ) ) {
@@ -184,7 +192,9 @@ component accessors="true" singleton threadsafe{
 		var node      = "";
 
 		// Try to locate the file path
-		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
+		arguments.settings.rulesFile = variables.controller.locateFilePath(
+			arguments.settings.rulesFile
+		);
 
 		// Validate Location
 		if ( !len( arguments.settings.rulesFile ) ) {

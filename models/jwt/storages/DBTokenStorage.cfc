@@ -20,14 +20,14 @@
  * - subject : varchar 255
  *
  */
-component accessors="true" singleton threadsafe{
+component accessors="true" singleton threadsafe {
 
 	// DI
-	property name="wirebox"    inject="wirebox";
-	property name="cachebox"   inject="cachebox";
-	property name="settings"   inject="coldbox:moduleSettings:cbSecurity";
+	property name="wirebox" inject="wirebox";
+	property name="cachebox" inject="cachebox";
+	property name="settings" inject="coldbox:moduleSettings:cbSecurity";
 	property name="jwtService" inject="JwtService@cbSecurity";
-	property name="log"        inject="logbox:logger:{this}";
+	property name="log" inject="logbox:logger:{this}";
 
 	/**
 	 * Storage properties
@@ -71,7 +71,10 @@ component accessors="true" singleton threadsafe{
 
 		// Setup Properties
 		if ( isNull( variables.properties.table ) ) {
-			throw( message = "No table property defined for DBTokenStorage", type = "PropertyNotDefined" );
+			throw(
+				message = "No table property defined for DBTokenStorage",
+				type    = "PropertyNotDefined"
+			);
 		}
 		if ( isNull( variables.properties.autoCreate ) ) {
 			variables.properties.autoCreate = true;
@@ -139,12 +142,7 @@ component accessors="true" singleton threadsafe{
 			  FROM #getTable()#
 			 WHERE expiration < :targetDate
 			",
-			{
-				targetDate : {
-					cfsqltype : "timestamp",
-					value     : targetDate
-				}
-			},
+			{ targetDate : { cfsqltype : "timestamp", value : targetDate } },
 			{
 				datasource : variables.properties.dsn,
 				result     : "local.qResults"
@@ -193,14 +191,8 @@ component accessors="true" singleton threadsafe{
 					cfsqltype : "varchar",
 					value     : "#variables.uuid.randomUUID().toString()#"
 				},
-				cacheKey : {
-					cfsqltype : "varchar",
-					value     : arguments.key
-				},
-				token : {
-					cfsqltype : "longvarchar",
-					value     : arguments.token
-				},
+				cacheKey   : { cfsqltype : "varchar", value : arguments.key },
+				token      : { cfsqltype : "longvarchar", value : arguments.token },
 				expiration : {
 					cfsqltype : "timestamp",
 					value     : jwtService.fromEpoch( arguments.payload.exp )
@@ -209,10 +201,7 @@ component accessors="true" singleton threadsafe{
 					cfsqltype : "timestamp",
 					value     : jwtService.fromEpoch( arguments.payload.iat )
 				},
-				subject : {
-					cfsqltype : "varchar",
-					value     : arguments.payload.sub
-				}
+				subject : { cfsqltype : "varchar", value : arguments.payload.sub }
 			},
 			{ datasource : variables.properties.dsn }
 		);
@@ -241,10 +230,7 @@ component accessors="true" singleton threadsafe{
 			",
 			{
 				cacheKey : arguments.key,
-				now      : {
-					cfsqltype : "timestamp",
-					value     : now()
-				}
+				now      : { cfsqltype : "timestamp", value : now() }
 			},
 			{ datsource : variables.properties.dsn }
 		);
@@ -307,10 +293,7 @@ component accessors="true" singleton threadsafe{
 			  WHERE cacheKey = ?
 			",
 			[ arguments.key ],
-			{
-				datsource : variables.properties.dsn,
-				result    : "local.q"
-			}
+			{ datsource : variables.properties.dsn, result : "local.q" }
 		);
 
 		return ( local.q.recordCount ? true : false );
@@ -342,7 +325,9 @@ component accessors="true" singleton threadsafe{
 		);
 
 		return (
-			variables.isLucee ? queryColumnData( qResults, "cacheKey" ) : listToArray( valueList( qResults.cacheKey ) )
+			variables.isLucee ? queryColumnData( qResults, "cacheKey" ) : listToArray(
+				valueList( qResults.cacheKey )
+			)
 		);
 	}
 
@@ -371,7 +356,12 @@ component accessors="true" singleton threadsafe{
 		var settings = getApplicationMetadata();
 
 		// check orm settings first
-		if ( structKeyExists( settings, "ormsettings" ) AND structKeyExists( settings.ormsettings, "datasource" ) ) {
+		if (
+			structKeyExists( settings, "ormsettings" ) AND structKeyExists(
+				settings.ormsettings,
+				"datasource"
+			)
+		) {
 			return settings.ormsettings.datasource;
 		}
 
@@ -380,7 +370,10 @@ component accessors="true" singleton threadsafe{
 			return settings.datasource;
 		}
 
-		throw( message = "No default datasource defined and no dsn property found", type = "PropertyNotDefined" );
+		throw(
+			message = "No default datasource defined and no dsn property found",
+			type    = "PropertyNotDefined"
+		);
 	}
 
 	/**
@@ -403,7 +396,11 @@ component accessors="true" singleton threadsafe{
 
 		if ( variables.properties.autocreate ) {
 			// Get Tables on this DSN
-			cfdbinfo(datasource="#variables.properties.dsn#", name="local.qTables", type="tables");
+			cfdbinfo(
+				datasource = "#variables.properties.dsn#",
+				name       = "local.qTables",
+				type       = "tables"
+			);
 			// Find the table
 			for ( var thisRecord in local.qTables ) {
 				if ( thisRecord.table_name == variables.properties.table ) {
@@ -445,7 +442,11 @@ component accessors="true" singleton threadsafe{
 	private function getTextColumnType(){
 		var qResults = "";
 
-		cfdbinfo(type="Version", name="qResults", datasource="#variables.properties.dsn#");
+		cfdbinfo(
+			type       = "Version",
+			name       = "qResults",
+			datasource = "#variables.properties.dsn#"
+		);
 
 		switch ( qResults.database_productName ) {
 			case "PostgreSQL": {
@@ -472,7 +473,11 @@ component accessors="true" singleton threadsafe{
 	private function getDateTimeColumnType(){
 		var qResults = "";
 
-		cfdbinfo(type="Version", name="qResults", datasource="#variables.properties.dsn#");
+		cfdbinfo(
+			type       = "Version",
+			name       = "qResults",
+			datasource = "#variables.properties.dsn#"
+		);
 
 		switch ( qResults.database_productName ) {
 			case "PostgreSQL": {

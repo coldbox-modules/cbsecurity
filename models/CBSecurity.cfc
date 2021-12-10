@@ -23,8 +23,8 @@ component threadsafe singleton accessors="true" {
 	/*********************************************************************************************/
 
 	property name="settings" inject="coldbox:moduleSettings:cbsecurity";
-	property name="log"      inject="logbox:logger:{this}";
-	property name="wirebox"  inject="wirebox";
+	property name="log" inject="logbox:logger:{this}";
+	property name="wirebox" inject="wirebox";
 
 
 	/*********************************************************************************************/
@@ -101,7 +101,9 @@ component threadsafe singleton accessors="true" {
 			);
 		}
 
-		variables.authService = variables.wirebox.getInstance( variables.settings.authenticationService );
+		variables.authService = variables.wirebox.getInstance(
+			variables.settings.authenticationService
+		);
 
 		return variables.authService;
 	}
@@ -189,15 +191,9 @@ component threadsafe singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secure(
-		required permissions,
-		message = variables.DEFAULT_ERROR_MESSAGE
-	){
+	CBSecurity function secure( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !has( arguments.permissions ) ) {
-			throw(
-				type    = "NotAuthorized",
-				message = arguments.message
-			);
+			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
 	}
@@ -212,15 +208,9 @@ component threadsafe singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secureAll(
-		required permissions,
-		message = variables.DEFAULT_ERROR_MESSAGE
-	){
+	CBSecurity function secureAll( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !all( arguments.permissions ) ) {
-			throw(
-				type    = "NotAuthorized",
-				message = arguments.message
-			);
+			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
 	}
@@ -240,10 +230,7 @@ component threadsafe singleton accessors="true" {
 		message = variables.DEFAULT_ERROR_MESSAGE
 	){
 		if ( !none( arguments.permissions ) ) {
-			throw(
-				type    = "NotAuthorized",
-				message = arguments.message
-			);
+			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
 	}
@@ -268,20 +255,14 @@ component threadsafe singleton accessors="true" {
 	 *
 	 * @returns CBSecurity
 	 */
-	CBSecurity function secureWhen(
-		required context,
-		message = variables.DEFAULT_ERROR_MESSAGE
-	){
+	CBSecurity function secureWhen( required context, message = variables.DEFAULT_ERROR_MESSAGE ){
 		var results = arguments.context;
 		// Check if udf/lambda
 		if ( isCustomFunction( arguments.context ) || isClosure( arguments.context ) ) {
 			results = arguments.context( getAuthService().getUser() );
 		}
 		if ( results ) {
-			throw(
-				type    = "NotAuthorized",
-				message = arguments.message
-			);
+			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
 	}
@@ -297,15 +278,9 @@ component threadsafe singleton accessors="true" {
 	 * @user The user to test for equality
 	 * @message The error message to throw in the exception
 	 */
-	CBSecurity function secureSameUser(
-		required user,
-		message = variables.DEFAULT_ERROR_MESSAGE
-	){
+	CBSecurity function secureSameUser( required user, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !sameUser( arguments.user ) ) {
-			throw(
-				type    = "NotAuthorized",
-				message = arguments.message
-			);
+			throw( type = "NotAuthorized", message = arguments.message );
 		}
 		return this;
 	}
@@ -340,22 +315,12 @@ component threadsafe singleton accessors="true" {
 	 * @success The closure/lambda/udf that executes if the context passes
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
-	function when(
-		required permissions,
-		required success,
-		fail
-	){
+	function when( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
 		if ( has( arguments.permissions ) ) {
-			arguments.success(
-				getAuthService().getUser(),
-				arguments.permissions
-			);
+			arguments.success( getAuthService().getUser(), arguments.permissions );
 		} else if ( !isNull( arguments.fail ) ) {
-			arguments.fail(
-				getAuthService().getUser(),
-				arguments.permissions
-			);
+			arguments.fail( getAuthService().getUser(), arguments.permissions );
 		}
 		return this;
 	}
@@ -379,22 +344,12 @@ component threadsafe singleton accessors="true" {
 	 * @success The closure/lambda/udf that executes if the context passes
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
-	function whenAll(
-		required permissions,
-		required success,
-		fail
-	){
+	function whenAll( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
 		if ( all( arguments.permissions ) ) {
-			arguments.success(
-				getAuthService().getUser(),
-				arguments.permissions
-			);
+			arguments.success( getAuthService().getUser(), arguments.permissions );
 		} else if ( !isNull( arguments.fail ) ) {
-			arguments.fail(
-				getAuthService().getUser(),
-				arguments.permissions
-			);
+			arguments.fail( getAuthService().getUser(), arguments.permissions );
 		}
 		return this;
 	}
@@ -418,22 +373,12 @@ component threadsafe singleton accessors="true" {
 	 * @success The closure/lambda/udf that executes if the context passes
 	 * @fail The closure/lambda/udf that executes if the context fails
 	 */
-	function whenNone(
-		required permissions,
-		required success,
-		fail
-	){
+	function whenNone( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
 		if ( none( arguments.permissions ) ) {
-			arguments.success(
-				getAuthService().getUser(),
-				arguments.permissions
-			);
+			arguments.success( getAuthService().getUser(), arguments.permissions );
 		} else if ( !isNull( arguments.fail ) ) {
-			arguments.fail(
-				getAuthService().getUser(),
-				arguments.permissions
-			);
+			arguments.fail( getAuthService().getUser(), arguments.permissions );
 		}
 		return this;
 	}

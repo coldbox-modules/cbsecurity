@@ -1,4 +1,7 @@
-component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbsecurity.interceptors.Security" {
+component
+	extends    ="coldbox.system.testing.BaseInterceptorTest"
+	interceptor="cbsecurity.interceptors.Security"
+{
 
 	function beforeAll(){
 		super.beforeAll();
@@ -9,24 +12,26 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 	function run( testResults, testBox ){
 		// all your suites go here.
 		describe( "Security Interceptor Unit Tests", function(){
-			beforeEach( function(currentSpec){
+			beforeEach( function( currentSpec ){
 				// setup properties
 				setup();
 				variables.wirebox = new coldbox.system.ioc.Injector();
-                mockController
-                    .$( "getAppHash", hash( "appHash" ) )
-                    .$( "getAppRootPath", expandPath( "/root" ) )
-                    .$( "getColdboxSettings", {
-                        "version": "6.0.0"
-					}, false  );
-					
+				mockController
+					.$( "getAppHash", hash( "appHash" ) )
+					.$( "getAppRootPath", expandPath( "/root" ) )
+					.$(
+						"getColdboxSettings",
+						{ "version" : "6.0.0" },
+						false
+					);
+
 				mockController
 					.$( "getSetting" )
 					.$args( "modules" )
 					.$results( [] );
 
-                security = interceptor;
-                security.setInvalidEventHandler( '' );
+				security = interceptor;
+				security.setInvalidEventHandler( "" );
 				settings = {
 					// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
 					"invalidAuthenticationEvent"  : "",
@@ -124,7 +129,10 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 				expect(
 					security.getValidator(
-						createMock( "coldbox.system.web.context.RequestContext" ).$( "getCurrentModule", "" )
+						createMock( "coldbox.system.web.context.RequestContext" ).$(
+							"getCurrentModule",
+							""
+						)
 					)
 				).toBeComponent();
 			} );
@@ -144,35 +152,36 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				expect( function(){
 					security.afterAspectsLoad();
 				} ).toThrow( "Security.ValidatorMethodException" );
-            } );
+			} );
 
-            it( "does not enable invalid event handler processing on Coldbox versions 6+", function() {
-                security.setProperties( settings );
+			it( "does not enable invalid event handler processing on Coldbox versions 6+", function(){
+				security.setProperties( settings );
 				security
 					.$( "getInstance" )
 					.$args( settings.validator )
 					.$results( wirebox.getInstance( settings.validator ) );
 				security.configure();
 				expect( security.$getProperty( "enableInvalidHandlerCheck" ) ).toBeFalse();
-            } );
-            
-            it( "enables invalid event handler processing on Coldbox versions prior to 6", function() {
-                
-                mockController.$( "getColdboxSettings", {
-                    "version": "5.0.0"
-                }, false  );
-                
-                security.setProperties( settings );
+			} );
+
+			it( "enables invalid event handler processing on Coldbox versions prior to 6", function(){
+				mockController.$(
+					"getColdboxSettings",
+					{ "version" : "5.0.0" },
+					false
+				);
+
+				security.setProperties( settings );
 				security
 					.$( "getInstance" )
 					.$args( settings.validator )
 					.$results( wirebox.getInstance( settings.validator ) );
 				security.configure();
 				expect( security.$getProperty( "enableInvalidHandlerCheck" ) ).toBeTrue();
-            } );   
+			} );
 
 			describe( "It can load many types of rules", function(){
-				beforeEach( function(currentSpec){
+				beforeEach( function( currentSpec ){
 					settings.validator = "tests.resources.security";
 					security
 						.$( "getInstance" )
@@ -212,13 +221,19 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
 				} );
 			} );
-			
-			describe( "module setting load", function() {
-				beforeEach( function(currentSpec){
-					settings.rules = [];
+
+			describe( "module setting load", function(){
+				beforeEach( function( currentSpec ){
+					settings.rules     = [];
 					settings.validator = "tests.resources.security";
 					security.$property( propertyName = "securityModules", mock = {} );
-					security.$property( propertyName = "log", mock = { info : function() {} });
+					security.$property(
+						propertyName = "log",
+						mock         = {
+							info : function(){
+							}
+						}
+					);
 					security
 						.$( "getInstance" )
 						.$args( settings.validator )
@@ -238,7 +253,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				} );
 
 				it( "can load XML Rules based on module settings", function(){
-					var source   = expandPath( "/tests/resources/security.xml.cfm" );
+					var source = expandPath( "/tests/resources/security.xml.cfm" );
 					mockController.$( "locateFilePath", source );
 
 					// initiate cbSecurity's module registration rule parsing
@@ -249,9 +264,9 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 				it( "can load model Rules based on module settings", function(){
 					var moduleSettings = {
-						rules           : "model",
-						rulesModel      : "tests.resources.security",
-						rulesModelMethod: "getSecurityRules"
+						rules            : "model",
+						rulesModel       : "tests.resources.security",
+						rulesModelMethod : "getSecurityRules"
 					};
 
 					// initiate cbSecurity's module registration rule parsing
@@ -259,8 +274,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
 				} );
-			});
-            
+			} );
 		} );
 	}
 

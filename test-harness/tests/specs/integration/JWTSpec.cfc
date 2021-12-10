@@ -64,6 +64,17 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							expect( results.messages ).toInclude( "TokenNotFoundException" );
 						} );
 					} );
+					given( "Auto refresh is on and no access token is sent but a refresh token is sent", function(){
+						then( "the validation should pass and we should return our two new tokens as headers", function(){
+							var oUser  = variables.userService.retrieveUserByUsername( "test" );
+							var tokens = variables.jwtService.fromUser( oUser );
+
+							getRequestContext().setValue( "x-refresh-token", tokens.refresh_token );
+
+							var results = variables.jwtService.validateSecurity( "" );
+							expect( results.allow ).toBeTrue();
+						} );
+					} );
 					given( "Auto refresh is on and an expired access token is sent but no refresh token is sent", function(){
 						then( "the validation should fail", function(){
 							getRequestContext().setValue( "x-auth-token", variables.expired_token );
@@ -82,6 +93,18 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 							var results = variables.jwtService.validateSecurity( "" );
 							expect( results.allow ).toBeTrue();
+						} );
+					} );
+					given( "Auto refresh is on and an expired access token is sent with an expired refresh token", function(){
+						then( "the validation should fail", function(){
+							getRequestContext().setValue( "x-auth-token", variables.expired_token );
+							getRequestContext().setValue(
+								"x-refresh-token",
+								variables.expired_token
+							);
+
+							var results = variables.jwtService.validateSecurity( "" );
+							expect( results.allow ).toBeFalse();
 						} );
 					} );
 				} );
@@ -163,6 +186,49 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							).toBeTrue();
 						} );
 					} );
+					given( "any custom claims", function(){
+						then( "it should pass them on to the new tokens", function(){
+							var oUser     = variables.userService.retrieveUserByUsername( "test" );
+							var tokens    = variables.jwtService.fromUser( oUser );
+							var newTokens = variables.jwtService.refreshToken(
+								tokens.refresh_token,
+								{ "foo" : "bar" }
+							);
+							expect( newTokens )
+								.toBeStruct()
+								.toHaveKey( "access_token" )
+								.toHaveKey( "refresh_token" );
+
+							var decodedAccessToken = variables.jwtService.decode(
+								newTokens.access_token
+							);
+							expect( decodedAccessToken ).toHaveKey( "foo" );
+							expect( decodedAccessToken.foo ).toBe( "bar" );
+							var decodedRefreshToken = variables.jwtService.decode(
+								newTokens.refresh_token
+							);
+							expect( decodedRefreshToken ).toHaveKey( "foo" );
+							expect( decodedRefreshToken.foo ).toBe( "bar" );
+						} );
+					} );
+
+					given( "a getJwtCustomClaims method on user", function(){
+						then( "it should pass the current payload in to the function", function(){
+							var oUser  = variables.userService.retrieveUserByUsername( "test" );
+							var tokens = variables.jwtService.fromUser( oUser );
+							expect( tokens ).toBeStruct().toHaveKey( "access_token" );
+
+							var decodedAccessToken = variables.jwtService.decode(
+								tokens.access_token
+							);
+							expect( decodedAccessToken ).toHaveKey( "jti" );
+							expect( decodedAccessToken ).toHaveKey( "duplicatedJTI" );
+							expect( decodedAccessToken.duplicatedJTI ).toBe(
+								decodedAccessToken.jti
+							);
+						} );
+					} );
+
 					given( "an invalid refresh token", function(){
 						then( "an exception should be thrown", function(){
 							expect( function(){
@@ -257,6 +323,36 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					expect( event.getPrivateValue( "cbsecurity_validatorResults" ).messages ).toInclude(
 						"Token has expired"
 					);
+				} );
+			} );
+
+			given( "a valid jwt token put in to storage", function(){
+				then( "it should use the exp on the token for the storage timeout", function(){
+					var originalTokenStorage = duplicate( variables.jwtService.getTokenStorage() );
+					try {
+						variables.jwtService.getTokenStorage().clearAll();
+						var tokenStorageMock = prepareMock( variables.jwtService.getTokenStorage() );
+						tokenStorageMock.$( "set", tokenStorageMock );
+						var expirationSeconds = 100;
+						var expirationTime    = variables.jwtService.toEpoch(
+							dateAdd( "n", expirationSeconds, now() )
+						);
+						var thisToken = variables.jwtService.attempt(
+							"test",
+							"test",
+							{ "exp" : expirationTime }
+						);
+						var tokenStorageSetCallLog = tokenStorageMock.$callLog().set;
+						expect( tokenStorageSetCallLog ).toBeArray();
+						expect( tokenStorageSetCallLog ).toHaveLength( 1 );
+						expect( tokenStorageSetCallLog[ 1 ] ).toHaveKey( "expiration" );
+						expect( tokenStorageSetCallLog[ 1 ].expiration ).toBeCloseTo(
+							expirationSeconds,
+							1
+						);
+					} finally {
+						variables.jwtService.setTokenStorage( originalTokenStorage );
+					}
 				} );
 			} );
 

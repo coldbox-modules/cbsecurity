@@ -5,7 +5,7 @@
  * This is the JWT Services that will provide you with glorious JWT capabilities.
  * Learn more about Json Web Tokens here: https://jwt.io/
  */
-component accessors="true" singleton threadsafe{
+component accessors="true" singleton threadsafe {
 
 	/*********************************************************************************************/
 	/** DI **/
@@ -335,6 +335,7 @@ component accessors="true" singleton threadsafe{
 	 * <code>{ access_token : "", refresh_token : "" }</code>
 	 *
 	 * @refreshToken A refresh token
+	 * @customClaims A struct of custom claims to apply to the new tokens
 	 *
 	 * @throws RefreshTokensNotActive If the setting enableRefreshTokens is false
 	 * @throws TokenExpiredException If the token has expired or no longer in the storage (invalidated)
@@ -343,7 +344,7 @@ component accessors="true" singleton threadsafe{
 	 *
 	 * @return A struct of { access_token : "", refresh_token : "" }
 	 */
-	struct function refreshToken( token = discoverRefreshToken() ){
+	struct function refreshToken( token = discoverRefreshToken(), struct customClaims = {} ){
 		if ( !variables.settings.jwt.enableRefreshTokens ) {
 			throw(
 				type   : "RefreshTokensNotActive",
@@ -362,7 +363,7 @@ component accessors="true" singleton threadsafe{
 		var oUser = authenticate( payload: payload );
 
 		// Build new tokens according to validated user
-		var results = fromUser( oUser );
+		var results = fromUser( oUser, arguments.customClaims );
 
 		// Invalidate the refresh token: Token Rotation
 		invalidate( arguments.token );
@@ -790,7 +791,7 @@ component accessors="true" singleton threadsafe{
 		// Append user custom claims with override, they take prescedence
 		structAppend(
 			payload,
-			arguments.user.getJwtCustomClaims(),
+			arguments.user.getJwtCustomClaims( payload ),
 			true
 		);
 
@@ -805,8 +806,12 @@ component accessors="true" singleton threadsafe{
 			getTokenStorage().set(
 				key        = payload.jti,
 				token      = jwtToken,
-				expiration = variables.settings.jwt.expiration,
-				payload    = payload
+				expiration = dateDiff(
+					"n",
+					fromEpoch( payload.iat ),
+					fromEpoch( payload.exp )
+				),
+				payload = payload
 			);
 		}
 
@@ -863,7 +868,7 @@ component accessors="true" singleton threadsafe{
 	 *
 	 * @return The discovered refresh token or an empty string
 	 */
-	private string function discoverRefreshToken(){
+	public string function discoverRefreshToken(){
 		var event = variables.requestService.getContext();
 
 		// Discover api token from headers using a custom header or the incoming RC
@@ -889,17 +894,29 @@ component accessors="true" singleton threadsafe{
 			"messages" : ""
 		};
 
+		var payload = {};
+
 		try {
-			// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
-			// This takes care of authenticating the jwt tokens for us.
-			// getPayload() => parseToken() => authenticateToken()
-			var payload = getPayload();
-		}
-		// Access Token Has Expired
-		catch ( TokenExpiredException e ) {
-			// Do we have autoRefreshValidator turned on and we have an incoming refresh token?
-			var refreshToken = discoverRefreshToken();
-			if ( variables.settings.jwt.enableAutoRefreshValidator && len( refreshToken ) ) {
+			try {
+				// Try to get the payload from the jwt token, if we have exceptions, we have failed :(
+				// This takes care of authenticating the jwt tokens for us.
+				// getPayload() => parseToken() => authenticateToken()
+				payload = getPayload();
+			} catch ( any e ) {
+				// if we aren't trying to refresh, return the false response now.
+				var refreshToken = discoverRefreshToken();
+				if (
+					!variables.settings.jwt.enableAutoRefreshValidator ||
+					!len( refreshToken ) ||
+					!listFindNoCase(
+						"TokenExpiredException,TokenInvalidException,TokenNotFoundException",
+						e.type
+					)
+				) {
+					results.messages = e.type & ":" & e.message;
+					return results;
+				}
+
 				// Try to Refresh the tokens
 				var newTokens = this.refreshToken( refreshToken );
 				// Setup payload + authenticate for current request
@@ -915,13 +932,9 @@ component accessors="true" singleton threadsafe{
 						name : variables.settings.jwt.customRefreshHeader,
 						value: newTokens.refresh_token
 					);
-			} else {
-				// Error out as normal
-				results.messages = e.type & ":" & e.message;
-				return results;
 			}
 		}
-		// All other exceptions
+		// All exceptions for refreshTokens
 		catch ( Any e ) {
 			results.messages = e.type & ":" & e.message;
 			return results;
