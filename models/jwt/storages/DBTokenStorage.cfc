@@ -232,7 +232,7 @@ component accessors="true" singleton threadsafe {
 				cacheKey : arguments.key,
 				now      : { cfsqltype : "timestamp", value : now() }
 			},
-			{ datsource : variables.properties.dsn }
+			{ datasource : variables.properties.dsn }
 		);
 
 		return qResults.recordcount > 0;
@@ -257,7 +257,7 @@ component accessors="true" singleton threadsafe {
 				WHERE cacheKey = ?
 			",
 			[ arguments.key ],
-			{ datsource : variables.properties.dsn }
+			{ datasource : variables.properties.dsn }
 		);
 
 		// Just return if records found, else null
@@ -293,7 +293,7 @@ component accessors="true" singleton threadsafe {
 			  WHERE cacheKey = ?
 			",
 			[ arguments.key ],
-			{ datsource : variables.properties.dsn, result : "local.q" }
+			{ datasource : variables.properties.dsn, result : "local.q" }
 		);
 
 		return ( local.q.recordCount ? true : false );
@@ -308,7 +308,7 @@ component accessors="true" singleton threadsafe {
 		queryExecute(
 			"TRUNCATE TABLE #getTable()#",
 			{},
-			{ datsource : variables.properties.dsn }
+			{ datasource : variables.properties.dsn }
 		);
 
 		return this;
@@ -321,7 +321,7 @@ component accessors="true" singleton threadsafe {
 		var qResults = queryExecute(
 			"SELECT cacheKey FROM #getTable()# ORDER BY cacheKey ASC",
 			{},
-			{ datsource : variables.properties.dsn }
+			{ datasource : variables.properties.dsn }
 		);
 
 		return (
@@ -340,7 +340,7 @@ component accessors="true" singleton threadsafe {
 			   FROM #getTable()#
 			",
 			{},
-			{ datsource : variables.properties.dsn }
+			{ datasource : variables.properties.dsn }
 		);
 
 		return q.totalCount;
