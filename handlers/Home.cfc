@@ -61,6 +61,18 @@ component extends="coldbox.system.RestHandler" {
 					400,
 					"Missing refresh token"
 				);
+		} catch ( TokenInvalidException e ) {
+			prc.response.setErrorMessage(
+				"Invalid Token - #e.message#",
+				400,
+				"Invalid Token"
+			);
+		} catch ( TokenExpiredException e ) {
+			prc.response.setErrorMessage(
+				"Token Expired - #e.message#",
+				400,
+				"Token Expired"
+			);
 		}
 	}
 
