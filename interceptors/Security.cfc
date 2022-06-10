@@ -9,9 +9,9 @@
 component accessors="true" extends="coldbox.system.Interceptor" {
 
 	// DI
-	property name="rulesLoader" inject="rulesLoader@cbSecurity";
+	property name="rulesLoader" inject="provider:rulesLoader@cbSecurity";
 	property name="handlerService" inject="coldbox:handlerService";
-	property name="cbSecurity" inject="@cbSecurity";
+	property name="cbSecurity" inject="provider:cbSecurity@cbSecurity";
 	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
 
 	/**
