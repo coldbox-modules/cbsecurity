@@ -293,7 +293,10 @@ component accessors="true" singleton threadsafe {
 			  WHERE cacheKey = ?
 			",
 			[ arguments.key ],
-			{ datasource : variables.properties.dsn, result : "local.q" }
+			{
+				datasource : variables.properties.dsn,
+				result     : "local.q"
+			}
 		);
 
 		return ( local.q.recordCount ? true : false );
