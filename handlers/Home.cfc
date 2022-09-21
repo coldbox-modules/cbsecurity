@@ -64,7 +64,7 @@ component extends="coldbox.system.RestHandler" {
 		} catch ( TokenInvalidException e ) {
 			prc.response.setErrorMessage(
 				"Invalid Token - #e.message#",
-				400,
+				401,
 				"Invalid Token"
 			);
 		} catch ( TokenExpiredException e ) {
