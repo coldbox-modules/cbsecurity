@@ -212,6 +212,33 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						} );
 					} );
 
+					given( "custom refresh claims on the attempt method", function() {
+						then( "the claims should be passed on to the refresh method", function() {
+							var newTokens = variables.jwtService.attempt(
+								"test",
+								"test",
+								{ "foo" : "bar" },
+								{ "foo" : "baz" }
+							);
+
+							expect( newTokens )
+								.toBeStruct()
+								.toHaveKey( "access_token" )
+								.toHaveKey( "refresh_token" );
+
+							var decodedAccessToken = variables.jwtService.decode(
+								newTokens.access_token
+							);
+							expect( decodedAccessToken ).toHaveKey( "foo" );
+							expect( decodedAccessToken.foo ).toBe( "bar" );
+							var decodedRefreshToken = variables.jwtService.decode(
+								newTokens.refresh_token
+							);
+							expect( decodedRefreshToken ).toHaveKey( "foo" );
+							expect( decodedRefreshToken.foo ).toBe( "baz" );
+						} );
+					} );
+
 					given( "a getJwtCustomClaims method on user", function(){
 						then( "it should pass the current payload in to the function", function(){
 							var oUser  = variables.userService.retrieveUserByUsername( "test" );

@@ -131,6 +131,7 @@ component accessors="true" singleton threadsafe {
 	 * @username The username to use
 	 * @password The password to use
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
+	 * @refreshCustomClaims A struct of custom claims to add to the refresh token if successful.
 	 *
 	 * @throws InvalidCredentials
 	 *
@@ -139,7 +140,8 @@ component accessors="true" singleton threadsafe {
 	any function attempt(
 		required username,
 		required password,
-		struct customClaims = {}
+		struct customClaims = {},
+		struct refreshCustomClaims = {}
 	){
 		// Authenticate via the auth service wired up
 		// If it fails an exception is thrown
@@ -153,7 +155,7 @@ component accessors="true" singleton threadsafe {
 			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
 		// Create the token(s) and return it
-		return fromUser( oUser, arguments.customClaims );
+		return fromUser( oUser, arguments.customClaims, arguments.refreshCustomClaims );
 	}
 
 	/**
@@ -192,12 +194,14 @@ component accessors="true" singleton threadsafe {
 	 *
 	 * @user The user to generate the token for, must implement IAuth and IJwtSubject
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
+	 * @refreshCustomClaims A struct of custom claims to add to the refresh token if successful.
 	 *
 	 * @return An access token if the enableRefreshTokens setting is false, else a struct with the access and refresh token: { access_token : "", refresh_token : "" }
 	 */
-	any function fromUser( required user, struct customClaims = {} ){
+	any function fromUser( required user, struct customClaims = {}, struct refreshCustomClaims = {} ){
 		// Refresh token and access token
 		if ( variables.settings.jwt.enableRefreshTokens ) {
+			structAppend( arguments.refreshCustomClaims, arguments.customClaims, false );
 			return {
 				"access_token" : generateToken(
 					user        : arguments.user,
@@ -205,7 +209,7 @@ component accessors="true" singleton threadsafe {
 				),
 				"refresh_token" : generateToken(
 					user        : arguments.user,
-					customClaims: arguments.customClaims,
+					customClaims: arguments.refreshCustomClaims,
 					refresh     : true
 				)
 			};
