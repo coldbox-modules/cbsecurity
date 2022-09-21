@@ -212,6 +212,37 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						} );
 					} );
 
+					given( "any custom claims with a function or closure", function(){
+						then( "it should evaluate them right before encoding the token", function(){
+							var newTokens = variables.jwtService.attempt(
+								"test",
+								"test",
+								{ "foo" : 2 },
+								{
+									"bar" : function( claims ){
+										return claims.foo * claims.foo;
+									}
+								}
+							);
+
+							expect( newTokens )
+								.toBeStruct()
+								.toHaveKey( "access_token" )
+								.toHaveKey( "refresh_token" );
+
+							var decodedAccessToken = variables.jwtService.decode(
+								newTokens.access_token
+							);
+							expect( decodedAccessToken ).toHaveKey( "foo" );
+							expect( decodedAccessToken.foo ).toBe( 2 );
+							var decodedRefreshToken = variables.jwtService.decode(
+								newTokens.refresh_token
+							);
+							expect( decodedRefreshToken ).toHaveKey( "bar" );
+							expect( decodedRefreshToken.bar ).toBe( 4 );
+						} );
+					} );
+
 					given( "custom refresh claims on the attempt method", function(){
 						then( "the claims should be passed on to the refresh method", function(){
 							var newTokens = variables.jwtService.attempt(

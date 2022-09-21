@@ -814,6 +814,17 @@ component accessors="true" singleton threadsafe {
 		// Append incoming custom claims with override, they take prescedence
 		structAppend( payload, arguments.customClaims, true );
 
+		for ( var key in payload ) {
+			if ( !structKeyExists( payload, key ) || isNull( payload[ key ] ) ) {
+				continue;
+			}
+
+			if ( isCustomFunction( payload[ key ] ) || isClosure( payload[ key ] ) ) {
+				var fn         = payload[ key ];
+				payload[ key ] = fn( payload );
+			}
+		}
+
 		// Create the token for the user
 		var jwtToken = this.encode( payload );
 
