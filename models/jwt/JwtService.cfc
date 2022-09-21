@@ -140,7 +140,7 @@ component accessors="true" singleton threadsafe {
 	any function attempt(
 		required username,
 		required password,
-		struct customClaims = {},
+		struct customClaims        = {},
 		struct refreshCustomClaims = {}
 	){
 		// Authenticate via the auth service wired up
@@ -155,7 +155,11 @@ component accessors="true" singleton threadsafe {
 			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
 		// Create the token(s) and return it
-		return fromUser( oUser, arguments.customClaims, arguments.refreshCustomClaims );
+		return fromUser(
+			oUser,
+			arguments.customClaims,
+			arguments.refreshCustomClaims
+		);
 	}
 
 	/**
@@ -198,10 +202,18 @@ component accessors="true" singleton threadsafe {
 	 *
 	 * @return An access token if the enableRefreshTokens setting is false, else a struct with the access and refresh token: { access_token : "", refresh_token : "" }
 	 */
-	any function fromUser( required user, struct customClaims = {}, struct refreshCustomClaims = {} ){
+	any function fromUser(
+		required user,
+		struct customClaims        = {},
+		struct refreshCustomClaims = {}
+	){
 		// Refresh token and access token
 		if ( variables.settings.jwt.enableRefreshTokens ) {
-			structAppend( arguments.refreshCustomClaims, arguments.customClaims, false );
+			structAppend(
+				arguments.refreshCustomClaims,
+				arguments.customClaims,
+				false
+			);
 			return {
 				"access_token" : generateToken(
 					user        : arguments.user,

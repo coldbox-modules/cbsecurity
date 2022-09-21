@@ -212,8 +212,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						} );
 					} );
 
-					given( "custom refresh claims on the attempt method", function() {
-						then( "the claims should be passed on to the refresh method", function() {
+					given( "custom refresh claims on the attempt method", function(){
+						then( "the claims should be passed on to the refresh method", function(){
 							var newTokens = variables.jwtService.attempt(
 								"test",
 								"test",
