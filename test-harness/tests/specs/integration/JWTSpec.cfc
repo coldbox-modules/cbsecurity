@@ -269,7 +269,10 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							var decodedRefreshToken = variables.jwtService.decode(
 								newTokens.refresh_token
 							);
-							expect( decodedRefreshToken ).toHaveKeyWithCase( "bar" );
+
+							// TODO: Change to `toHaveKeyWithCase` when Adobe 2021 Bug is resolved
+							// https://tracker.adobe.com/#/view/CF-4215309
+							expect( decodedRefreshToken ).toHaveKey( "bar" );
 							expect( decodedRefreshToken.bar ).toBe( 4 );
 						} );
 					} );
