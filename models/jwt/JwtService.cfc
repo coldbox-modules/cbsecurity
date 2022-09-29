@@ -352,6 +352,7 @@ component accessors="true" singleton threadsafe {
 	 *
 	 * @refreshToken A refresh token
 	 * @customClaims A struct of custom claims to apply to the new tokens
+	 * @refreshCustomClaims A struct of custom claims to add to the refresh token
 	 *
 	 * @throws RefreshTokensNotActive If the setting enableRefreshTokens is false
 	 * @throws TokenExpiredException If the token has expired or no longer in the storage (invalidated)
@@ -360,7 +361,11 @@ component accessors="true" singleton threadsafe {
 	 *
 	 * @return A struct of { access_token : "", refresh_token : "" }
 	 */
-	struct function refreshToken( token = discoverRefreshToken(), struct customClaims = {} ){
+	struct function refreshToken(
+		token                      = discoverRefreshToken(),
+		struct customClaims        = {},
+		struct refreshCustomClaims = {}
+	){
 		if ( !variables.settings.jwt.enableRefreshTokens ) {
 			throw(
 				type   : "RefreshTokensNotActive",
@@ -379,7 +384,11 @@ component accessors="true" singleton threadsafe {
 		var oUser = authenticate( payload: payload );
 
 		// Build new tokens according to validated user
-		var results = fromUser( oUser, arguments.customClaims );
+		var results = fromUser(
+			oUser,
+			arguments.customClaims,
+			arguments.refreshCustomClaims
+		);
 
 		// Invalidate the refresh token: Token Rotation
 		invalidate( arguments.token );
