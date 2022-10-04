@@ -131,6 +131,7 @@ component accessors="true" singleton threadsafe {
 	 * @username The username to use
 	 * @password The password to use
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
+	 * @refreshCustomClaims A struct of custom claims to add to the refresh token if successful.
 	 *
 	 * @throws InvalidCredentials
 	 *
@@ -139,7 +140,8 @@ component accessors="true" singleton threadsafe {
 	any function attempt(
 		required username,
 		required password,
-		struct customClaims = {}
+		struct customClaims        = {},
+		struct refreshCustomClaims = {}
 	){
 		// Authenticate via the auth service wired up
 		// If it fails an exception is thrown
@@ -153,7 +155,11 @@ component accessors="true" singleton threadsafe {
 			.setPrivateValue( variables.settings.prcUserVariable, oUser );
 
 		// Create the token(s) and return it
-		return fromUser( oUser, arguments.customClaims );
+		return fromUser(
+			oUser,
+			arguments.customClaims,
+			arguments.refreshCustomClaims
+		);
 	}
 
 	/**
@@ -192,12 +198,22 @@ component accessors="true" singleton threadsafe {
 	 *
 	 * @user The user to generate the token for, must implement IAuth and IJwtSubject
 	 * @customClaims A struct of custom claims to add to the jwt token if successful.
+	 * @refreshCustomClaims A struct of custom claims to add to the refresh token if successful.
 	 *
 	 * @return An access token if the enableRefreshTokens setting is false, else a struct with the access and refresh token: { access_token : "", refresh_token : "" }
 	 */
-	any function fromUser( required user, struct customClaims = {} ){
+	any function fromUser(
+		required user,
+		struct customClaims        = {},
+		struct refreshCustomClaims = {}
+	){
 		// Refresh token and access token
 		if ( variables.settings.jwt.enableRefreshTokens ) {
+			structAppend(
+				arguments.refreshCustomClaims,
+				arguments.customClaims,
+				false
+			);
 			return {
 				"access_token" : generateToken(
 					user        : arguments.user,
@@ -205,7 +221,7 @@ component accessors="true" singleton threadsafe {
 				),
 				"refresh_token" : generateToken(
 					user        : arguments.user,
-					customClaims: arguments.customClaims,
+					customClaims: arguments.refreshCustomClaims,
 					refresh     : true
 				)
 			};
@@ -336,6 +352,7 @@ component accessors="true" singleton threadsafe {
 	 *
 	 * @refreshToken A refresh token
 	 * @customClaims A struct of custom claims to apply to the new tokens
+	 * @refreshCustomClaims A struct of custom claims to add to the refresh token
 	 *
 	 * @throws RefreshTokensNotActive If the setting enableRefreshTokens is false
 	 * @throws TokenExpiredException If the token has expired or no longer in the storage (invalidated)
@@ -344,7 +361,11 @@ component accessors="true" singleton threadsafe {
 	 *
 	 * @return A struct of { access_token : "", refresh_token : "" }
 	 */
-	struct function refreshToken( token = discoverRefreshToken(), struct customClaims = {} ){
+	struct function refreshToken(
+		token                      = discoverRefreshToken(),
+		struct customClaims        = {},
+		struct refreshCustomClaims = {}
+	){
 		if ( !variables.settings.jwt.enableRefreshTokens ) {
 			throw(
 				type   : "RefreshTokensNotActive",
@@ -363,7 +384,11 @@ component accessors="true" singleton threadsafe {
 		var oUser = authenticate( payload: payload );
 
 		// Build new tokens according to validated user
-		var results = fromUser( oUser, arguments.customClaims );
+		var results = fromUser(
+			oUser,
+			arguments.customClaims,
+			arguments.refreshCustomClaims
+		);
 
 		// Invalidate the refresh token: Token Rotation
 		invalidate( arguments.token );
@@ -797,6 +822,17 @@ component accessors="true" singleton threadsafe {
 
 		// Append incoming custom claims with override, they take prescedence
 		structAppend( payload, arguments.customClaims, true );
+
+		for ( var key in payload ) {
+			if ( !structKeyExists( payload, key ) || isNull( payload[ key ] ) ) {
+				continue;
+			}
+
+			if ( isCustomFunction( payload[ key ] ) || isClosure( payload[ key ] ) ) {
+				var fn         = payload[ key ];
+				payload[ key ] = fn( payload );
+			}
+		}
 
 		// Create the token for the user
 		var jwtToken = this.encode( payload );

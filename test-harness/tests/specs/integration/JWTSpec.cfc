@@ -6,6 +6,37 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 		clearFrameworks();
 		super.beforeAll();
 
+		addMatchers( {
+			toHaveKeyWithCase : function( expectation, args = {} ){
+				// handle both positional and named arguments
+				param args.key = "";
+				if ( structKeyExists( args, 1 ) ) {
+					args.key = args[ 1 ];
+				}
+				param args.message = "";
+				if ( structKeyExists( args, 2 ) ) {
+					args.message = args[ 2 ];
+				}
+
+				if ( args.key == "" ) {
+					expectation.message = "No Key Provided.";
+					return false;
+				}
+
+				if ( !listFind( expectation.actual.keyList(), args.key ) ) {
+					if ( listFindNoCase( expectation.actual.keyList(), args.key ) ) {
+						expectation.message = "The key(s) [#args.key#] does exist in the target object, but the Case is incorrect. Found keys are [#structKeyArray( expectation.actual ).toString()#]";
+					} else {
+						expectation.message = "The key(s) [#args.key#] does not exist in the target object, with or without case sensitivity. Found keys are [#structKeyArray( expectation.actual ).toString()#]";
+					}
+					debug( expectation.actual );
+					return false;
+				}
+
+				return true;
+			}
+		} );
+
 		// Fixtures
 		variables.expired_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE1NjkyNzI0NjQsInJvbGUiOiJhZG1pbiIsInNjb3BlcyI6W10sImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvIiwic3ViIjoxMjMsImV4cCI6MTU2OTI3MjQ2NSwianRpIjoiRTRDNEM3MDdFNjA1MzQwRDkxRDNCMDBCMkI4NTdFNDMifQ.N2rT_b_Xp8e9Hw0O7yVork6Fg8aC7RKf0Fv-Bmu7Iv5CVvFrmk1gkF_oKeXmcl22MiwhB2oQJhMNZiFa5OfSKw";
 		variables.invalid_token = "eyJ0eXAiOiJKV1QihbGciOiJIUzUxMiJ9.eyJpYXQiOjE1Njg5MDMyODIsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTY1OTYvaW5kZXguY2ZtLyIsInN1YiI6MCwiZXhwIjoxNTY4OTA2ODgyLCJqdGkiOiIzRDUyMjUzNDM3Mjk4NjlCQkUzMjQxRUEzNjVEMUJDMyJ9.aCJrcD4TV0ei9lGpmrn0I2WQLrvSUx64BXPJYVi7BzZ2U-yS5ejg";
@@ -146,8 +177,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							);
 							expect( event.getResponse().getData() )
 								.toBeStruct()
-								.toHaveKey( "access_token" )
-								.toHaveKey( "refresh_token" );
+								.toHaveKeyWithCase( "access_token" )
+								.toHaveKeyWithCase( "refresh_token" );
 						} );
 					} );
 					given( "An activated endpoint and an invalid refresh token", function(){
@@ -175,8 +206,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							);
 							expect( newTokens )
 								.toBeStruct()
-								.toHaveKey( "access_token" )
-								.toHaveKey( "refresh_token" );
+								.toHaveKeyWithCase( "access_token" )
+								.toHaveKeyWithCase( "refresh_token" );
 							expect( variables.jwtService.isTokenInStorage( tokens.refresh_token ) ).toBeFalse();
 							expect(
 								variables.jwtService.isTokenInStorage( newTokens.access_token )
@@ -196,19 +227,80 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							);
 							expect( newTokens )
 								.toBeStruct()
-								.toHaveKey( "access_token" )
-								.toHaveKey( "refresh_token" );
+								.toHaveKeyWithCase( "access_token" )
+								.toHaveKeyWithCase( "refresh_token" );
 
 							var decodedAccessToken = variables.jwtService.decode(
 								newTokens.access_token
 							);
-							expect( decodedAccessToken ).toHaveKey( "foo" );
+							expect( decodedAccessToken ).toHaveKeyWithCase( "foo" );
 							expect( decodedAccessToken.foo ).toBe( "bar" );
 							var decodedRefreshToken = variables.jwtService.decode(
 								newTokens.refresh_token
 							);
-							expect( decodedRefreshToken ).toHaveKey( "foo" );
+							expect( decodedRefreshToken ).toHaveKeyWithCase( "foo" );
 							expect( decodedRefreshToken.foo ).toBe( "bar" );
+						} );
+					} );
+
+					given( "any custom claims with a function or closure", function(){
+						then( "it should evaluate them right before encoding the token", function(){
+							var newTokens = variables.jwtService.attempt(
+								"test",
+								"test",
+								{ "foo" : 2 },
+								{
+									"bar" : function( claims ){
+										return claims.foo * claims.foo;
+									}
+								}
+							);
+
+							expect( newTokens )
+								.toBeStruct()
+								.toHaveKeyWithCase( "access_token" )
+								.toHaveKeyWithCase( "refresh_token" );
+
+							var decodedAccessToken = variables.jwtService.decode(
+								newTokens.access_token
+							);
+							expect( decodedAccessToken ).toHaveKeyWithCase( "foo" );
+							expect( decodedAccessToken.foo ).toBe( 2 );
+							var decodedRefreshToken = variables.jwtService.decode(
+								newTokens.refresh_token
+							);
+
+							// TODO: Change to `toHaveKeyWithCase` when Adobe 2021 Bug is resolved
+							// https://tracker.adobe.com/#/view/CF-4215309
+							expect( decodedRefreshToken ).toHaveKey( "bar" );
+							expect( decodedRefreshToken.bar ).toBe( 4 );
+						} );
+					} );
+
+					given( "custom refresh claims on the attempt method", function(){
+						then( "the claims should be passed on to the refresh method", function(){
+							var newTokens = variables.jwtService.attempt(
+								"test",
+								"test",
+								{ "foo" : "bar" },
+								{ "foo" : "baz" }
+							);
+
+							expect( newTokens )
+								.toBeStruct()
+								.toHaveKeyWithCase( "access_token" )
+								.toHaveKeyWithCase( "refresh_token" );
+
+							var decodedAccessToken = variables.jwtService.decode(
+								newTokens.access_token
+							);
+							expect( decodedAccessToken ).toHaveKeyWithCase( "foo" );
+							expect( decodedAccessToken.foo ).toBe( "bar" );
+							var decodedRefreshToken = variables.jwtService.decode(
+								newTokens.refresh_token
+							);
+							expect( decodedRefreshToken ).toHaveKeyWithCase( "foo" );
+							expect( decodedRefreshToken.foo ).toBe( "baz" );
 						} );
 					} );
 
@@ -216,13 +308,13 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						then( "it should pass the current payload in to the function", function(){
 							var oUser  = variables.userService.retrieveUserByUsername( "test" );
 							var tokens = variables.jwtService.fromUser( oUser );
-							expect( tokens ).toBeStruct().toHaveKey( "access_token" );
+							expect( tokens ).toBeStruct().toHaveKeyWithCase( "access_token" );
 
 							var decodedAccessToken = variables.jwtService.decode(
 								tokens.access_token
 							);
-							expect( decodedAccessToken ).toHaveKey( "jti" );
-							expect( decodedAccessToken ).toHaveKey( "duplicatedJTI" );
+							expect( decodedAccessToken ).toHaveKeyWithCase( "jti" );
+							expect( decodedAccessToken ).toHaveKeyWithCase( "duplicatedJTI" );
 							expect( decodedAccessToken.duplicatedJTI ).toBe(
 								decodedAccessToken.jti
 							);
@@ -252,8 +344,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					var tokens = variables.jwtService.fromUser( oUser );
 					expect( tokens )
 						.toBeStruct()
-						.toHaveKey( "access_token" )
-						.toHaveKey( "refresh_token" );
+						.toHaveKeyWithCase( "access_token" )
+						.toHaveKeyWithCase( "refresh_token" );
 				} );
 
 				it( "can discover refresh tokens via the rc", function(){
@@ -345,7 +437,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						var tokenStorageSetCallLog = tokenStorageMock.$callLog().set;
 						expect( tokenStorageSetCallLog ).toBeArray();
 						expect( tokenStorageSetCallLog ).toHaveLength( 1 );
-						expect( tokenStorageSetCallLog[ 1 ] ).toHaveKey( "expiration" );
+						expect( tokenStorageSetCallLog[ 1 ] ).toHaveKeyWithCase( "expiration" );
 						expect( tokenStorageSetCallLog[ 1 ].expiration ).toBeCloseTo(
 							expirationSeconds,
 							1

@@ -67,14 +67,15 @@ component accessors="true" singleton threadsafe {
 		required payload
 	){
 		variables.cache.set(
-			buildKey( arguments.key ),
-			{
+			objectKey = buildKey( arguments.key ),
+			object    = {
 				token      : arguments.token,
 				expiration : jwtService.fromEpoch( arguments.payload.exp ),
 				issued     : jwtService.fromEpoch( arguments.payload.iat ),
 				payload    : arguments.payload
 			},
-			arguments.expiration
+			timeout           = arguments.expiration,
+			lastAccessTimeout = 0
 		);
 		return this;
 	}
