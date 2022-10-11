@@ -12,7 +12,6 @@ env:
     - MODULE_ID=cbsecurity
   matrix:
     - ENGINE=lucee@5
-    - ENGINE=adobe@2016
     - ENGINE=adobe@2018
 
 branches:

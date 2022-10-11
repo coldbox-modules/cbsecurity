@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
+## [3.0.0] => 2022-OCT-11
+
+### Changed
+
+* Dropped ACF2016
+
+### Added
+
+* Dynamic Custom Claims: You can pass a function/closure as the value for a custom claim and it will be evaluated at runtime passing in the current claims before being encoded
+* Allow passing in custom refresh token claims to `attempt()` and `fromUser()` and `refreshToken()` : `refreshCustomClaims`
+* Added `TokenInvalidException` and `TokenExpiredException` to the `refreshToken` endpoint
+
+### Fixed
+
+* Disable lastAccessTimeouts for JWT CacheTokenStorage BOX-128
+* Fix spelling of property `datasource` on queryExecute that was causing a read issue.
+
+----
+
 ## [2.15.0] => 2021-DEC-10
 
 ### :rocket: Added

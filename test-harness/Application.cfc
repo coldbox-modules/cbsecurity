@@ -8,6 +8,7 @@ component{
 
 	// UPDATE THE NAME OF THE MODULE IN TESTING BELOW
 	request.MODULE_NAME = "cbsecurity";
+	request.MODULE_PATH = "cbsecurity";
 
 	// Application properties
 	this.name              = hash( getCurrentTemplatePath() );

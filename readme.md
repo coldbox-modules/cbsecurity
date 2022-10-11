@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/coldbox-modules/cbsecurity.svg?branch=development)](https://travis-ci.org/coldbox-modules/cbsecurity)
+[![cbsecurity CI](https://github.com/coldbox-modules/cbsecurity/actions/workflows/ci.yml/badge.svg)](https://github.com/coldbox-modules/cbsecurity/actions/workflows/ci.yml)
 
 # WELCOME TO THE COLDBOX SECURITY MODULE
 
@@ -9,7 +9,7 @@ This module will enhance your ColdBox applications by providing out-of-the-box s
 - JWT (JSON Web Tokens) generator, decoder, and authentication services
 - Refresh and Access tokens
 - Pluggable with any Authentication service or can leverage [cbauth](https://github.com/elpete/cbauth) by default
-- Capability to distinguish between invalid authentication and authorization and determine the process's outcome.  
+- Capability to distinguish between invalid authentication and authorization and determine the process's outcome.
 - Ability to load/unload security rules from contributing modules. So you can create a nice HMVC hierarchy of security.
 - Ability for each module to define its own `validator`
 
@@ -28,7 +28,7 @@ Apache License, Version 2.0.
 ## Requirements
 
 - Lucee 5+
-- ColdFusion 2016+
+- ColdFusion 2018+
 
 ## Installation
 
@@ -137,7 +137,7 @@ cbsecurity = {
 
 ## Usage
 
-This module will automatically register the `Security` interceptor for you according to the settings shown above and using the interceptor => (`cbsecurity.interceptor.Security`).  
+This module will automatically register the `Security` interceptor for you according to the settings shown above and using the interceptor => (`cbsecurity.interceptor.Security`).
 
 > **Info** You can deactivate this and load it as a manual interceptor via the `autoLoadFirewall` setting.
 
@@ -147,7 +147,7 @@ The interceptor will intercept all calls to your application via the `preProcess
 
 ### How does validation happen?
 
-How does the interceptor know a user doesn't have access? Well, here is where you register a Validator CFC (`validator` setting) with the interceptor that implements two validation functions: `ruleValidator() and annotationValidator()`.  
+How does the interceptor know a user doesn't have access? Well, here is where you register a Validator CFC (`validator` setting) with the interceptor that implements two validation functions: `ruleValidator() and annotationValidator()`.
 
 > **Info** You can find an interface for these methods in `cbsecurity.interfaces.ISecurityValidator`
 
@@ -326,7 +326,7 @@ component{
     function index(event,rc,prc) secured{
 
     }
-    
+
     function list(event,rc,prc) secured="list"{
 
     }
@@ -345,7 +345,7 @@ component secured="admin,users"{
     function index(event,rc,prc) secured="list"{
 
     }
-    
+
     function save(event,rc,prc) secured="write"{
 
     }
@@ -479,7 +479,7 @@ Because of His grace, this project exists. If you don't like this, then don't re
 By whom also we have access by faith into this grace wherein we stand, and rejoice in hope of the glory of God.
 And not only so, but we glory in tribulations also: knowing that tribulation worketh patience;
 And patience, experience; and experience, hope:
-And hope maketh not ashamed; because the love of God is shed abroad in our hearts by the 
+And hope maketh not ashamed; because the love of God is shed abroad in our hearts by the
 Holy Ghost which is given unto us. ." Romans 5:5
 
 ### THE DAILY BREAD
