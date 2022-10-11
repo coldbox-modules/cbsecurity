@@ -79,7 +79,7 @@ component {
 				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
 				"defaultAuthorizationAction"  : "override",
 				// The validator to use for this module
-				"validator"                   : "JWTService@cbsecurity",
+				"validator"                   : "JwtAuthValidator@cbsecurity",
 				// You can define your security rules here or externally via a source
 				"rules"                       : [ { "secureList" : "api:Secure\.*" } ]
 			}

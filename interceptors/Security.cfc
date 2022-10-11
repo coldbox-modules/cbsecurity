@@ -15,7 +15,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
 
 	/**
-	 * The reference to the security validator for this interceptor
+	 * The reference to the security validator for this firewall. One-to-One relationship.
 	 */
 	property name="validator";
 

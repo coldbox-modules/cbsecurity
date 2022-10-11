@@ -283,7 +283,7 @@ settings = {
         // Default Authorization Action: override or redirect when a user does not have enough permissions to access something
         "defaultAuthorizationAction"    : "override",
         // Custom validator for the module.
-        "validator"                     : "jwtService@cbsecurity"
+        "validator"                     : "JwtAuthValidator@cbsecurity"
         // You can define your security rules here or externally via a source
         "rules"                         : [
             {

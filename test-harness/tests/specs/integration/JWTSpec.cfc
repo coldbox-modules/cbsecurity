@@ -78,15 +78,15 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				story( "I can auto refresh tokens by using the autoRefreshValidator setting and the JWT Validator", function(){
 					beforeEach( function( currentSpec ){
 						variables.jwtService.getSettings().jwt.enableAutoRefreshValidator = true;
-						makePublic( variables.jwtService, "validateSecurity" );
+						variables.jwtAuthValidator = getInstance( "JwtAuthValidator@cbsecurity" );
 					} );
 					afterEach( function( currentSpec ){
 						variables.jwtService.getSettings().jwt.enableAutoRefreshValidator = false;
 					} );
 					given( "Auto refresh is on and no access or refresh token is sent", function(){
 						then( "the validation should fail", function(){
-							var results = variables.jwtService.validateSecurity( "" );
-							expect( results.allow ).toBeFalse();
+							var results = variables.jwtAuthValidator.validateSecurity( "" );
+							expect( results.allow ).toBeFalse( results.toString() );
 							expect( results.messages ).toInclude( "TokenNotFoundException" );
 						} );
 					} );
@@ -97,15 +97,15 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 							getRequestContext().setValue( "x-refresh-token", tokens.refresh_token );
 
-							var results = variables.jwtService.validateSecurity( "" );
-							expect( results.allow ).toBeTrue();
+							var results = variables.jwtAuthValidator.validateSecurity( "" );
+							expect( results.allow ).toBeTrue( results.toString() );
 						} );
 					} );
 					given( "Auto refresh is on and an expired access token is sent but no refresh token is sent", function(){
 						then( "the validation should fail", function(){
 							getRequestContext().setValue( "x-auth-token", variables.expired_token );
-							var results = variables.jwtService.validateSecurity( "" );
-							expect( results.allow ).toBeFalse();
+							var results = variables.jwtAuthValidator.validateSecurity( "" );
+							expect( results.allow ).toBeFalse( results.toString() );
 							expect( results.messages ).toInclude( "TokenExpiredException" );
 						} );
 					} );
@@ -117,8 +117,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							getRequestContext().setValue( "x-auth-token", variables.expired_token );
 							getRequestContext().setValue( "x-refresh-token", tokens.refresh_token );
 
-							var results = variables.jwtService.validateSecurity( "" );
-							expect( results.allow ).toBeTrue();
+							var results = variables.jwtAuthValidator.validateSecurity( "" );
+							expect( results.allow ).toBeTrue( results.toString() );
 						} );
 					} );
 					given( "Auto refresh is on and an expired access token is sent with an expired refresh token", function(){
@@ -126,8 +126,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							getRequestContext().setValue( "x-auth-token", variables.expired_token );
 							getRequestContext().setValue( "x-refresh-token", variables.expired_token );
 
-							var results = variables.jwtService.validateSecurity( "" );
-							expect( results.allow ).toBeFalse();
+							var results = variables.jwtAuthValidator.validateSecurity( "" );
+							expect( results.allow ).toBeFalse( results.toString() );
 						} );
 					} );
 				} );
