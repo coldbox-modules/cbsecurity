@@ -68,44 +68,10 @@ component {
 			"enableSecurityVisualizer"    : false,
 			// Security Headers : Defaults are defined in the interceptors.SecurityHeaders
 			"securityHeaders"             : { "enabled" : true },
-			// JWT Configurations
+			// JWT Configurations : Defaults are defined in the JwtService
 			"jwt"                         : {
-				// The issuer authority for the tokens, placed in the `iss` claim
-				"issuer"                     : "",
 				// The jwt secret encoding key to use
-				"secretKey"                  : getSystemSetting( "JWT_SECRET", "" ),
-				// by default it uses the authorization bearer header, but you can also pass a custom one as well or as an rc variable.
-				"customAuthHeader"           : "x-auth-token",
-				// The expiration in minutes for the jwt tokens
-				"expiration"                 : 60,
-				// If true, enables refresh tokens, token creation methods will return a struct instead
-				// of just the access token. e.g. { access_token: "", refresh_token : "" }
-				"enableRefreshTokens"        : false,
-				// The default expiration for refresh tokens, defaults to 30 days
-				"refreshExpiration"          : 10080,
-				// The Custom header to inspect for refresh tokens
-				"customRefreshHeader"        : "x-refresh-token",
-				// If enabled, the JWT validator will inspect the request for refresh tokens and expired access tokens
-				// It will then automatically refresh them for you and return them back as
-				// response headers in the same request according to the customRefreshHeader and customAuthHeader
-				"enableAutoRefreshValidator" : false,
-				// Enable the POST > /cbsecurity/refreshtoken API endpoint
-				"enableRefreshEndpoint"      : true,
-				// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
-				"algorithm"                  : "HS512",
-				// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
-				"requiredClaims"             : [],
-				// The token storage settings
-				"tokenStorage"               : {
-					// enable or not, default is true
-					"enabled"    : true,
-					// A cache key prefix to use when storing the tokens
-					"keyPrefix"  : "cbjwt_",
-					// The driver to use: db, cachebox or a WireBox ID
-					"driver"     : "cachebox",
-					// Driver specific properties
-					"properties" : { "cacheName" : "default" }
-				}
+				"secretKey" : getSystemSetting( "JWT_SECRET", "" )
 			}
 		};
 
