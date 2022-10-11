@@ -107,10 +107,6 @@ component {
 			}
 		};
 
-		// CBSecurity Routes
-		router.post( "/refreshtoken" ).to( "Home.refreshToken" );
-		router.route( "/" ).to( "Home.index" );
-
 		// Security Interceptions
 		interceptorSettings = {
 			customInterceptionPoints : [

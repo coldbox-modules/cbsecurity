@@ -23,9 +23,8 @@ component threadsafe singleton accessors="true" {
 	/*********************************************************************************************/
 
 	property name="settings" inject="coldbox:moduleSettings:cbsecurity";
-	property name="log" inject="logbox:logger:{this}";
-	property name="wirebox" inject="wirebox";
-
+	property name="log"      inject="logbox:logger:{this}";
+	property name="wirebox"  inject="wirebox";
 
 	/*********************************************************************************************/
 	/** PROPERTIES **/
@@ -57,9 +56,9 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Get the user service object defined accordingly in the settings
 	 *
-	 * @throws IncompleteConfiguration
-	 *
 	 * @return cbsecurity.interfaces.IUserService
+	 *
+	 * @throws IncompleteConfiguration
 	 */
 	any function getUserService(){
 		// If loaded, use it!
@@ -83,9 +82,9 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Get the authentication service defined accordingly in the settings
 	 *
-	 * @throws IncompleteConfiguration
-	 *
 	 * @return cbsecurity.interfaces.IAuthService
+	 *
+	 * @throws IncompleteConfiguration
 	 */
 	any function getAuthService(){
 		// If loaded, use it!
@@ -101,9 +100,7 @@ component threadsafe singleton accessors="true" {
 			);
 		}
 
-		variables.authService = variables.wirebox.getInstance(
-			variables.settings.authenticationService
-		);
+		variables.authService = variables.wirebox.getInstance( variables.settings.authenticationService );
 
 		return variables.authService;
 	}
@@ -116,9 +113,9 @@ component threadsafe singleton accessors="true" {
 	 * Verify if the incoming permissions exist in the currently authenticated user.
 	 * All permissions are Or'ed together
 	 *
-	 * @throws NoUserLoggedIn
-	 *
 	 * @permissions One, a list or an array of permissions
+	 *
+	 * @throws NoUserLoggedIn
 	 */
 	boolean function has( required permissions ){
 		var oUser = getAuthService().getUser();
@@ -133,9 +130,9 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verify that ALL the permissions passed must exist within the authenticated user
 	 *
-	 * @throws NoUserLoggedIn
-	 *
 	 * @permissions One, a list or an array of permissions
+	 *
+	 * @throws NoUserLoggedIn
 	 */
 	boolean function all( required permissions ){
 		var oUser  = getAuthService().getUser();
@@ -151,9 +148,9 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verify that NONE of the permissions passed must exist within the authenticated user
 	 *
-	 * @throws NoUserLoggedIn
-	 *
 	 * @permissions One, a list or an array of permissions
+	 *
+	 * @throws NoUserLoggedIn
 	 */
 	boolean function none( required permissions ){
 		var oUser = getAuthService().getUser();
@@ -169,9 +166,9 @@ component threadsafe singleton accessors="true" {
 	 * Verify that the passed in user object must be the same as the authenticated user
 	 * Equality is done by evaluating the `getid()` method on both objects.
 	 *
-	 * @throws NoUserLoggedIn
-	 *
 	 * @user The user to test for equality
+	 *
+	 * @throws NoUserLoggedIn
 	 */
 	boolean function sameUser( required user ){
 		return ( arguments.user.getId() == getAuthService().getUser().getId() );
@@ -184,12 +181,12 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verifies if the currently logged in user has any of the passed permissions.
 	 *
-	 * @throws NotAuthorized
-	 *
 	 * @permissions One, a list or an array of permissions
-	 * @message The error message to throw in the exception
+	 * @message     The error message to throw in the exception
 	 *
-	 * @returns CBSecurity
+	 * @return CBSecurity
+	 *
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secure( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !has( arguments.permissions ) ) {
@@ -201,12 +198,12 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verifies if the currently logged in user has ALL of the passed permissions.
 	 *
-	 * @throws NotAuthorized
-	 *
 	 * @permissions One, a list or an array of permissions
-	 * @message The error message to throw in the exception
+	 * @message     The error message to throw in the exception
 	 *
-	 * @returns CBSecurity
+	 * @return CBSecurity
+	 *
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secureAll( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !all( arguments.permissions ) ) {
@@ -218,17 +215,14 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verifies if the currently logged in user has NONE of the passed permissions.
 	 *
-	 * @throws NotAuthorized
-	 *
 	 * @permissions One, a list or an array of permissions
-	 * @message The error message to throw in the exception
+	 * @message     The error message to throw in the exception
 	 *
-	 * @returns CBSecurity
+	 * @return CBSecurity
+	 *
+	 * @throws NotAuthorized
 	 */
-	CBSecurity function secureNone(
-		required permissions,
-		message = variables.DEFAULT_ERROR_MESSAGE
-	){
+	CBSecurity function secureNone( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !none( arguments.permissions ) ) {
 			throw( type = "NotAuthorized", message = arguments.message );
 		}
@@ -248,12 +242,12 @@ component threadsafe singleton accessors="true" {
 	 *
 	 * It receives the currently logged in user
 	 *
-	 * @throws NotAuthorized
-	 *
 	 * @context A closure/lambda/udf that returns boolean, or a boolean expression
 	 * @message The error message to throw in the exception
 	 *
-	 * @returns CBSecurity
+	 * @return CBSecurity
+	 *
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secureWhen( required context, message = variables.DEFAULT_ERROR_MESSAGE ){
 		var results = arguments.context;
@@ -272,11 +266,11 @@ component threadsafe singleton accessors="true" {
 	 * Equality is done by evaluating the `getid()` method on both objects.
 	 * If the equality check fails, a `NotAuthorized` exception is thrown.
 	 *
-	 * @throws NoUserLoggedIn
-	 * @throws NotAuthorized
-	 *
-	 * @user The user to test for equality
+	 * @user    The user to test for equality
 	 * @message The error message to throw in the exception
+	 *
+	 * @throws NoUserLoggedIn
+	 * @throws NotAuthorized 
 	 */
 	CBSecurity function secureSameUser( required user, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !sameUser( arguments.user ) ) {
@@ -312,8 +306,8 @@ component threadsafe singleton accessors="true" {
 	 * They receive the currently logged in user and the permissions that where evaluated
 	 *
 	 * @permissions One, a list or an array of permissions
-	 * @success The closure/lambda/udf that executes if the context passes
-	 * @fail The closure/lambda/udf that executes if the context fails
+	 * @success     The closure/lambda/udf that executes if the context passes
+	 * @fail        The closure/lambda/udf that executes if the context fails
 	 */
 	function when( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
@@ -341,8 +335,8 @@ component threadsafe singleton accessors="true" {
 	 * They receive the currently logged in user and the permissions that where evaluated
 	 *
 	 * @permissions One, a list or an array of permissions
-	 * @success The closure/lambda/udf that executes if the context passes
-	 * @fail The closure/lambda/udf that executes if the context fails
+	 * @success     The closure/lambda/udf that executes if the context passes
+	 * @fail        The closure/lambda/udf that executes if the context fails
 	 */
 	function whenAll( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
@@ -370,8 +364,8 @@ component threadsafe singleton accessors="true" {
 	 * They receive the currently logged in user and the permissions that where evaluated
 	 *
 	 * @permissions One, a list or an array of permissions
-	 * @success The closure/lambda/udf that executes if the context passes
-	 * @fail The closure/lambda/udf that executes if the context fails
+	 * @success     The closure/lambda/udf that executes if the context passes
+	 * @fail        The closure/lambda/udf that executes if the context fails
 	 */
 	function whenNone( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
@@ -389,7 +383,7 @@ component threadsafe singleton accessors="true" {
 	 *
 	 * @permissions One, a list or an array of permissions
 	 * @successView The view to set in the request context if the permissions pass
-	 * @failView The view to set in the request context if the permissions fails, optional
+	 * @failView    The view to set in the request context if the permissions fails, optional
 	 */
 	function secureViewProxy(
 		required permissions,
@@ -408,10 +402,10 @@ component threadsafe singleton accessors="true" {
 	 * This method is injected into all request contex's in order to allow you to easily
 	 * switch between views if the permissions are not found in the user.
 	 *
-	 * @event The proxied request context
+	 * @event       The proxied request context
 	 * @permissions One, a list or an array of permissions
 	 * @successView The view to set in the request context if the permissions pass
-	 * @failView The view to set in the request context if the permissions fails, optional
+	 * @failView    The view to set in the request context if the permissions fails, optional
 	 */
 	function secureView(
 		required event,

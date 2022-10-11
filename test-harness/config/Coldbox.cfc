@@ -63,6 +63,10 @@
 
 		// Module Settings
 		moduleSettings = {
+			// CBDebugger
+			cbdebugger : {
+				modules  : { enabled : true, expanded : false },
+			},
 			// CB Auth
 			cbAuth     : { userServiceClass : "UserService" },
 			// CB Security

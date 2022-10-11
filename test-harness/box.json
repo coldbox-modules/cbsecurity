@@ -9,7 +9,8 @@
         "cbauth":"^5.0.0",
         "BCrypt":"^2.0.0",
         "jwt-cfml":"^1.0.0",
-        "cbcsrf":"^2.0.0+21"
+        "cbcsrf":"^2.0.0+21",
+        "cbdebugger":"^3.5.0+64"
     },
     "devDependencies":{
         "testbox":"*",
@@ -22,6 +23,7 @@
         "BCrypt":"modules/BCrypt/",
         "route-visualizer":"modules/route-visualizer/",
         "jwt-cfml":"modules/jwtcfml/",
-        "cbcsrf":"modules/cbcsrf/"
+        "cbcsrf":"modules/cbcsrf/",
+        "cbdebugger":"modules/cbdebugger/"
     }
 }
