@@ -105,6 +105,26 @@ component threadsafe singleton accessors="true" {
 		return variables.authService;
 	}
 
+	/**
+	 * Get the authenticated user
+	 *
+	 * Change to delegates on CB7
+	 *
+	 * @return User that implements IAuthUser
+	 *
+	 * @throws NoUserLoggedIn : If the user is not logged in
+	 */
+	any function getUser(){
+		return getAuthService().getUser();
+	}
+
+	/**
+	 * Verifies if a user is logged in
+	 */
+	boolean function isLoggedIn(){
+		return getAuthService().isLoggedIn();
+	}
+
 	/***************************************************************/
 	/* Verification Methods
 	/***************************************************************/

@@ -11,6 +11,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	// DI
 	property name="rulesLoader"         inject="rulesLoader@cbSecurity";
 	property name="handlerService"      inject="coldbox:handlerService";
+	property name="requestService"      inject="coldbox:requestService";
 	property name="cbSecurity"          inject="@cbSecurity";
 	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
 
@@ -207,6 +208,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				arguments.event.getCurrentEvent()
 			);
 		}
+
+		// Store User in ColdBox data bus if logged in
+		if ( variables.cbSecurity.isLoggedIn() ) {
+			variables.requestService
+				.getContext()
+				.setPrivateValue(
+					variables.cbSecurity.getSettings().prcUserVariable,
+					variables.cbSecurity.getUser()
+				);
+		}
 	}
 
 	/**
@@ -367,6 +378,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					thisRule,
 					variables.controller
 				);
+
 				// Verify type, else default to "authentication"
 				if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
 					validatorResults.type = "authentication";
@@ -418,6 +430,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				}
 				// end if valid state
 				else {
+					// Log it
 					if ( log.canDebug() ) {
 						log.debug(
 							"Secure target=#matchTarget# matched and user authorized for rule: #thisRule.toString()#."
@@ -552,6 +565,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
 			validatorResults.type = "authentication";
 		}
+
 		return validatorResults;
 	}
 

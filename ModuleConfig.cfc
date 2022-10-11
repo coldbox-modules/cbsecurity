@@ -42,7 +42,7 @@ component {
 			"authenticationService"       : "authenticationService@cbauth",
 			// WireBox ID of the user service to use
 			"userService"                 : "",
-			// The name of the variable to use to store an authenticated user in prc scope if using a validator that supports it.
+			// The name of the variable to use to store an authenticated user in prc scope
 			"prcUserVariable"             : "oCurrentUser",
 			// If source is model, the wirebox Id to use for retrieving the rules
 			"rulesModel"                  : "",
