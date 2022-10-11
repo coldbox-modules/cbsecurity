@@ -1,9 +1,10 @@
 component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
+	this.unloadColdBox = false;
+
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
-		clearFrameworks();
 		super.beforeAll();
 
 		addMatchers( {
@@ -129,10 +130,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					given( "Auto refresh is on and an expired access token is sent with an expired refresh token", function(){
 						then( "the validation should fail", function(){
 							getRequestContext().setValue( "x-auth-token", variables.expired_token );
-							getRequestContext().setValue(
-								"x-refresh-token",
-								variables.expired_token
-							);
+							getRequestContext().setValue( "x-refresh-token", variables.expired_token );
 
 							var results = variables.jwtService.validateSecurity( "" );
 							expect( results.allow ).toBeFalse();
@@ -201,20 +199,14 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						then( "it should create new access and refresh tokens and invalidate the old refresh token", function(){
 							var oUser     = variables.userService.retrieveUserByUsername( "test" );
 							var tokens    = variables.jwtService.fromUser( oUser );
-							var newTokens = variables.jwtService.refreshToken(
-								tokens.refresh_token
-							);
+							var newTokens = variables.jwtService.refreshToken( tokens.refresh_token );
 							expect( newTokens )
 								.toBeStruct()
 								.toHaveKeyWithCase( "access_token" )
 								.toHaveKeyWithCase( "refresh_token" );
 							expect( variables.jwtService.isTokenInStorage( tokens.refresh_token ) ).toBeFalse();
-							expect(
-								variables.jwtService.isTokenInStorage( newTokens.access_token )
-							).toBeTrue();
-							expect(
-								variables.jwtService.isTokenInStorage( newTokens.refresh_token )
-							).toBeTrue();
+							expect( variables.jwtService.isTokenInStorage( newTokens.access_token ) ).toBeTrue();
+							expect( variables.jwtService.isTokenInStorage( newTokens.refresh_token ) ).toBeTrue();
 						} );
 					} );
 					given( "any custom claims", function(){
@@ -230,14 +222,10 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 								.toHaveKeyWithCase( "access_token" )
 								.toHaveKeyWithCase( "refresh_token" );
 
-							var decodedAccessToken = variables.jwtService.decode(
-								newTokens.access_token
-							);
+							var decodedAccessToken = variables.jwtService.decode( newTokens.access_token );
 							expect( decodedAccessToken ).toHaveKeyWithCase( "foo" );
 							expect( decodedAccessToken.foo ).toBe( "bar" );
-							var decodedRefreshToken = variables.jwtService.decode(
-								newTokens.refresh_token
-							);
+							var decodedRefreshToken = variables.jwtService.decode( newTokens.refresh_token );
 							expect( decodedRefreshToken ).toHaveKeyWithCase( "foo" );
 							expect( decodedRefreshToken.foo ).toBe( "bar" );
 						} );
@@ -261,14 +249,10 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 								.toHaveKeyWithCase( "access_token" )
 								.toHaveKeyWithCase( "refresh_token" );
 
-							var decodedAccessToken = variables.jwtService.decode(
-								newTokens.access_token
-							);
+							var decodedAccessToken = variables.jwtService.decode( newTokens.access_token );
 							expect( decodedAccessToken ).toHaveKeyWithCase( "foo" );
 							expect( decodedAccessToken.foo ).toBe( 2 );
-							var decodedRefreshToken = variables.jwtService.decode(
-								newTokens.refresh_token
-							);
+							var decodedRefreshToken = variables.jwtService.decode( newTokens.refresh_token );
 
 							// TODO: Change to `toHaveKeyWithCase` when Adobe 2021 Bug is resolved
 							// https://tracker.adobe.com/#/view/CF-4215309
@@ -291,14 +275,10 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 								.toHaveKeyWithCase( "access_token" )
 								.toHaveKeyWithCase( "refresh_token" );
 
-							var decodedAccessToken = variables.jwtService.decode(
-								newTokens.access_token
-							);
+							var decodedAccessToken = variables.jwtService.decode( newTokens.access_token );
 							expect( decodedAccessToken ).toHaveKeyWithCase( "foo" );
 							expect( decodedAccessToken.foo ).toBe( "bar" );
-							var decodedRefreshToken = variables.jwtService.decode(
-								newTokens.refresh_token
-							);
+							var decodedRefreshToken = variables.jwtService.decode( newTokens.refresh_token );
 							expect( decodedRefreshToken ).toHaveKeyWithCase( "foo" );
 							expect( decodedRefreshToken.foo ).toBe( "baz" );
 						} );
@@ -310,14 +290,10 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							var tokens = variables.jwtService.fromUser( oUser );
 							expect( tokens ).toBeStruct().toHaveKeyWithCase( "access_token" );
 
-							var decodedAccessToken = variables.jwtService.decode(
-								tokens.access_token
-							);
+							var decodedAccessToken = variables.jwtService.decode( tokens.access_token );
 							expect( decodedAccessToken ).toHaveKeyWithCase( "jti" );
 							expect( decodedAccessToken ).toHaveKeyWithCase( "duplicatedJTI" );
-							expect( decodedAccessToken.duplicatedJTI ).toBe(
-								decodedAccessToken.jti
-							);
+							expect( decodedAccessToken.duplicatedJTI ).toBe( decodedAccessToken.jti );
 						} );
 					} );
 
@@ -331,9 +307,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					given( "an expired refresh token", function(){
 						then( "an exception should be thrown", function(){
 							expect( function(){
-								var newTokens = variables.jwtService.refreshToken(
-									variables.expired_token
-								);
+								var newTokens = variables.jwtService.refreshToken( variables.expired_token );
 							} ).toThrow();
 						} );
 					} );
@@ -429,19 +403,12 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						var expirationTime    = variables.jwtService.toEpoch(
 							dateAdd( "n", expirationSeconds, now() )
 						);
-						var thisToken = variables.jwtService.attempt(
-							"test",
-							"test",
-							{ "exp" : expirationTime }
-						);
+						var thisToken              = variables.jwtService.attempt( "test", "test", { "exp" : expirationTime } );
 						var tokenStorageSetCallLog = tokenStorageMock.$callLog().set;
 						expect( tokenStorageSetCallLog ).toBeArray();
 						expect( tokenStorageSetCallLog ).toHaveLength( 1 );
 						expect( tokenStorageSetCallLog[ 1 ] ).toHaveKeyWithCase( "expiration" );
-						expect( tokenStorageSetCallLog[ 1 ].expiration ).toBeCloseTo(
-							expirationSeconds,
-							1
-						);
+						expect( tokenStorageSetCallLog[ 1 ].expiration ).toBeCloseTo( expirationSeconds, 1 );
 					} finally {
 						variables.jwtService.setTokenStorage( originalTokenStorage );
 					}

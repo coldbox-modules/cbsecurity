@@ -16,10 +16,11 @@
  *******************************************************************************/
 component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
+	this.unloadColdBox = false;
+
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
-		structDelete( application, "cbController" );
 		super.beforeAll();
 		// do your own stuff here
 	}

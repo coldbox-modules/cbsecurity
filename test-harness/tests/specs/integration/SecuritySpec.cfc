@@ -16,10 +16,11 @@
  *******************************************************************************/
 component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
+	this.unloadColdbox = false;
+
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
-		structDelete( application, "cbController" );
 		super.beforeAll();
 		// do your own stuff here
 	}
@@ -43,9 +44,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 			describe( "Rule based Security", function(){
 				it( "should load the rules from inline declaration", function(){
-					var rules = getWireBox()
-						.getInstance( "interceptor-cbsecurity@global" )
-						.getProperty( "rules" );
+					var rules = getWireBox().getInstance( "interceptor-cbsecurity@global" ).getProperty( "rules" );
 					expect( rules ).notToBeEmpty();
 				} );
 
@@ -112,9 +111,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 					given( "a module unload call", function(){
 						then( "it should unload module rules if the module is unloaded", function(){
-							var security = getWireBox().getInstance(
-								"interceptor-cbsecurity@global"
-							);
+							var security = getWireBox().getInstance( "interceptor-cbsecurity@global" );
 							var oldRules = security.getProperty( "rules" );
 
 							// Issue unload

@@ -27,13 +27,13 @@
         "cbauth":"^5.0.0",
         "cbcsrf":"^2.0.0"
     },
-	"devDependencies":{
+    "devDependencies":{
         "commandbox-cfformat":"*",
         "commandbox-docbox":"*",
         "commandbox-dotenv":"*",
         "commandbox-cfconfig":"*"
     },
-	"ignore":[
+    "ignore":[
         "**/.*",
         "test-harness",
         "/server*.json"
@@ -42,15 +42,20 @@
         "runner":"http://localhost:60299/tests/runner.cfm"
     },
     "scripts":{
-		"build:module":"task run taskFile=build/Build.cfc :projectName=`package show slug` :version=`package show version`",
+        "build:module":"task run taskFile=build/Build.cfc :projectName=`package show slug` :version=`package show version`",
         "build:docs":"task run taskFile=build/Build.cfc target=docs :projectName=`package show slug` :version=`package show version`",
         "release":"recipe build/release.boxr",
         "format":"cfformat run handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc --overwrite",
         "format:watch":"cfformat watch handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc ./.cfformat.json",
         "format:check":"cfformat check handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc",
-		"cfpm":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\"' | run",
+        "cfpm":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\"' | run",
         "cfpm:install":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\" install ${1}' | run",
         "install:2021":"run-script cfpm:install zip,debugger,orm,mysql,postgresql,sqlserver,feed",
-        "install:dependencies":"install && cd test-harness && install",
+        "install:dependencies":"install && cd test-harness && install"
+    },
+    "installPaths":{
+        "jwt-cfml":"modules/jwtcfml/",
+        "cbauth":"modules/cbauth/",
+        "cbcsrf":"modules/cbcsrf/"
     }
 }
