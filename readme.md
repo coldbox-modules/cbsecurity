@@ -90,6 +90,57 @@ cbsecurity = {
     "handlerAnnotationSecurity"     : true,
     // Activate security rule visualizer, defaults to false by default
     "enableSecurityVisualizer"      : false,
+
+	// Security Headers
+	"securityHeaders"                     : {
+		// Master switch for security headers
+		"enabled" : true,
+		// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+		"frameOptions"       : { "enabled" : true, "value" : "DENY" },
+		// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
+		// X-XSS-Protection: 1; mode=block
+		"xssProtection"      : { "enabled" : true, "mode" : "block" },
+		// The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised in
+		// the Content-Type headers should be followed and not be changed => X-Content-Type-Options: nosniff
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+		"contentTypeOptions" : { "enabled" : true },
+		// The Referrer-Policy HTTP header controls how much referrer information (sent with the Referer header) should be included with requests.
+		// Aside from the HTTP header, you can set this policy in HTML.
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+		"referrerPolicy"     : { "enabled" : true, "policy" : "same-origin" },
+		// HTTP Strict Transport Security (HSTS)
+		// The HTTP Strict-Transport-Security response header (often abbreviated as HSTS)
+		// informs browsers that the site should only be accessed using HTTPS, and that any future attempts to access it
+		// using HTTP should automatically be converted to HTTPS.
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security,
+		"hsts" : {
+			"enabled" : true,
+			// The time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS, 1 year is the default
+			"max-age" : "31536000",
+			// See Preloading Strict Transport Security for details. Not part of the specification.
+			"preload" : true,
+			// If this optional parameter is specified, this rule applies to all of the site's subdomains as well.
+			"includeSubDomains" : false
+		},
+		// Content Security Policy
+		// Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks,
+		// including Cross-Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft, to
+		// site defacement, to malware distribution.
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+		"contentSecurityPolicy" : {
+			// Disabled by defautl as it is totally customizable
+			"enabled" : false,
+			// The custom policy to use, by default we don't include any
+			"policy" : ""
+		},
+		"customHeaders" : {
+			// Name : value pairs as you see fit.
+		}
+	},
+
+
     // JWT Settings
     "jwt"                           : {
         // The issuer authority for the tokens, placed in the `iss` claim

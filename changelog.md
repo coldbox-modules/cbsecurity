@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* New `securityHeaders` configuration to allow a developer to protect their apps from common exploits: xss, HSTS, Content Type Options, click jacking and much more.
 * Authenticated user is now stored by the security firewall according to the `prcUserVariable` on authenticated calls via `preProcess()` no matter the validator used
 * Dynamic Custom Claims: You can pass a function/closure as the value for a custom claim and it will be evaluated at runtime passing in the current claims before being encoded
 * Allow passing in custom refresh token claims to `attempt()` and `fromUser()` and `refreshToken()` : `refreshCustomClaims`

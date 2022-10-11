@@ -118,6 +118,14 @@
 					// Using redirect only, so use an explicit redirect
 					{ "securelist" : "ruleActionRedirect", "match" : "url", "redirect" : "main.login" }
 				],
+
+				// Security Headers
+				"securityHeaders" : {
+					"frameOptions" : {
+						"value" : "sameOrigin"
+					}
+				},
+
 				// JWT Settings
 				"jwt" : {
 					"secretKey"           : "C3D4AF35-8FCD-49AB-943A39AEFFB584EE",
