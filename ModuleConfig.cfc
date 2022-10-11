@@ -40,7 +40,7 @@ component {
 			"validator"                   : "CBAuthValidator@cbsecurity",
 			// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
 			"authenticationService"       : "authenticationService@cbauth",
-			// WireBox ID of the user service to use
+			// WireBox ID of the user service to use when leveraging user authentication
 			"userService"                 : "",
 			// The name of the variable to use to store an authenticated user in prc scope
 			"prcUserVariable"             : "oCurrentUser",
@@ -66,8 +66,26 @@ component {
 			"handlerAnnotationSecurity"   : true,
 			// Activate security rule visualizer, defaults to false by default
 			"enableSecurityVisualizer"    : false,
-			// JWT Settings
-			"jwt"                         : {
+			// Security Headers
+			"headers"                     : {
+				// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
+				// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+				"frameOptions"       : { "enabled" : true, "value" : "DENY" },
+				// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
+				// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
+				// X-XSS-Protection: 1; mode=block
+				"xssProtection"      : { "enabled" : true, "mode" : "block" },
+				// The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised in
+				// the Content-Type headers should be followed and not be changed => X-Content-Type-Options: nosniff
+				// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+				"contentTypeOptions" : { "enabled" : true },
+				// The Referrer-Policy HTTP header controls how much referrer information (sent with the Referer header) should be included with requests.
+				// Aside from the HTTP header, you can set this policy in HTML.
+				// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+				"referrerPolicy"     : { "enabled" : true, "policy" : "same-origin" }
+			},
+			// JWT Configurations
+			"jwt" : {
 				// The issuer authority for the tokens, placed in the `iss` claim
 				"issuer"                     : "",
 				// The jwt secret encoding key to use
