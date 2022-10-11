@@ -59,7 +59,7 @@ component {
 			// Use regular expression matching on the rule match types
 			"useRegex"                    : true,
 			// Force SSL for all relocations
-			"useSSL"                      : false,
+			"useSSL"                      : true,
 			// Auto load the global security firewall
 			"autoLoadFirewall"            : true,
 			// Activate handler/action based annotation security
@@ -67,11 +67,9 @@ component {
 			// Activate security rule visualizer, defaults to false by default
 			"enableSecurityVisualizer"    : false,
 			// Security Headers : Defaults are defined in the interceptors.SecurityHeaders
-			"securityHeaders"              : {
-				"enabled" : true
-			},
+			"securityHeaders"             : { "enabled" : true },
 			// JWT Configurations
-			"jwt" : {
+			"jwt"                         : {
 				// The issuer authority for the tokens, placed in the `iss` claim
 				"issuer"                     : "",
 				// The jwt secret encoding key to use
@@ -147,7 +145,7 @@ component {
 		}
 
 		// Do we load the security headers response interceptor: Default is true even if not defined.
-		if( settings.securityHeaders.enabled ?: true ){
+		if ( settings.securityHeaders.enabled ?: true ) {
 			controller
 				.getInterceptorService()
 				.registerInterceptor(
@@ -156,7 +154,6 @@ component {
 					interceptorName       = "securityHeaders@cbsecurity"
 				);
 		}
-
 	}
 
 	/**

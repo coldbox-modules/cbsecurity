@@ -40,7 +40,7 @@ component extends="coldbox.system.Interceptor" {
 			// The time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS, 1 year is the default
 			"max-age"           : "31536000",
 			// See Preloading Strict Transport Security for details. Not part of the specification.
-			"preload"           : true,
+			"preload"           : false,
 			// If this optional parameter is specified, this rule applies to all of the site's subdomains as well.
 			"includeSubDomains" : false
 		},

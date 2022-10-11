@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Dropped ACF2016
 * Separated routes to it's own module Router
-* **COMPAT** New `JwtAuthValidator` instead of mixing concerns with the `JwtService`.  You will have to update your configuration to use this `validator` instead of the `JwtService`.
+* **COMPAT** New `JwtAuthValidator` instead of mixing concerns with the `JwtService`.  You will have to update your configuration to use this `validator` instead of the `JwtService`
+* `useSSL` is now defaulted to `true` for all security relocations as the default
 
 ### Added
 
