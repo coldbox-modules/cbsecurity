@@ -55,12 +55,6 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 	function afterAll(){
 		// do your own stuff here
 		super.afterAll();
-		clearFrameworks();
-	}
-
-	function clearFrameworks(){
-		structDelete( application, "cbController" );
-		structDelete( application, "wirebox" );
 	}
 
 	/*********************************** BDD SUITES ***********************************/
