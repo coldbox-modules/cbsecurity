@@ -191,7 +191,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// Add SecureView() into the requestcontext
 		arguments.event.secureView = variables.cbSecurity.secureViewProxy;
 
-		// Execute Rule processing
+		// Execute Rule Security
 		if ( getProperty( "rules" ).len() ) {
 			processRules(
 				arguments.event,
@@ -200,7 +200,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			);
 		}
 
-		// Are we doing annotation based security?
+		// Execute Annotation Security
 		if ( getProperty( "handlerAnnotationSecurity" ) ) {
 			processAnnotationRules(
 				arguments.event,
@@ -209,14 +209,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			);
 		}
 
-		// Store User in ColdBox data bus if logged in
-		if ( variables.cbSecurity.isLoggedIn() ) {
+		// Store User in ColdBox data bus
+		try {
 			variables.requestService
 				.getContext()
 				.setPrivateValue(
 					variables.cbSecurity.getSettings().prcUserVariable,
 					variables.cbSecurity.getUser()
 				);
+		} catch ( "NoUserLoggedIn" e ) {
+			// Skip it if we get this excecption, we just need the user in the prc bus!
 		}
 	}
 
