@@ -285,7 +285,8 @@ component accessors="true" singleton threadsafe {
 			"useSSL"        : false, // Force SSL,
 			"action"        : "", // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
 			"module"        : "", // metadata we can add so mark rules that come from modules
-			"httpMethods"   : "*" // Match all HTTP methods or particular ones as a list
+			"httpMethods"   : "*", // Match all HTTP methods or particular ones as a list
+			"allowedIPs"    : "*" // The rule only matches if the IP list matches. It can be a list of IPs to match.
 		};
 	}
 

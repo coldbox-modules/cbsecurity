@@ -41,7 +41,6 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				cbauth.logout();
 			} );
 
-
 			describe( "Rule based Security", function(){
 				it( "should load the rules from inline declaration", function(){
 					var rules = getWireBox().getInstance( "interceptor-cbsecurity@global" ).getProperty( "rules" );
@@ -58,19 +57,18 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				} );
 
 				// match public with post|put
-				given( "a direct action of redirect with no explicit rule actions and post/put httpMethods", function(){
-					when( "executing a put/post", function(){
-						then( "it should do a global redirect using the global setting for invalid authentication", function(){
+				given( "a secure event of public with a put,post http method constraint", function(){
+					when( "when logged in and using a put or post", function(){
+						then( "it should do allow it to be executed", function(){
+							cbauth.authenticate( "test", "test" );
 							var event = put( "public" );
-							// should have protected it
-							expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
+							expect( "public" ).toBe( event.getRenderedContent() );
 						} );
 					} );
-					when( "executing a get", function(){
-						then( "it should do ignore the rule and execute it", function(){
+					when( "when logged in and using a GET", function(){
+						then( "it should NOT allow it to be executed", function(){
 							var event = get( "public" );
-							// should have protected it
-							expect( "public.index" ).toBe( event.getCurrentEvent() );
+							expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
 						} );
 					} );
 				} );
@@ -142,7 +140,6 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					} );
 				} );
 			} );
-
 
 			describe( "Annotation based Security", function(){
 				given( "a public handler and action", function(){

@@ -369,18 +369,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				continue;
 			}
 
-			// Are we in the secured list and in the rule's valid http methods
-			if (
-				isInPattern( matchTarget, thisRule.securelist ) && isValidHTTPmethod(
-					arguments.event,
-					thisRule.httpMethods
-				)
-			) {
+			// Are we in the secured list and in the rule's valid http methods and in the allowed Ips
+			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
 				if ( log.canDebug() ) {
 					log.debug( "---> Incoming '#matchTarget#' MATCHED this rule: #thisRule.toString()#" );
 				}
 
-				// Verify if user is logged in and in a secure state
+				// Check authentication and authorizations
 				var validatorResults = getValidator( arguments.event ).ruleValidator(
 					thisRule,
 					variables.controller
@@ -389,6 +384,20 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				// Verify type, else default to "authentication"
 				if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
 					validatorResults.type = "authentication";
+				}
+
+				// Verify IP
+				if ( !isValidIP( thisRule.allowedIPs ) ) {
+					validatorResults.type     = "authorization";
+					validatorResults.allow    = false;
+					validatorResults.messages = "Detected IP is not allowed";
+				}
+
+				// Verify HTTP Verbs
+				if ( !isValidHTTPmethod( event, thisRule.httpMethods ) ) {
+					validatorResults.type     = "authorization";
+					validatorResults.allow    = false;
+					validatorResults.messages = "Detected HTTP Method is not allowed";
 				}
 
 				// Do we allow or not?
@@ -729,6 +738,20 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 		// Else we need to test the verb list
 		return listFindNoCase( arguments.httpMethods, arguments.event.getHTTPMethod() );
+	}
+
+	/**
+	 * Verifies that the current request's IP is valid for execution
+	 *
+	 * @allowedIPs The allowedIPs in the rule
+	 */
+	private boolean function isValidIP( required allowedIPs ){
+		// Nothing or ALL
+		if ( !len( arguments.allowedIPs ) || arguments.allowedIPs == "*" ) {
+			return true;
+		}
+		// Else we need to test the ip list against the actual IP
+		return listFindNoCase( arguments.allowedIPs, variables.cbSecurity.getRealIP() );
 	}
 
 	/**

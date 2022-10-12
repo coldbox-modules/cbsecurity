@@ -105,7 +105,18 @@
 						"roles"       : "",
 						"permissions" : "",
 						"action"      : "redirect",
+						"redirect"    : "main.index",
 						"httpMethods" : "put,post"
+					},
+					// Match only public put/post
+					{
+						"whitelist"   : "",
+						"securelist"  : "cfide",
+						"match"       : "url",
+						"roles"       : "",
+						"permissions" : "",
+						"action"      : "redirect",
+						"allowedIPs"  : "10.0.0.1"
 					},
 					// no action, use global default action
 					{

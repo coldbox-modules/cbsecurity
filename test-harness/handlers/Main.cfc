@@ -29,8 +29,8 @@ component {
 
 
 	/**
-	* cbSecureMixin
-	*/
+	 * cbSecureMixin
+	 */
 	function cbSecureMixin( event, rc, prc ){
 		cbsecure().getAuthService();
 		cbSecure().getUserService();
