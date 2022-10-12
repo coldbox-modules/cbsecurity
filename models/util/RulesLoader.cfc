@@ -2,13 +2,18 @@
  * Copyright since 2016 by Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
- * Rule loader service
+ * Rule loader service. This object is in charge of loading rules from many different types of sources:
+ * - xml
+ * - json
+ * - array
+ * - database
+ * - model
  */
 component accessors="true" singleton threadsafe {
 
 	// DI
 	property name="controller" inject="coldbox";
-	property name="wirebox" inject="wirebox";
+	property name="wirebox"    inject="wirebox";
 
 	/**
 	 * Constructor
@@ -20,7 +25,7 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Utility function to normalize an array of rules to our standards
 	 *
-	 * @rules The rules to normalize
+	 * @rules  The rules to normalize
 	 * @module The module to incorporate if passed
 	 */
 	array function normalizeRules( required array rules, module = "" ){
@@ -160,9 +165,7 @@ component accessors="true" singleton threadsafe {
 		var thisElement = "";
 
 		// Try to locate the file path
-		arguments.settings.rulesFile = variables.controller.locateFilePath(
-			arguments.settings.rulesFile
-		);
+		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
 
 		// Validate Location
 		if ( !len( arguments.settings.rulesFile ) ) {
@@ -192,9 +195,7 @@ component accessors="true" singleton threadsafe {
 		var node      = "";
 
 		// Try to locate the file path
-		arguments.settings.rulesFile = variables.controller.locateFilePath(
-			arguments.settings.rulesFile
-		);
+		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
 
 		// Validate Location
 		if ( !len( arguments.settings.rulesFile ) ) {

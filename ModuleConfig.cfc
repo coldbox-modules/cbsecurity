@@ -99,7 +99,7 @@ component {
 	 * Fired when the module is registered and activated.
 	 */
 	function onLoad(){
-		// Check the global settings for rules or a rules source
+		// Are we auto loading the firewall?
 		if ( settings.autoLoadFirewall ) {
 			controller
 				.getInterceptorService()
