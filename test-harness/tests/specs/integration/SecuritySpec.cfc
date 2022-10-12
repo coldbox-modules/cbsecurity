@@ -57,6 +57,24 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					} );
 				} );
 
+				// match public with post|put
+				given( "a direct action of redirect with no explicit rule actions and post/put httpMethods", function(){
+					when( "executing a put/post", function(){
+						then( "it should do a global redirect using the global setting for invalid authentication", function(){
+							var event = put( "public" );
+							// should have protected it
+							expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
+						} );
+					} );
+					when( "executing a get", function(){
+						then( "it should do ignore the rule and execute it", function(){
+							var event = get( "public" );
+							// should have protected it
+							expect( "public.index" ).toBe( event.getCurrentEvent() );
+						} );
+					} );
+				} );
+
 				// no action, use global default action
 				given( "no direct action and no explicit rule actions", function(){
 					then( "it should default to a redirect action to the global setting for invalid authentication", function(){

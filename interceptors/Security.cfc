@@ -369,8 +369,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				continue;
 			}
 
-			// Are we in the secured list?
-			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
+			// Are we in the secured list and in the rule's valid http methods
+			if (
+				isInPattern( matchTarget, thisRule.securelist ) && isValidHTTPmethod(
+					arguments.event,
+					thisRule.httpMethods
+				)
+			) {
 				if ( log.canDebug() ) {
 					log.debug( "---> Incoming '#matchTarget#' MATCHED this rule: #thisRule.toString()#" );
 				}
@@ -709,6 +714,21 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Verifies that the current request's http method is valid for execution
+	 *
+	 * @event       The request context
+	 * @httpMethods The httpMethods from the rule to verify
+	 */
+	private boolean function isValidHTTPmethod( required event, required httpMethods ){
+		// Nothing or ALL
+		if ( !len( arguments.httpMethods ) || arguments.httpMethods == "*" ) {
+			return true;
+		}
+		// Else we need to test the verb list
+		return listFindNoCase( arguments.httpMethods, arguments.event.getHTTPMethod() );
 	}
 
 	/**

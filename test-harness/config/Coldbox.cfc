@@ -94,7 +94,18 @@
 						"match"       : "event",
 						"roles"       : "admin",
 						"permissions" : "",
-						"action"      : "redirect"
+						"action"      : "redirect",
+						"httpMethods" : "*"
+					},
+					// Match only public put/post
+					{
+						"whitelist"   : "",
+						"securelist"  : "public",
+						"match"       : "event",
+						"roles"       : "",
+						"permissions" : "",
+						"action"      : "redirect",
+						"httpMethods" : "put,post"
 					},
 					// no action, use global default action
 					{
@@ -102,10 +113,11 @@
 						"securelist"  : "noAction",
 						"match"       : "url",
 						"roles"       : "admin",
-						"permissions" : ""
+						"permissions" : "",
+						"httpMethods" : "*"
 					},
 					// Using overrideEvent only, so use an explicit override
-					{ "securelist" : "ruleActionOverride", "match" : "url", "overrideEvent" : "main.login" },
+					{ "securelist" : "ruleActionOverride", "match" : "url", "overrideEvent" : "main.login", "httpMethods" : "*" },
 					// direct action, use global override
 					{
 						"whitelist"   : "",
@@ -113,10 +125,11 @@
 						"match"       : "url",
 						"roles"       : "",
 						"permissions" : "",
-						"action"      : "override"
+						"action"      : "override",
+						"httpMethods" : "*"
 					},
 					// Using redirect only, so use an explicit redirect
-					{ "securelist" : "ruleActionRedirect", "match" : "url", "redirect" : "main.login" }
+					{ "securelist" : "ruleActionRedirect", "match" : "url", "redirect" : "main.login", "httpMethods" : "*" }
 				],
 
 				// Security Headers
