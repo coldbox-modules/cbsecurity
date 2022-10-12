@@ -9,12 +9,15 @@ component extends="coldbox.system.Interceptor" {
 	/** DI **/
 	/*********************************************************************************************/
 
-	property name="settings" inject="coldbox:moduleSettings:cbsecurity";
+	property name="settings"   inject="coldbox:moduleSettings:cbsecurity";
+	property name="cbSecurity" inject="cbSecurity@cbSecurity";
 
 	// Static Defaults Config
 	variables.DEFAULT_SETTINGS = {
 		// Master switch for security headers
 		"enabled"            : true,
+		// If you trust the upstream then we will check the upstream first for specific headers
+		"trustUpstream"      : false,
 		// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
 		"frameOptions"       : { "enabled" : true, "value" : "DENY" },
@@ -57,6 +60,18 @@ component extends="coldbox.system.Interceptor" {
 		},
 		"customHeaders" : {
 			 // Name : value pairs as you see fit.
+		},
+		// Validates the host or x-forwarded-host to an allowed list of valid hosts
+		"hostHeaderValidation" : {
+			"enabled"      : false,
+			// Allowed hosts list
+			"allowedHosts" : ""
+		},
+		// Validates the ip address of the incoming request
+		"ipValidation" : {
+			"enabled"    : false,
+			// Allowed IP list
+			"allowedIPs" : ""
 		}
 	};
 
@@ -78,7 +93,78 @@ component extends="coldbox.system.Interceptor" {
 	}
 
 	/**
-	 * Process all security headers
+	 * Process blocking headers
+	 */
+	function preProcess( event, interceptData, rc, prc ){
+		// Host Header Validation
+		if (
+			variables.settings.securityHeaders.hostHeaderValidation.enabled &&
+			len( variables.settings.securityHeaders.hostHeaderValidation.allowedHosts ) &&
+			variables.settings.securityHeaders.hostHeaderValidation.allowedHosts != "*"
+		) {
+			var incomingHost = variables.settings.securityHeaders.trustUpstream ? event.getHTTPHeader(
+				"x-forwarded-host",
+				event.getHTTPHeader( "host" )
+			) : event.getHTTPHeader( "host" );
+
+			if (
+				!listFindNoCase(
+					variables.settings.securityHeaders.hostHeaderValidation.allowedHosts,
+					incomingHost
+				)
+			) {
+				// Debug
+				if ( log.canDebug() ) {
+					log.debug(
+						"Host header validation block. Incoming host (#incomingHost#) is not valid.",
+						"Valid hosts are #variables.settings.securityHeaders.hostHeaderValidation.allowedHosts#"
+					);
+				}
+
+				// block
+				event
+					.noExecution()
+					.renderData(
+						data       = "<strong>Invalid Host</strong>",
+						statusCode = "403",
+						statusText = "Invalid host"
+					);
+			}
+		}
+
+		// IP Header Validation
+		if (
+			variables.settings.securityHeaders.ipValidation.enabled &&
+			len( variables.settings.securityHeaders.ipValidation.allowedIPs ) &&
+			variables.settings.securityHeaders.ipValidation.allowedIPs != "*"
+		) {
+			var incomingIP = variables.cbSecurity.getRealIP(
+				trustUpstream = variables.settings.securityHeaders.trustUpstream
+			);
+
+			if ( !listFindNoCase( variables.settings.securityHeaders.ipValidation.allowedIPs, incomingIP ) ) {
+				// Debug
+				if ( log.canDebug() ) {
+					log.debug(
+						"IP validation block. Incoming ip (#incomingIP#) is not valid.",
+						"Valid ips are #variables.settings.securityHeaders.ipValidation.allowedIPs#"
+					);
+				}
+
+				// block
+				event
+					.noExecution()
+					.renderData(
+						data       = "<strong>Invalid IP</strong>",
+						statusCode = "403",
+						statusText = "Invalid IP"
+					);
+			}
+		}
+	}
+
+	/**
+	 * Process all output security headers
 	 */
 	function postProcess( event, interceptData, rc, prc ){
 		if ( variables.settings.securityHeaders.frameOptions.enabled ) {

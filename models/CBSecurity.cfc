@@ -442,17 +442,19 @@ component threadsafe singleton accessors="true" {
 
 	/**
 	 * Get Real IP, by looking at clustered, proxy headers and locally.
+	 *
+	 * @trustUpstream If true, we check the forwarded headers first, else we don't
 	 */
-	string function getRealIP(){
-		var headers = getHTTPRequestData( false ).headers;
-
+	string function getRealIP( boolean trustUpstream = true ){
 		// When going through a proxy, the IP can be a delimtied list, thus we take the last one in the list
-
-		if ( structKeyExists( headers, "x-cluster-client-ip" ) ) {
-			return trim( listLast( headers[ "x-cluster-client-ip" ] ) );
-		}
-		if ( structKeyExists( headers, "X-Forwarded-For" ) ) {
-			return trim( listFirst( headers[ "X-Forwarded-For" ] ) );
+		if ( arguments.trustUpstream ) {
+			var headers = getHTTPRequestData( false ).headers;
+			if ( structKeyExists( headers, "x-cluster-client-ip" ) ) {
+				return trim( listLast( headers[ "x-cluster-client-ip" ] ) );
+			}
+			if ( structKeyExists( headers, "X-Forwarded-For" ) ) {
+				return trim( listFirst( headers[ "X-Forwarded-For" ] ) );
+			}
 		}
 
 		return len( cgi.remote_addr ) ? trim( listFirst( cgi.remote_addr ) ) : "127.0.0.1";

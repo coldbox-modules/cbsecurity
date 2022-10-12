@@ -147,6 +147,17 @@
 				"securityHeaders" : {
 					"frameOptions" : {
 						"value" : "sameOrigin"
+					},
+					"hostHeaderValidation" : {
+						"enabled"       : true,
+						// Allowed hosts list
+						"allowedHosts"  : "*"
+					},
+					// Validates the ip address of the incoming request
+					"ipValidation" : {
+						"enabled"    : true,
+						// Allowed IP list
+						"allowedIPs" : "*"
 					}
 				},
 
