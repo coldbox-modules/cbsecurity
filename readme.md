@@ -97,7 +97,7 @@ cbsecurity = {
 		"enabled" : true,
 		// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-		"frameOptions"       : { "enabled" : true, "value" : "DENY" },
+		"frameOptions"       : { "enabled" : true, "value" : "SAMEORIGIN" },
 		// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
 		// X-XSS-Protection: 1; mode=block
