@@ -17,13 +17,15 @@
 			<th>useSSL</th>
 			<th>action</th>
 			<th>module</th>
+			<th>http methods</th>
+			<th>allowed ips</th>
 			<th width="150" class="text-center">actions</th>
 		</tr>
 	</thead>
 
 	<tbody>
 	<cfset index = 1>
-	<cfloop array="#prc.properties.rules#" index="thisRule">
+	<cfloop array="#prc.settings.firewall.rules.inline#" index="thisRule">
 		<cfset thisRule.id = hash( thisRule.toString() )>
 		<tr class="rules">
 			<td>
@@ -70,6 +72,12 @@
 			</td>
 			<td>
 				#thisRule.module#
+			</td>
+			<td>
+				#thisRule.httpMethods#
+			</td>
+			<td>
+				#thisRule.allowedIps#
 			</td>
 			<td class="text-center">
 				<button class="btn btn-danger btn-sm" onclick="$( '##debug-#thisRule.id#' ).toggle()">Dump</button>

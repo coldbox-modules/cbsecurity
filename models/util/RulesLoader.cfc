@@ -25,126 +25,133 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Utility function to normalize an array of rules to our standards
 	 *
-	 * @rules  The rules to normalize
-	 * @module The module to incorporate if passed
+	 * @rules    The rules to normalize
+	 * @module   The module to incorporate if passed
+	 * @defaults A set of defaults to incorporate into the rules
 	 */
-	array function normalizeRules( required array rules, module = "" ){
+	array function normalizeRules(
+		required array rules,
+		module   = "",
+		defaults = {}
+	){
 		return arguments.rules.map( function( item ){
 			// Append template
-			structAppend( item, getRuleTemplate(), false );
-			// Incorporate module if needed
-			item.module = module;
-			return item;
+			structAppend( arguments.item, getRuleTemplate(), false );
+			// Append defaults
+			structAppend( arguments.item, defaults, false );
+			arguments.item.module = module;
+			return arguments.item;
 		} );
 	}
 
 	/**
 	 * Load the appropriate rules from the source and return them in consumable focus.
 	 *
-	 * @settings The interceptor config settings
+	 * @provider The firewall rules provider configuration
+	 * @defaults Defaults to incorporate to each rule
+	 *
+	 * @return The loaded rules the source produced
 	 */
-	array function loadRules( required settings ){
+	array function loadRules( required provider, defaults = {} ){
 		// Load Rules
-		switch ( arguments.settings.rulesSource ) {
+		switch ( arguments.provider.source ) {
 			case "xml": {
-				return loadXMLRules( arguments.settings );
+				return loadXMLRules( arguments.provider, arguments.defaults );
 			}
 			case "json": {
-				return loadJSONRules( arguments.settings );
+				return loadJSONRules( arguments.provider, arguments.defaults );
 			}
 			case "db": {
-				return loadDBRules( arguments.settings );
+				return loadDBRules( arguments.provider, arguments.defaults );
 			}
 			case "model": {
-				return loadModelRules( arguments.settings );
+				return loadModelRules( arguments.provider, arguments.defaults );
 			}
 		}
 	}
 
 	/**
-	 * Validate the rules source property
+	 * Validate from where we are getting rules from. This prepares the settings and normalizes them.
 	 *
-	 * @settings The settings to check
+	 * @provider The firewall rules provider configuration
+	 *
+	 * @throws Security.InvalidRuleSource     - When the source is invalid
+	 * @throws Security.MissingSourceProperty - When a source is missing a required
 	 */
-	function rulesSourceChecks( required settings ){
-		param arguments.settings.rulesSource = "";
-		param arguments.settings.rules       = [];
+	RulesLoader function rulesSourceChecks( required provider ){
+		param arguments.provider.source     = "";
+		param arguments.provider.properties = {};
 
-		// Auto detect rules source
-		if ( isSimpleValue( arguments.settings.rules ) ) {
-			// Auto detect source
-			switch ( arguments.settings.rules ) {
-				case "db": {
-					arguments.settings.rulesSource = "db";
-					break;
-				}
-				case "model": {
-					arguments.settings.rulesSource = "model";
-					break;
-				}
-				default: {
-					arguments.settings.rulesFile = arguments.settings.rules;
-					if ( findNoCase( "json", arguments.settings.rulesFile ) ) {
-						arguments.settings.rulesSource = "json";
-					}
-					if ( findNoCase( "xml", arguments.settings.rulesFile ) ) {
-						arguments.settings.rulesSource = "xml";
-					}
-				}
-			}
+		// If there is no provider, skip out, nothing to do, move along!!!
+		if ( !len( arguments.provider.source ) ) {
+			return this;
+		}
 
-			// Reset rules
-			arguments.settings.rules = [];
+		// json | xml file shortcuts
+		if ( findNoCase( ".json", arguments.provider.source ) ) {
+			arguments.provider.properties.file = arguments.provider.source;
+			arguments.provider.source          = "json";
+		}
+		if ( findNoCase( ".xml", arguments.provider.source ) ) {
+			arguments.provider.properties.file = arguments.provider.source;
+			arguments.provider.source          = "xml";
 		}
 
 		// Rule Source Checks
-		if (
-			arguments.settings[ "rulesSource" ].len() && !reFindNoCase(
-				"^(xml|db|model|json)$",
-				arguments.settings[ "rulesSource" ]
-			)
-		) {
+		if ( !reFindNoCase( "^(xml|db|model|json)$", arguments.provider.source ) ) {
 			throw(
-				message = "The rules source you set is invalid: #arguments.settings[ "rulesSource" ]#.",
+				message = "The rules source you set is invalid: #arguments.provider.source#.",
 				detail  = "The valid sources are xml, db, model, or json",
 				type    = "Security.InvalidRuleSource"
 			);
 		}
 
-		switch ( arguments.settings[ "rulesSource" ] ) {
+		// Specific Rule Checks
+		switch ( arguments.provider.source ) {
 			case "xml":
 			case "json": {
+				// Defaults
+				param arguments.provider.properties.file = "";
 				// Check if file property exists
-				if ( !arguments.settings[ "rulesFile" ].len() ) {
+				if ( !arguments.provider.properties.file.len() ) {
 					throw(
-						message = "Please enter a valid rulesFile setting",
-						type    = "Security.RulesFileNotDefined"
+						message = "Please enter a valid file property for the rule source",
+						type    = "Security.MissingSourceProperty"
 					);
 				}
 				break;
 			}
 
 			case "db": {
-				if ( !arguments.settings[ "rulesDSN" ].len() ) {
+				// Defaults
+				param arguments.provider.properties.dsn     = "";
+				param arguments.provider.properties.table   = "";
+				param arguments.provider.properties.orderby = "";
+				param arguments.provider.properties.sql     = "select * from #arguments.provider.properties.table#";
+				// Verify Properties
+				if ( !arguments.provider.properties[ "dsn" ].len() ) {
 					throw(
-						message = "Missing setting for DB source: rulesDSN ",
-						type    = "Security.RuleDSNNotDefined"
+						message = "Missing property for DB source: dsn ",
+						type    = "Security.MissingSourceProperty"
 					);
 				}
-				if ( !arguments.settings[ "rulesTable" ].len() ) {
+				if ( !arguments.provider.properties[ "table" ].len() ) {
 					throw(
-						message = "Missing setting for DB source: rulesTable ",
-						type    = "Security.RulesTableNotDefined"
+						message = "Missing property for DB source: table ",
+						type    = "Security.MissingSourceProperty"
 					);
 				}
 				break;
 			}
 
 			case "model": {
-				if ( !arguments.settings[ "rulesModel" ].len() ) {
+				// Defaults
+				param arguments.provider.properties.model  = "";
+				param arguments.provider.properties.method = "getSecurityRules";
+				if ( !arguments.provider.properties[ "model" ].len() ) {
 					throw(
-						message = "Missing setting for model source: rulesModel ",
-						type    = "Security.RulesModelNotDefined"
+						message = "Missing property for model source: model ",
+						type    = "Security.MissingSourceProperty"
 					);
 				}
 
@@ -157,36 +164,40 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Load rules from an XML file
 	 *
-	 * @settings The loaded settings
+	 * @provider The firewall rules provider configuration
+	 * @defaults Defaults to incorporate to each rule
 	 */
-	function loadXmlRules( required settings ){
+	function loadXmlRules( required provider, defaults = {} ){
 		// Validate the XML File
 		var node        = "";
 		var thisElement = "";
 
 		// Try to locate the file path
-		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
+		arguments.provider.properties.file = variables.controller.locateFilePath(
+			arguments.provider.properties.file
+		);
 
 		// Validate Location
-		if ( !len( arguments.settings.rulesFile ) ) {
+		if ( !len( arguments.provider.properties.file ) ) {
 			throw(
-				message = "Security Rules File could not be located: #arguments.settings.rulesFile#. Please check again.",
+				message = "Security Rules File could not be located: #arguments.provider.properties.file#. Please check again.",
 				type    = "Security.XMLRulesNotFound"
 			);
 		}
 
 		// Read in and parse
-		return xmlSearch( xmlParse( arguments.settings.rulesFile ), "/rules/rule" ).map( function( node ){
-			return parseXmlRule( arguments.node.xmlChildren );
+		return xmlSearch( xmlParse( arguments.provider.properties.file ), "/rules/rule" ).map( function( node ){
+			return parseXmlRule( arguments.node.xmlChildren, defaults ).append( defaults, false );
 		} );
 	}
 
 	/**
 	 * Load rules from json file
 	 *
-	 * @settings The loaded settings
+	 * @provider The firewall rules provider configuration
+	 * @defaults Defaults to incorporate to each rule
 	 */
-	array function loadJsonRules( required settings ){
+	array function loadJsonRules( required provider, defaults = {} ){
 		// Validate the JSON File
 		var rulesFile = "";
 		var jsonRules = "";
@@ -195,29 +206,32 @@ component accessors="true" singleton threadsafe {
 		var node      = "";
 
 		// Try to locate the file path
-		arguments.settings.rulesFile = variables.controller.locateFilePath( arguments.settings.rulesFile );
+		arguments.provider.properties.file = variables.controller.locateFilePath(
+			arguments.provider.properties.file
+		);
 
 		// Validate Location
-		if ( !len( arguments.settings.rulesFile ) ) {
+		if ( !len( arguments.provider.properties.file ) ) {
 			throw(
-				message = "Security Rules File could not be located: #arguments.settings.rulesFile#. Please check again.",
+				message = "Security Rules File could not be located: #arguments.provider.properties.file#. Please check again.",
 				type    = "Security.RulesFileNotFound"
 			);
 		}
 
 		// Read in and parse
-		var jsonRules = fileRead( arguments.settings.rulesFile );
+		var jsonRules = fileRead( arguments.provider.properties.file );
 
 		// Validate JSON
 		if ( !isJSON( jsonRules ) ) {
 			throw(
-				message = "Security Rules File is not valid JSON: #arguments.settings.rulesFile#. Please check again.",
+				message = "Security Rules File is not valid JSON: #arguments.provider.properties.file#. Please check again.",
 				type    = "Security.InvalidJson"
 			);
 		}
 
 		return deserializeJSON( jsonRules ).map( function( item ){
 			structAppend( item, getRuleTemplate(), false );
+			structAppend( item, defaults, false );
 			return item;
 		} );
 	}
@@ -225,49 +239,52 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Load rules from a database
 	 *
-	 * @settings The loaded settings
+	 * @provider The firewall rules provider configuration
+	 * @defaults Defaults to incorporate to each rule
 	 */
-	array function loadDBRules( required settings ){
-		var ruleSql = arguments.settings.rulesSQL;
+	array function loadDBRules( required provider, defaults = {} ){
+		var ruleSql = arguments.provider.properties.sql;
 
-		// Core SQL or they are using their own
-		if ( !len( arguments.settings.rulesSQL ) ) {
-			ruleSql = "SELECT * FROM #arguments.settings.rulesTable#";
-			if ( len( arguments.settings.rulesOrderBy ) ) {
-				ruleSql &= " ORDER BY #arguments.settings.rulesOrderBy#";
-			}
+		if ( len( arguments.provider.properties.orderBy ) ) {
+			ruleSql &= " ORDER BY #arguments.provider.properties.orderBy#";
 		}
 
 		return queryToArray(
 			queryExecute(
 				ruleSql,
 				[],
-				{ datasource : arguments.settings.rulesDSN }
+				{ datasource : arguments.provider.properties.dsn }
 			)
-		);
+		).map( function( item ){
+			structAppend( item, getRuleTemplate(), false );
+			structAppend( item, defaults, false );
+			return item;
+		} );
 	}
 
 	/**
 	 * Load rules from an IOC bean
 	 *
-	 * @settings The loaded settings
+	 * @provider The firewall rules provider configuration
+	 * @defaults Defaults to incorporate to each rule
 	 */
-	function loadModelRules( required settings ){
-		//  Get rules from a Model Object
-		var oModel = variables.wirebox.getInstance( arguments.settings.rulesModel );
-
+	function loadModelRules( required provider, defaults = {} ){
 		// Get the rules
-		var rules = invoke( oModel, arguments.settings.rulesModelMethod );
+		var rules = invoke(
+			variables.wirebox.getInstance( arguments.provider.properties.model ),
+			arguments.provider.properties.method
+		);
 
 		// Determine type and normalize
 		if ( isQuery( rules ) ) {
 			return queryToArray( rules );
-		} else {
-			return rules.map( function( item ){
-				structAppend( item, getRuleTemplate(), false );
-				return item;
-			} );
 		}
+
+		return rules.map( function( item ){
+			structAppend( item, getRuleTemplate(), false );
+			structAppend( item, defaults, false );
+			return item;
+		} );
 	}
 
 	/**
@@ -298,15 +315,10 @@ component accessors="true" singleton threadsafe {
 	 * @query The target query to convert
 	 */
 	private function queryToArray( required query ){
-		return arguments.query
-			.reduce( function( results, item ){
-				arrayAppend( results, item );
-				return results;
-			}, [] )
-			.map( function( item ){
-				structAppend( item, getRuleTemplate(), false );
-				return item;
-			} );
+		return arguments.query.reduce( function( results, item ){
+			arrayAppend( results, item );
+			return results;
+		}, [] );
 	}
 
 	/**

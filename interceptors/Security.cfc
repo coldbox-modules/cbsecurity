@@ -32,17 +32,32 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// init the security modules dictionary
 		variables.securityModules = {};
 
-		// Verify setting configurations
-		variables.rulesLoader.rulesSourceChecks( getProperties() );
-
-		// If we added our own rules, then normalize them.
-		if ( arrayLen( getProperty( "rules" ) ) ) {
-			setProperty( "rules", variables.rulesLoader.normalizeRules( getProperty( "rules" ) ) );
+		// Shorthand for rules
+		if ( isArray( variables.properties.firewall.rules ) ) {
+			variables.properties.firewall.rules = variables.cbSecurity
+				.getDefaultRuleSettings()
+				.append( { "inline" : variables.properties.firewall.rules }, true );
 		}
 
-		// Load Rules if we have a ruleSource
-		if ( getProperty( "rulesSource" ).len() ) {
-			setProperty( "rules", variables.rulesLoader.loadRules( getProperties() ) );
+		// Verify rule providers
+		variables.rulesLoader.rulesSourceChecks( variables.properties.firewall.rules.provider );
+
+		// If we added our own inline rules, then normalize them.
+		if ( arrayLen( variables.properties.firewall.rules.inline ) ) {
+			variables.properties.firewall.rules.inline = variables.rulesLoader.normalizeRules(
+				rules   : variables.properties.firewall.rules.inline,
+				defaults: variables.properties.firewall.rules.defaults
+			);
+		}
+
+		// Load the rules if a source is defined
+		if ( variables.properties.firewall.rules.provider.source.len() ) {
+			variables.properties.firewall.rules.inline.append(
+				variables.rulesLoader.loadRules(
+					variables.properties.firewall.rules.provider,
+					variables.properties.firewall.rules.defaults
+				)
+			);
 		}
 
 		// Coldbox version 5 (and lower) needs a little extra invalid event handler checking.
@@ -60,7 +75,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 */
 	function afterAspectsLoad( event, interceptData, rc, prc, buffer ){
 		// Register the validator
-		registerValidator( getInstance( getProperty( "validator" ) ) );
+		registerValidator( getInstance( variables.properties.firewall.validator ) );
 
 		// Register cbSecurity modules so we can incorporate them.
 		controller
@@ -95,36 +110,70 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @settings The module cbSecurity settings
 	 */
 	Security function registerModule( required string module, required struct settings ){
-		// Param settings
-		param arguments.settings.rules                       = [];
-		param arguments.settings.invalidAuthenticationEvent  = "";
-		param arguments.settings.defaultAuthenticationAction = "";
-		param arguments.settings.invalidAuthorizationEvent   = "";
-		param arguments.settings.defaultAuthorizationAction  = "";
-		param arguments.settings.validator                   = "";
+		// Param module settings
+		param arguments.settings.firewall                             = {};
+		param arguments.settings.firewall.invalidAuthenticationEvent  = "";
+		param arguments.settings.firewall.defaultAuthenticationAction = "";
+		param arguments.settings.firewall.invalidAuthorizationEvent   = "";
+		param arguments.settings.firewall.defaultAuthorizationAction  = "";
+		param arguments.settings.firewall.validator                   = "";
+		param arguments.settings.firewall.rules                       = {};
+
+		// Shorthand for rules
+		if ( isArray( arguments.settings.firewall.rules ) ) {
+			arguments.settings.firewall.rules = {
+				inline   : arguments.settings.firewall.rules,
+				defaults : {},
+				provider : {}
+			};
+		}
+
+		// Rule Defaults
+		param arguments.settings.firewall.rules.defaults = {};
+		param arguments.settings.firewall.rules.inline   = [];
+		param arguments.settings.firewall.rules.provider = {};
 
 		// Verify setting configurations
-		variables.rulesLoader.rulesSourceChecks( arguments.settings );
+		variables.rulesLoader.rulesSourceChecks( arguments.settings.firewall.rules.provider );
 
 		// Store configuration in this firewall
 		variables.securityModules[ arguments.module ] = arguments.settings;
 
 		// Process Module Rules
-		arguments.settings.rules = variables.rulesLoader.normalizeRules( arguments.settings.rules, module );
+		// Incorporate global defaults as well.
+		if ( isArray( arguments.settings.firewall.rules.inline ) ) {
+			arguments.settings.firewall.rules.inline = variables.rulesLoader.normalizeRules(
+				rules   : arguments.settings.firewall.rules.inline,
+				module  : module,
+				defaults: arguments.settings.firewall.rules.defaults.append(
+					variables.properties.firewall.rules.defaults,
+					false
+				)
+			);
+		}
 
 		// Load Rules if we have a ruleSource
-		if ( arguments.settings.rulesSource.len() ) {
-			arguments.settings.rules = variables.rulesLoader.loadRules( arguments.settings );
+		if ( arguments.settings.firewall.rules.provider.source.len() ) {
+			arguments.settings.firewall.rules.inline = variables.rulesLoader.loadRules(
+				arguments.settings.firewall.rules.provider,
+				arguments.settings.firewall.rules.defaults.append(
+					variables.properties.firewall.rules.defaults,
+					false
+				)
+			);
 		}
 
 		// prepend them so the don't interfere with MAIN rules
 		// one by one as I don't see a way to prepend the whole array at once
-		for ( var i = arguments.settings.rules.len(); i >= 1; i-- ) {
-			arrayPrepend( getProperty( "rules" ), arguments.settings.rules[ i ] );
+		for ( var i = arguments.settings.firewall.rules.inline.len(); i >= 1; i-- ) {
+			arrayPrepend(
+				variables.properties.firewall.rules.inline,
+				arguments.settings.firewall.rules.inline[ i ]
+			);
 		}
 
 		// Log it
-		log.info( "+ Registered module (#arguments.module#) with cbSecurity" );
+		log.info( "+ Registered module (#arguments.module#) with cbSecurity using #arrayLen( arguments.settings.firewall.rules.inline )# rules." );
 
 		return this;
 	}
@@ -167,12 +216,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			// Delete registration
 			structDelete( variables.securityModules, arguments.interceptData.moduleName );
 			// Delete rules
-			setProperty(
-				"rules",
-				getProperty( "rules" ).filter( function( item ){
-					return item.module != interceptData.moduleName;
-				} )
-			);
+			variables.properties.firewall.rules.inline = variables.properties.firewall.rules.inline.filter( function( item ){
+				return item.module != interceptData.moduleName;
+			} );
 			// Log it
 			log.info( "- Unregistered module (#arguments.interceptData.moduleName#) with cbSecurity" );
 		}
@@ -192,7 +238,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		arguments.event.secureView = variables.cbSecurity.secureViewProxy;
 
 		// Execute Rule Security
-		if ( getProperty( "rules" ).len() ) {
+		if ( variables.properties.firewall.rules.len() ) {
 			processRules(
 				arguments.event,
 				arguments.interceptData,
@@ -201,7 +247,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		// Execute Annotation Security
-		if ( getProperty( "handlerAnnotationSecurity" ) ) {
+		if ( variables.properties.firewall.handlerAnnotationSecurity ) {
 			processAnnotationRules(
 				arguments.event,
 				arguments.interceptData,
@@ -214,7 +260,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			variables.requestService
 				.getContext()
 				.setPrivateValue(
-					variables.cbSecurity.getSettings().prcUserVariable,
+					variables.properties.authentication.prcUserVariable,
 					variables.cbSecurity.getUser()
 				);
 		} catch ( "NoUserLoggedIn" e ) {
@@ -355,7 +401,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required currentEvent
 	){
 		// Verify all rules
-		for ( var thisRule in getProperty( "rules" ) ) {
+		for ( var thisRule in variables.properties.firewall.rules.inline ) {
 			// Determine Match Target by event or url
 			var matchTarget = (
 				thisRule.match == "url" ? arguments.event.getCurrentRoutedURL() : arguments.currentEvent
@@ -501,16 +547,18 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			structKeyExists( variables.securityModules, currentModule )
 			&&
 			// Does the setting have value?
-			variables.securityModules[ currentModule ][ "validator" ].len()
+			variables.securityModules[ currentModule ].firewall[ "validator" ].len()
 		) {
 			// Debug
 			if ( log.canDebug() ) {
 				log.debug(
 					"validator setting overriden by #currentModule# module",
-					variables.securityModules[ currentModule ][ "validator" ]
+					variables.securityModules[ currentModule ].firewall[ "validator" ]
 				);
 			}
-			return variables.wirebox.getInstance( variables.securityModules[ currentModule ][ "validator" ] );
+			return variables.wirebox.getInstance(
+				variables.securityModules[ currentModule ].firewall[ "validator" ]
+			);
 		}
 
 		return variables.validator;
@@ -535,25 +583,28 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			structKeyExists( variables.securityModules, currentModule )
 			&&
 			// Does the setting have value?
-			variables.securityModules[ currentModule ][ arguments.property ].len()
+			variables.securityModules[ currentModule ].firewall[ arguments.property ].len()
 		) {
 			// Debug
 			if ( log.canDebug() ) {
 				log.debug(
 					"#arguments.property# setting overriden by #currentModule# module",
-					variables.securityModules[ currentModule ][ arguments.property ]
+					variables.securityModules[ currentModule ].firewall[ arguments.property ]
 				);
 			}
-			return variables.securityModules[ currentModule ][ arguments.property ];
+			return variables.securityModules[ currentModule ].firewall[ arguments.property ];
 		}
 
 		// Debug
 		if ( log.canDebug() ) {
-			log.debug( "Using global #arguments.property# setting", getProperty( arguments.property ) );
+			log.debug(
+				"Using global #arguments.property# setting",
+				variables.properties.firewall[ arguments.property ]
+			);
 		}
 
 		// Return global property
-		return getProperty( arguments.property );
+		return variables.properties.firewall[ arguments.property ];
 	}
 
 	/**
@@ -645,7 +696,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						URL     = redirectEvent,
 						persist = "_securedURL",
 						// Chain SSL: Global, rule, request
-						ssl     = ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
+						ssl     = (
+							variables.properties.firewall.rules.useSSL || arguments.rule.useSSL || arguments.event.isSSL()
+						)
 					);
 				} else {
 					// Relocate now
@@ -653,7 +706,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						event   = redirectEvent,
 						persist = "_securedURL",
 						// Chain SSL: Global, rule, request
-						ssl     = ( getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL() )
+						ssl     = (
+							variables.properties.firewall.rules.useSSL || arguments.rule.useSSL || arguments.event.isSSL()
+						)
 					);
 				}
 
@@ -713,7 +768,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		//  Loop Over Patterns
 		for ( var pattern in arguments.patternList ) {
 			//  Using Regex
-			if ( getProperty( "useRegex" ) ) {
+			if ( variables.properties.firewall.rules.useRegex ) {
 				if ( reFindNoCase( trim( pattern ), arguments.currentEvent ) ) {
 					return true;
 				}

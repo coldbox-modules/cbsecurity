@@ -22,9 +22,10 @@ component threadsafe singleton accessors="true" {
 	/** DI **/
 	/*********************************************************************************************/
 
-	property name="settings" inject="coldbox:moduleSettings:cbsecurity";
-	property name="log"      inject="logbox:logger:{this}";
-	property name="wirebox"  inject="wirebox";
+	property name="settings"       inject="coldbox:moduleSettings:cbsecurity";
+	property name="log"            inject="logbox:logger:{this}";
+	property name="wirebox"        inject="wirebox";
+	property name="moduleSettings" inject="coldbox:setting:modules";
 
 	/*********************************************************************************************/
 	/** PROPERTIES **/
@@ -45,12 +46,108 @@ component threadsafe singleton accessors="true" {
 	/*********************************************************************************************/
 
 	variables.DEFAULT_ERROR_MESSAGE = "Not authorized!";
+	variables.DEFAULT_SETTINGS      = {
+		authentication : {
+			// The WireBox ID of the authentication service to use which must adhere to the cbsecurity.interfaces.IAuthService interface.
+			"provider"        : "authenticationService@cbauth",
+			// WireBox ID of the user service to use when leveraging user authentication
+			"userService"     : "",
+			// The name of the variable to use to store an authenticated user in prc scope on all incoming authenticated requests
+			"prcUserVariable" : "oCurrentUser"
+		},
+		csrf : {
+			// By default we load up an interceptor that verifies all non-GET incoming requests against the token validations
+			enableAutoVerifier     : false,
+			// A list of events to exclude from csrf verification, regex allowed: e.g. stripe\..*
+			verifyExcludes         : [],
+			// By default, all csrf tokens have a life-span of 30 minutes. After 30 minutes, they expire and we aut-generate new ones.
+			// If you do not want expiring tokens, then set this value to 0
+			rotationTimeout        : 30,
+			// Enable the /cbcsrf/generate endpoint to generate cbcsrf tokens for secured users.
+			enableEndpoint         : false,
+			// The WireBox mapping to use for the CacheStorage
+			cacheStorage           : "CacheStorage@cbstorages",
+			// Enable/Disable the cbAuth login/logout listener in order to rotate keys
+			enableAuthTokenRotator : true
+		},
+		firewall : {
+			// Auto load the global security firewall automatically, else you can load it a-la-carte via the `Security` interceptor
+			"autoLoadFirewall"            : true,
+			// The validator is an object that will validate the firewall rules and annotations and provide feedback on either authentication or authorization issues.
+			"validator"                   : "CBAuthValidator@cbsecurity",
+			// Activate handler/action based annotation security
+			"handlerAnnotationSecurity"   : true,
+			// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
+			"invalidAuthenticationEvent"  : "",
+			// Default Auhtentication Action: override or redirect when a user has not logged in
+			"defaultAuthenticationAction" : "redirect",
+			// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
+			"invalidAuthorizationEvent"   : "",
+			// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
+			"defaultAuthorizationAction"  : "redirect",
+			// Firewall Rules
+			"rules"                       : {
+				// Use regular expression matching on the rule match types
+				"useRegex" : true,
+				// Force SSL for all relocations
+				"useSSL"   : false,
+				// A collection of default name-value pairs to add to ALL rules
+				// This way you can add global roles, permissions, redirects, etc
+				"defaults" : {},
+				// You can store all your rules in this inline array
+				"inline"   : [],
+				// If you don't store the rules inline, then you can use a provider to load the rules
+				// The source can be a json file, an xml file, model, db
+				// Each provider can have it's appropriate properties as well. Please see the documentation for each provider.
+				"provider" : { "source" : "", "properties" : {} }
+			}
+		},
+		visualizer      : { "enabled" : false },
+		securityHeaders : { "enabled" : true }
+	};
 
 	/**
 	 * Constructor
 	 */
 	function init(){
 		return this;
+	}
+
+	function onDIComplete(){
+		// Default level-1 settings
+		variables.settings.append( variables.DEFAULT_SETTINGS, false );
+		// Default level-2 settings
+		variables.DEFAULT_SETTINGS.each( function( key, value ){
+			variables.settings[ key ].append( value, false );
+		} );
+		// Default level-3 settings
+		if ( isStruct( variables.settings.firewall.rules ) ) {
+			variables.settings.firewall.rules.append( variables.DEFAULT_SETTINGS.firewall.rules, false );
+		}
+
+		// Try to discover defaults for known authentication services
+		switch ( variables.settings.authentication.provider ) {
+			case "authenticationService@cbauth": {
+				param variables.settings.csrf.enableAuthTokenRotator = true;
+				param variables.settings.authentication.userService  = variables.moduleSettings.cbauth.settings.userServiceClass;
+				break;
+			}
+			case "BasicAuthService@cbsecurity": {
+				param variables.settings.csrf.enableAuthTokenRotator = true;
+				param variables.settings.authentication.userService  = "BasicAuthService@cbsecurity";
+				break;
+			}
+		}
+
+		// cbcsrf settings incorporation
+		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, false );
+	}
+
+	/**
+	 * Get the default rule settings structure
+	 */
+	struct function getDefaultRuleSettings(){
+		return variables.DEFAULT_SETTINGS.firewall.rules;
 	}
 
 	/**
@@ -67,14 +164,14 @@ component threadsafe singleton accessors="true" {
 		}
 
 		// Check and Load Baby!
-		if ( !len( variables.settings.userService ) ) {
+		if ( !len( variables.settings.authentication.userService ) ) {
 			throw(
 				message = "No [userService] provided in the settings.  Please set it in the `config/ColdBox.cfc` under `moduleSettings.cbsecurity.userService`.",
 				type    = "IncompleteConfiguration"
 			);
 		}
 
-		variables.userService = variables.wirebox.getInstance( variables.settings.userService );
+		variables.userService = variables.wirebox.getInstance( variables.settings.authentication.userService );
 
 		return variables.userService;
 	}
@@ -93,14 +190,14 @@ component threadsafe singleton accessors="true" {
 		}
 
 		// Check and Load Baby!
-		if ( !len( variables.settings.authenticationService ) ) {
+		if ( !len( variables.settings.authentication.provider ) ) {
 			throw(
-				message = "No [authService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.authenticationService`.",
+				message = "No [authService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.authentication.provider`.",
 				type    = "IncompleteConfiguration"
 			);
 		}
 
-		variables.authService = variables.wirebox.getInstance( variables.settings.authenticationService );
+		variables.authService = variables.wirebox.getInstance( variables.settings.authentication.provider );
 
 		return variables.authService;
 	}

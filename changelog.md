@@ -19,9 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Ability to set the `cbcsrf` module settings into the `cbsecurity` settings as `csrf`.
+* We now default the user service class and the auth token rotation events according to used authentication service (cbauth, etc), no need to duplicate work.
 * New rule based IP security. You can add a `allowedIPs` key into any rule and add which IP Addresses are allowed into the match. By default, it matches all IPs.
 * New rule based HTTP method security. You can add a `httpMethods` key into any rule and add which HTTP methods are allowed into the match. By default, it matches all HTTP Verbs.
-* New `securityHeaders` configuration to allow a developer to protect their apps from common exploits: xss, HSTS, Content Type Options, host header validation, ip validation, click jacking and much more.
+* New `securityHeaders` configuration to allow a developer to protect their apps from common exploits: xss, HSTS, Content Type Options, host header validation, ip validation, click jacking, non-SSL redirection and much more.
 * Authenticated user is now stored by the security firewall according to the `prcUserVariable` on authenticated calls via `preProcess()` no matter the validator used
 * Dynamic Custom Claims: You can pass a function/closure as the value for a custom claim and it will be evaluated at runtime passing in the current claims before being encoded
 * Allow passing in custom refresh token claims to `attempt()` and `fromUser()` and `refreshToken()` : `refreshCustomClaims`

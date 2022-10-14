@@ -71,77 +71,81 @@
 			cbAuth     : { userServiceClass : "UserService" },
 			// CB Security
 			cbSecurity : {
-				// Global Relocation when an invalid access is detected, instead of each rule declaring one.
-				"invalidAuthenticationEvent" : "main.index",
-				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
-				"defaultAuthenticationAction" : "redirect",
-				// Global override event when an invalid access is detected, instead of each rule declaring one.
-				"invalidAuthorizationEvent"  : "main.index",
-				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
-				"defaultAuthorizationAction" : "redirect",
-				// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
-				"authenticationService"      : "authenticationService@cbauth",
-				// WireBox ID of the user service to use
-				"userService"                : "UserService",
-				// Enable Visualizer
-				"enableSecurityVisualizer"   : true,
-				// The global security rules
-				"rules"                      : [
-					// should use direct action and do a global redirect
-					{
-						"whitelist"   : "",
-						"securelist"  : "admin",
-						"match"       : "event",
-						"roles"       : "admin",
-						"permissions" : "",
-						"action"      : "redirect",
-						"httpMethods" : "*"
-					},
-					// Match only public put/post
-					{
-						"whitelist"   : "",
-						"securelist"  : "public",
-						"match"       : "event",
-						"roles"       : "",
-						"permissions" : "",
-						"action"      : "redirect",
-						"redirect"    : "main.index",
-						"httpMethods" : "put,post"
-					},
-					// Match only public put/post
-					{
-						"whitelist"   : "",
-						"securelist"  : "cfide",
-						"match"       : "url",
-						"roles"       : "",
-						"permissions" : "",
-						"action"      : "redirect",
-						"allowedIPs"  : "10.0.0.1"
-					},
-					// no action, use global default action
-					{
-						"whitelist"   : "",
-						"securelist"  : "noAction",
-						"match"       : "url",
-						"roles"       : "admin",
-						"permissions" : "",
-						"httpMethods" : "*"
-					},
-					// Using overrideEvent only, so use an explicit override
-					{ "securelist" : "ruleActionOverride", "match" : "url", "overrideEvent" : "main.login", "httpMethods" : "*" },
-					// direct action, use global override
-					{
-						"whitelist"   : "",
-						"securelist"  : "override",
-						"match"       : "url",
-						"roles"       : "",
-						"permissions" : "",
-						"action"      : "override",
-						"httpMethods" : "*"
-					},
-					// Using redirect only, so use an explicit redirect
-					{ "securelist" : "ruleActionRedirect", "match" : "url", "redirect" : "main.login", "httpMethods" : "*" }
-				],
+
+				authentication : {
+					// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
+					"authenticationService"      : "authenticationService@cbauth",
+					// WireBox ID of the user service to use
+					"userService"                : "UserService"
+				},
+
+				firewall : {
+					// Global Relocation when an invalid access is detected, instead of each rule declaring one.
+					"invalidAuthenticationEvent" : "main.index",
+					// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
+					"defaultAuthenticationAction" : "redirect",
+					// Global override event when an invalid access is detected, instead of each rule declaring one.
+					"invalidAuthorizationEvent"  : "main.index",
+					// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
+					"defaultAuthorizationAction" : "redirect",
+					// The global security rules
+					"rules"                      : [
+						// should use direct action and do a global redirect
+						{
+							"whitelist"   : "",
+							"securelist"  : "admin",
+							"match"       : "event",
+							"roles"       : "admin",
+							"permissions" : "",
+							"action"      : "redirect",
+							"httpMethods" : "*"
+						},
+						// Match only public put/post
+						{
+							"whitelist"   : "",
+							"securelist"  : "public",
+							"match"       : "event",
+							"roles"       : "",
+							"permissions" : "",
+							"action"      : "redirect",
+							"redirect"    : "main.index",
+							"httpMethods" : "put,post"
+						},
+						// Match only public put/post
+						{
+							"whitelist"   : "",
+							"securelist"  : "cfide",
+							"match"       : "url",
+							"roles"       : "",
+							"permissions" : "",
+							"action"      : "redirect",
+							"allowedIPs"  : "10.0.0.1"
+						},
+						// no action, use global default action
+						{
+							"whitelist"   : "",
+							"securelist"  : "noAction",
+							"match"       : "url",
+							"roles"       : "admin",
+							"permissions" : "",
+							"httpMethods" : "*"
+						},
+						// Using overrideEvent only, so use an explicit override
+						{ "securelist" : "ruleActionOverride", "match" : "url", "overrideEvent" : "main.login", "httpMethods" : "*" },
+						// direct action, use global override
+						{
+							"whitelist"   : "",
+							"securelist"  : "override",
+							"match"       : "url",
+							"roles"       : "",
+							"permissions" : "",
+							"action"      : "override",
+							"httpMethods" : "*"
+						},
+						// Using redirect only, so use an explicit redirect
+						{ "securelist" : "ruleActionRedirect", "match" : "url", "redirect" : "main.login", "httpMethods" : "*" }
+					]
+				},
 
 				// Security Headers
 				"securityHeaders" : {
@@ -159,6 +163,10 @@
 						// Allowed IP list
 						"allowedIPs" : "*"
 					}
+				},
+
+				visualizer : {
+					enabled : true
 				},
 
 				// JWT Settings

@@ -4,20 +4,19 @@
 component extends="coldbox.system.RestHandler" {
 
 	// DI
-	property name="cbSecurity" inject="coldbox:interceptor:cbsecurity@global";
+	property name="settings"   inject="coldbox:moduleSettings:cbsecurity";
 	property name="jwtService" inject="jwtService@cbSecurity";
 
 	/**
 	 * Visualizer Action
 	 */
 	function index( event, rc, prc ){
-		prc.properties = variables.cbSecurity.getProperties();
-
 		// If not enabled or in production, just 404 it
-		if ( !prc.properties.enableSecurityVisualizer || getSetting( "environment" ) == "production" ) {
+		if ( !variables.settings.visualizer.enabled || getSetting( "environment" ) == "production" ) {
 			event.setHTTPHeader( statusCode = 404, statusText = "page not found" );
 			return "Page Not Found";
 		}
+		prc.settings = variables.settings;
 		// Show the visualizer
 		event.setView( "home/index" );
 	}
@@ -28,10 +27,8 @@ component extends="coldbox.system.RestHandler" {
 	 * - x-refresh-token header or rc variable
 	 */
 	function refreshToken( event, rc, prc ){
-		prc.properties = variables.cbSecurity.getProperties();
-
 		// If endpoint not enabled, just 404 it
-		if ( !prc.properties.jwt.enableRefreshEndpoint ) {
+		if ( !variables.jwtService.getSettings().jwt.enableRefreshEndpoint ) {
 			return event
 				.getResponse()
 				.setErrorMessage(
@@ -50,9 +47,7 @@ component extends="coldbox.system.RestHandler" {
 				.setData( prc.newTokens )
 				.addMessage( "Tokens refreshed! The passed in refresh token has been invalidated" );
 		} catch ( RefreshTokensNotActive e ) {
-			return event
-				.getResponse()
-				.setErrorMessage( "Refresh Tokens Not Active", 404, "Disabled" );
+			return event.getResponse().setErrorMessage( "Refresh Tokens Not Active", 404, "Disabled" );
 		} catch ( TokenNotFoundException e ) {
 			return event
 				.getResponse()

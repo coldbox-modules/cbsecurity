@@ -14,8 +14,6 @@ component extends="coldbox.system.Interceptor" {
 
 	// Static Defaults Config
 	variables.DEFAULT_SETTINGS = {
-		// Master switch for security headers
-		"enabled"            : true,
 		// If you trust the upstream then we will check the upstream first for specific headers
 		"trustUpstream"      : false,
 		// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
@@ -72,7 +70,9 @@ component extends="coldbox.system.Interceptor" {
 			"enabled"    : false,
 			// Allowed IP list
 			"allowedIPs" : ""
-		}
+		},
+		// Detect if the incoming requests are NON-SSL and if enabled, redirect with SSL
+		"secureSSLRedirects" : { "enabled" : false }
 	};
 
 	/**
@@ -93,9 +93,19 @@ component extends="coldbox.system.Interceptor" {
 	}
 
 	/**
-	 * Process blocking headers
+	 * Process early warning security headers
 	 */
 	function preProcess( event, interceptData, rc, prc ){
+		// Secure SSL Redirects
+		if ( variables.settings.securityHeaders.secureSSLRedirects.enabled && !arguments.event.isSSL() ) {
+			// Debug
+			if ( log.canDebug() ) {
+				log.debug( "Non-SSL URI detected (#event.getFullUrl()#), redirecting in ssl" );
+			}
+			relocate( url: arguments.event.getFullUrl(), ssl: true );
+			return;
+		}
+
 		// Host Header Validation
 		if (
 			variables.settings.securityHeaders.hostHeaderValidation.enabled &&

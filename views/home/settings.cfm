@@ -1,8 +1,8 @@
 <cfscript>
-	globalSettings = prc.properties.filter( function( key ){
+	globalSettings = prc.settings.filter( function( key ){
 		return !listFindNoCase( "rules,jwt", key );
 	} );
-	jwtSettings = prc.properties.jwt.filter( function( key ){
+	jwtSettings = prc.settings.jwt.filter( function( key ){
 		return !listFindNoCase( "secretKey", key );
 	} );
 </cfscript>
