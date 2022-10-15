@@ -33,7 +33,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		variables.securityModules = {};
 
 		// Shorthand for rules
-		if ( isArray( variables.properties.firewall.rules ) ) {
+		if ( isArray( variables.properties.firewall.rules ) && arrayLen( variables.properties.firewall.rules ) ) {
 			variables.properties.firewall.rules = variables.cbSecurity
 				.getDefaultRuleSettings()
 				.append( { "inline" : variables.properties.firewall.rules }, true );
@@ -43,7 +43,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		variables.rulesLoader.rulesSourceChecks( variables.properties.firewall.rules.provider );
 
 		// If we added our own inline rules, then normalize them.
-		if ( arrayLen( variables.properties.firewall.rules.inline ) ) {
+		if (
+			arrayLen( variables.properties.firewall.rules.inline ) && arrayLen(
+				variables.properties.firewall.rules.inline
+			)
+		) {
 			variables.properties.firewall.rules.inline = variables.rulesLoader.normalizeRules(
 				rules   : variables.properties.firewall.rules.inline,
 				defaults: variables.properties.firewall.rules.defaults
@@ -56,7 +60,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				variables.rulesLoader.loadRules(
 					variables.properties.firewall.rules.provider,
 					variables.properties.firewall.rules.defaults
-				)
+				),
+				true
 			);
 		}
 
@@ -120,7 +125,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		param arguments.settings.firewall.rules                       = {};
 
 		// Shorthand for rules
-		if ( isArray( arguments.settings.firewall.rules ) ) {
+		if ( isArray( arguments.settings.firewall.rules ) && arrayLen( arguments.settings.firewall.rules ) ) {
 			arguments.settings.firewall.rules = {
 				inline   : arguments.settings.firewall.rules,
 				defaults : {},
@@ -141,7 +146,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// Process Module Rules
 		// Incorporate global defaults as well.
-		if ( isArray( arguments.settings.firewall.rules.inline ) ) {
+		if (
+			isArray( arguments.settings.firewall.rules.inline ) && arrayLen(
+				arguments.settings.firewall.rules.inline
+			)
+		) {
 			arguments.settings.firewall.rules.inline = variables.rulesLoader.normalizeRules(
 				rules   : arguments.settings.firewall.rules.inline,
 				module  : module,
