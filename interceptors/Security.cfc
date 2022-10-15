@@ -381,10 +381,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			"annotationType"   : arguments.type,
 			"processActions"   : true // Boolean indicator if the invalid actions should process or not
 		};
-		announceInterception(
-			state         = "cbSecurity_onInvalid#arguments.validatorResults.type#",
-			interceptData = iData
-		);
+		announce( state = "cbSecurity_onInvalid#arguments.validatorResults.type#", interceptData = iData );
 
 		// Are we processing the invalid actions?
 		if ( iData.processActions ) {
@@ -482,10 +479,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						"annotationType"   : "",
 						"processActions"   : true // Boolean indicator if the invalid actions should process or not
 					};
-					announceInterception(
-						state         = "cbSecurity_onInvalid#validatorResults.type#",
-						interceptData = iData
-					);
+					announce( state = "cbSecurity_onInvalid#validatorResults.type#", interceptData = iData );
 
 					// Are we processing the invalid actions?
 					if ( iData.processActions ) {

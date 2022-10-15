@@ -131,6 +131,16 @@ component extends="coldbox.system.Interceptor" {
 					);
 				}
 
+				// Announce
+				announce(
+					"cbSecurity_onFirewallBlock",
+					{
+						type         : "hostheader",
+						config       : variables.settings.securityHeaders.hostHeaderValidation,
+						incomingHost : incomingHost
+					}
+				);
+
 				// block
 				event
 					.noExecution()
@@ -160,6 +170,16 @@ component extends="coldbox.system.Interceptor" {
 						"Valid ips are #variables.settings.securityHeaders.ipValidation.allowedIPs#"
 					);
 				}
+
+				// Announce
+				announce(
+					"cbSecurity_onFirewallBlock",
+					{
+						type       : "ipvalidation",
+						config     : variables.settings.securityHeaders.ipValidation,
+						incomingIP : incomingIP
+					}
+				);
 
 				// block
 				event

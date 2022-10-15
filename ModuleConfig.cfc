@@ -96,6 +96,7 @@ component {
 				// Validator Events
 				"cbSecurity_onInvalidAuthentication",
 				"cbSecurity_onInvalidAuthorization",
+				"cbSecurity_onFirewallBlock",
 				// JWT Events
 				"cbSecurity_onJWTCreation",
 				"cbSecurity_onJWTInvalidation",
