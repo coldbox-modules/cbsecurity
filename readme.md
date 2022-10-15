@@ -4,13 +4,17 @@
 
 This module will enhance your ColdBox applications by providing out-of-the-box security in the form of:
 
-- A security rule engine for incoming requests
+- A security rule engine for incoming requests allowing both authentication and authorization checks
 - Annotation-driven security for handlers and actions
-- JWT (JSON Web Tokens) generator, decoder, and authentication services
-- Refresh and Access tokens
-- Pluggable with any Authentication service or can leverage [cbauth](https://github.com/elpete/cbauth) by default
-- Capability to distinguish between invalid authentication and authorization and determine the process's outcome.
-- Ability to load/unload security rules from contributing modules. So you can create a nice HMVC hierarchy of security.
+- JWT (JSON Web Tokens) generator, decoder, rotation, invalidation and authentication services
+- JWT Token Storage in a cache or database
+- Refresh and access tokens
+- Ip Blocking, Host Blocking, and much more
+- CSRF protection
+- Security Headers for protection against ip spoofing, host spoofing, click jacking, ssl attacks, hsts, and much more
+- Pluggable with any Authentication service or can leverage [cbauth](https://github.com/coldbox-modules/cbauth) by default
+- Capability to distinguish between invalid authentication and authorization and determine the process's outcome
+- Ability to load/unload security rules from contributing modules. So you can create a nice HMVC hierarchy of security
 - Ability for each module to define its own `validator`
 
 Welcome to SecureLand!
@@ -40,148 +44,182 @@ You can then continue to configure the firewall in your `config/Coldbox.cfc`.
 
 ## Settings
 
-Below are the security settings you can use for this module. Remember you must create the `cbsecurity` and `cbauth` structs in your `ColdBox.cfc`:
+Below are the security settings you can use for this module. Remember you must create the `cbsecurity` and `cbauth` structs in your `ColdBox.cfc` or you can create a `config/modules/cbsecurity.cfc` if you are on ColdBox 7.
 
 ```js
 moduleSettings = {
 
-cbauth = {
-    // This is the path to your user object that contains the credential validation methods
-    userServiceClass = "entities.user"
-},
-cbsecurity = {
-    // The global invalid authentication event or URI or URL to go if an invalid authentication occurs
-    "invalidAuthenticationEvent"    : "",
-    // Default Authentication Action: override or redirect when a user has not logged in
-    "defaultAuthenticationAction"   : "redirect",
-    // The global invalid authorization event or URI or URL to go if an invalid authorization occurs
-    "invalidAuthorizationEvent"     : "",
-    // Default Authorization Action: override or redirect when a user does not have enough permissions to access something
-    "defaultAuthorizationAction"    : "redirect",
-    // You can define your security rules here or externally via a source
-    "rules"                         : [],
-    // The validator is an object that will validate rules and annotations and provide feedback on either authentication or authorization issues.
-    "validator"                     : "CBAuthValidator@cbsecurity",
-    // The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
-    "authenticationService"         : "authenticationService@cbauth",
-    // WireBox ID of the user service to use
-    "userService"                   : "",
-    // The name of the variable to use to store an authenticated user in prc scope if using a validator that supports it.
-    "prcUserVariable"               : "oCurrentUser",
-    // If source is model, the wirebox Id to use for retrieving the rules
-    "rulesModel"                    : "",
-    // If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
-    "rulesModelMethod"              : "getSecurityRules",
-    // If source is db then the datasource name to use
-    "rulesDSN"                      : "",
-    // If source is db then the table to get the rules from
-    "rulesTable"                    : "",
-    // If source is db then the ordering of the select
-    "rulesOrderBy"                  : "",
-    // If source is db then you can have your custom select SQL
-    "rulesSql"                      : "",
-    // Use regular expression matching on the rule match types
-    "useRegex"                      : true,
-    // Force SSL for all relocations
-    "useSSL"                        : false,
-    // Auto load the global security firewall
-    "autoLoadFirewall"              : true,
-    // Activate handler/action based annotation security
-    "handlerAnnotationSecurity"     : true,
-    // Activate security rule visualizer, defaults to false by default
-    "enableSecurityVisualizer"      : false,
-
-	// Security Headers
-	"securityHeaders"                     : {
-		// Master switch for security headers
-		"enabled" : true,
-		// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-		"frameOptions"       : { "enabled" : true, "value" : "SAMEORIGIN" },
-		// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
-		// X-XSS-Protection: 1; mode=block
-		"xssProtection"      : { "enabled" : true, "mode" : "block" },
-		// The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised in
-		// the Content-Type headers should be followed and not be changed => X-Content-Type-Options: nosniff
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
-		"contentTypeOptions" : { "enabled" : true },
-		// The Referrer-Policy HTTP header controls how much referrer information (sent with the Referer header) should be included with requests.
-		// Aside from the HTTP header, you can set this policy in HTML.
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
-		"referrerPolicy"     : { "enabled" : true, "policy" : "same-origin" },
-		// HTTP Strict Transport Security (HSTS)
-		// The HTTP Strict-Transport-Security response header (often abbreviated as HSTS)
-		// informs browsers that the site should only be accessed using HTTPS, and that any future attempts to access it
-		// using HTTP should automatically be converted to HTTPS.
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security,
-		"hsts" : {
-			"enabled" : true,
-			// The time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS, 1 year is the default
-			"max-age" : "31536000",
-			// See Preloading Strict Transport Security for details. Not part of the specification.
-			"preload" : true,
-			// If this optional parameter is specified, this rule applies to all of the site's subdomains as well.
-			"includeSubDomains" : false
-		},
-		// Content Security Policy
-		// Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks,
-		// including Cross-Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft, to
-		// site defacement, to malware distribution.
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
-		"contentSecurityPolicy" : {
-			// Disabled by defautl as it is totally customizable
-			"enabled" : false,
-			// The custom policy to use, by default we don't include any
-			"policy" : ""
-		},
-		"customHeaders" : {
-			// Name : value pairs as you see fit.
-		}
+	cbauth = {
+		// This is the path to your user object that contains the credential validation methods
+		userServiceClass = "entities.user"
 	},
 
+	cbsecurity = {
+		authentication : {
+			// The WireBox ID of the authentication service to use which must adhere to the cbsecurity.interfaces.IAuthService interface.
+			"provider"        : "authenticationService@cbauth",
+			// WireBox ID of the user service to use when leveraging user authentication
+			"userService"     : "",
+			// The name of the variable to use to store an authenticated user in prc scope on all incoming authenticated requests
+			"prcUserVariable" : "oCurrentUser"
+		},
 
-    // JWT Settings
-    "jwt"                           : {
-        // The issuer authority for the tokens, placed in the `iss` claim
-        "issuer"                  : "",
-        // The jwt secret encoding key, defaults to getSystemEnv( "JWT_SECRET", "" )
-        "secretKey"               : getSystemSetting( "JWT_SECRET", "" ),
-        // by default it uses the authorization bearer header, but you can also pass a custom one as well.
-        "customAuthHeader"        : "x-auth-token",
-        // The expiration in minutes for the jwt tokens
-        "expiration"              : 60,
-        // If true, enables refresh tokens, longer lived tokens (not implemented yet)
-        "enableRefreshTokens"     : false,
-        // The default expiration for refresh tokens, defaults to 30 days
-        "refreshExpiration"          : 10080,
-        // The Custom header to inspect for refresh tokens
-        "customRefreshHeader"        : "x-refresh-token",
-        // If enabled, the JWT validator will inspect the request for refresh tokens and expired access tokens
-        // It will then automatically refresh them for you and return them back as
-        // response headers in the same request according to the customRefreshHeader and customAuthHeader
-        "enableAutoRefreshValidator" : false,
-        // Enable the POST > /cbsecurity/refreshtoken API endpoint
-        "enableRefreshEndpoint"      : true,
-        // encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
-        "algorithm"               : "HS512",
-        // Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
-        "requiredClaims"          : [] ,
-        // The token storage settings
-        "tokenStorage"            : {
-            // enable or not, default is true
-            "enabled"       : true,
-            // A cache key prefix to use when storing the tokens
-            "keyPrefix"     : "cbjwt_",
-            // The driver to use: db, cachebox or a WireBox ID
-            "driver"        : "cachebox",
-            // Driver specific properties
-            "properties"    : {
-                "cacheName" : "default"
-            }
-        }
-    }
-};
+		csrf : {
+			// By default we load up an interceptor that verifies all non-GET incoming requests against the token validations
+			enableAutoVerifier     : false,
+			// A list of events to exclude from csrf verification, regex allowed: e.g. stripe\..*
+			verifyExcludes         : [],
+			// By default, all csrf tokens have a life-span of 30 minutes. After 30 minutes, they expire and we aut-generate new ones.
+			// If you do not want expiring tokens, then set this value to 0
+			rotationTimeout        : 30,
+			// Enable the /cbcsrf/generate endpoint to generate cbcsrf tokens for secured users.
+			enableEndpoint         : false,
+			// The WireBox mapping to use for the CacheStorage
+			cacheStorage           : "CacheStorage@cbstorages",
+			// Enable/Disable the cbAuth login/logout listener in order to rotate keys
+			enableAuthTokenRotator : true
+		},
+
+		firewall : {
+			// Auto load the global security firewall automatically, else you can load it a-la-carte via the `Security` interceptor
+			"autoLoadFirewall"            : true,
+			// The validator is an object that will validate the firewall rules and annotations and provide feedback on either authentication or authorization issues.
+			"validator"                   : "CBAuthValidator@cbsecurity",
+			// Activate handler/action based annotation security
+			"handlerAnnotationSecurity"   : true,
+			// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
+			"invalidAuthenticationEvent"  : "",
+			// Default Auhtentication Action: override or redirect when a user has not logged in
+			"defaultAuthenticationAction" : "redirect",
+			// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
+			"invalidAuthorizationEvent"   : "",
+			// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
+			"defaultAuthorizationAction"  : "redirect",
+			// Firewall Rules, this can be a struct of detailed configuration
+			// or a simple array of inline rules
+			"rules"                       : {
+				// Use regular expression matching on the rule match types
+				"useRegex" : true,
+				// Force SSL for all relocations
+				"useSSL"   : false,
+				// A collection of default name-value pairs to add to ALL rules
+				// This way you can add global roles, permissions, redirects, etc
+				"defaults" : {},
+				// You can store all your rules in this inline array
+				"inline"   : [],
+				// If you don't store the rules inline, then you can use a provider to load the rules
+				// The source can be a json file, an xml file, model, db
+				// Each provider can have it's appropriate properties as well. Please see the documentation for each provider.
+				"provider" : { "source" : "", "properties" : {} }
+			}
+		},
+
+		visualizer      : { "enabled" : false },
+
+		// Security Headers
+		securityHeaders                     : {
+			// Master switch for security headers
+			"enabled" : true,
+			// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+			"frameOptions"       : { "enabled" : true, "value" : "SAMEORIGIN" },
+			// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
+			// X-XSS-Protection: 1; mode=block
+			"xssProtection"      : { "enabled" : true, "mode" : "block" },
+			// The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised in
+			// the Content-Type headers should be followed and not be changed => X-Content-Type-Options: nosniff
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+			"contentTypeOptions" : { "enabled" : true },
+			// The Referrer-Policy HTTP header controls how much referrer information (sent with the Referer header) should be included with requests.
+			// Aside from the HTTP header, you can set this policy in HTML.
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+			"referrerPolicy"     : { "enabled" : true, "policy" : "same-origin" },
+			// HTTP Strict Transport Security (HSTS)
+			// The HTTP Strict-Transport-Security response header (often abbreviated as HSTS)
+			// informs browsers that the site should only be accessed using HTTPS, and that any future attempts to access it
+			// using HTTP should automatically be converted to HTTPS.
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security,
+			"hsts" : {
+				"enabled" : true,
+				// The time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS, 1 year is the default
+				"max-age" : "31536000",
+				// See Preloading Strict Transport Security for details. Not part of the specification.
+				"preload" : true,
+				// If this optional parameter is specified, this rule applies to all of the site's subdomains as well.
+				"includeSubDomains" : false
+			},
+			// Content Security Policy
+			// Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks,
+			// including Cross-Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft, to
+			// site defacement, to malware distribution.
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+			"contentSecurityPolicy" : {
+				// Disabled by defautl as it is totally customizable
+				"enabled" : false,
+				// The custom policy to use, by default we don't include any
+				"policy" : ""
+			},
+			"customHeaders" : {
+				// Name : value pairs as you see fit.
+			}
+			// Validates the host or x-forwarded-host to an allowed list of valid hosts
+			"hostHeaderValidation" : {
+				"enabled"      : false,
+				// Allowed hosts list
+				"allowedHosts" : ""
+			},
+			// Validates the ip address of the incoming request
+			"ipValidation" : {
+				"enabled"    : false,
+				// Allowed IP list
+				"allowedIPs" : ""
+			},
+			// Detect if the incoming requests are NON-SSL and if enabled, redirect with SSL
+			"secureSSLRedirects" : { "enabled" : false }
+		},
+
+		// JWT Settings
+		jwt                          : {
+			// The issuer authority for the tokens, placed in the `iss` claim
+			"issuer"                  : "",
+			// The jwt secret encoding key, defaults to getSystemEnv( "JWT_SECRET", "" )
+			"secretKey"               : getSystemSetting( "JWT_SECRET", "" ),
+			// by default it uses the authorization bearer header, but you can also pass a custom one as well.
+			"customAuthHeader"        : "x-auth-token",
+			// The expiration in minutes for the jwt tokens
+			"expiration"              : 60,
+			// If true, enables refresh tokens, longer lived tokens (not implemented yet)
+			"enableRefreshTokens"     : false,
+			// The default expiration for refresh tokens, defaults to 30 days
+			"refreshExpiration"          : 10080,
+			// The Custom header to inspect for refresh tokens
+			"customRefreshHeader"        : "x-refresh-token",
+			// If enabled, the JWT validator will inspect the request for refresh tokens and expired access tokens
+			// It will then automatically refresh them for you and return them back as
+			// response headers in the same request according to the customRefreshHeader and customAuthHeader
+			"enableAutoRefreshValidator" : false,
+			// Enable the POST > /cbsecurity/refreshtoken API endpoint
+			"enableRefreshEndpoint"      : true,
+			// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
+			"algorithm"               : "HS512",
+			// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
+			"requiredClaims"          : [] ,
+			// The token storage settings
+			"tokenStorage"            : {
+				// enable or not, default is true
+				"enabled"       : true,
+				// A cache key prefix to use when storing the tokens
+				"keyPrefix"     : "cbjwt_",
+				// The driver to use: db, cachebox or a WireBox ID
+				"driver"        : "cachebox",
+				// Driver specific properties
+				"properties"    : {
+					"cacheName" : "default"
+				}
+			}
+		}
+	};
 
 }
 ```
@@ -250,7 +288,9 @@ rules = [
         "overrideEvent" : "", // If rule breaks, and you have an event, it will override it
         "useSSL"        : false, // Force SSL,
         "action"        : "", // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
-        "module"        : "" // metadata we can add so mark rules that come from modules
+        "module"        : "", // metadata we can add so mark rules that come from modules
+		"httpMethods"   : "*", // Match all HTTP methods or particular ones as a list
+		"allowedIPs"    : "*" // The rule only matches if the IP list matches. It can be a list of IPs to match.
     };
 ]
 ```
@@ -264,53 +304,55 @@ The global rules come from the `config/Coldbox.cfc` and they are defined within 
 moduleSettings = {
     // CB Security
     cbSecurity : {
-        // Global Relocation when invalid access is detected, instead of each rule declaring one.
-        "invalidAuthenticationEvent"    : "main.index",
-        // Global override event when invalid access is detected, instead of each rule declaring one.
-        "invalidAuthorizationEvent"     : "main.index",
-        // Default invalid action: override or redirect when invalid access is detected, default is to redirect
-        "defaultAuthorizationAction"    : "redirect",
-        // The global security rules
-        "rules"                         : [
-            // should use direct action and do a global redirect
-            {
-                "whitelist": "",
-                "securelist": "admin",
-                "match": "event",
-                "roles": "admin",
-                "permissions": "",
-                "action" : "redirect"
-            },
-            // no action, use global default action
-            {
-                "whitelist": "",
-                "securelist": "noAction",
-                "match": "url",
-                "roles": "admin",
-                "permissions": ""
-            },
-            // Using overrideEvent only, so use an explicit override
-            {
-                "securelist": "ruleActionOverride",
-                "match": "url",
-                "overrideEvent": "main.login"
-            },
-            // direct action, use global override
-            {
-                "whitelist": "",
-                "securelist": "override",
-                "match": "url",
-                "roles": "",
-                "permissions": "",
-                "action" : "override"
-            },
-            // Using redirect only, so use an explicit redirect
-            {
-                "securelist": "ruleActionRedirect",
-                "match": "url",
-                "redirect": "main.login"
-            }
-        ]
+       firewall : {
+			// Global Relocation when invalid access is detected, instead of each rule declaring one.
+			"invalidAuthenticationEvent"    : "main.index",
+			// Global override event when invalid access is detected, instead of each rule declaring one.
+			"invalidAuthorizationEvent"     : "main.index",
+			// Default invalid action: override or redirect when invalid access is detected, default is to redirect
+			"defaultAuthorizationAction"    : "redirect",
+			// The global security rules as inline
+        	"rules"                         : [
+				// should use direct action and do a global redirect
+				{
+					"whitelist": "",
+					"securelist": "admin",
+					"match": "event",
+					"roles": "admin",
+					"permissions": "",
+					"action" : "redirect"
+				},
+				// no action, use global default action
+				{
+					"whitelist": "",
+					"securelist": "noAction",
+					"match": "url",
+					"roles": "admin",
+					"permissions": ""
+				},
+				// Using overrideEvent only, so use an explicit override
+				{
+					"securelist": "ruleActionOverride",
+					"match": "url",
+					"overrideEvent": "main.login"
+				},
+				// direct action, use global override
+				{
+					"whitelist": "",
+					"securelist": "override",
+					"match": "url",
+					"roles": "",
+					"permissions": "",
+					"action" : "override"
+				},
+				// Using redirect only, so use an explicit redirect
+				{
+					"securelist": "ruleActionRedirect",
+					"match": "url",
+					"redirect": "main.login"
+				}
+			]
+	   }
     }
 };
 ```
@@ -325,27 +367,29 @@ settings = {
 
     // CB Security Rules to append to global rules
     cbsecurity = {
-        // Module Relocation when an invalid access is detected, instead of each rule declaring one.
-        "invalidAuthenticationEvent"    : "mod1:secure.index",
-        // Default Authentication Action: override or redirect when a user has not logged in
-        "defaultAuthenticationAction"   : "override",
-        // Module override event when an invalid access is detected, instead of each rule declaring one.
-        "invalidAuthorizationEvent"     : "mod1:secure.auth",
-        // Default Authorization Action: override or redirect when a user does not have enough permissions to access something
-        "defaultAuthorizationAction"    : "override",
-        // Custom validator for the module.
-        "validator"                     : "JwtAuthValidator@cbsecurity"
-        // You can define your security rules here or externally via a source
-        "rules"                         : [
-            {
-                "secureList"    : "mod1:home"
-            },
-            {
-                "secureList"    : "mod1/modOverride",
-                "match"         : "url",
-                "action"        : "override"
-            }
-        ]
+        firewall : {
+			// Module Relocation when an invalid access is detected, instead of each rule declaring one.
+			"invalidAuthenticationEvent"    : "mod1:secure.index",
+			// Default Authentication Action: override or redirect when a user has not logged in
+			"defaultAuthenticationAction"   : "override",
+			// Module override event when an invalid access is detected, instead of each rule declaring one.
+			"invalidAuthorizationEvent"     : "mod1:secure.auth",
+			// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
+			"defaultAuthorizationAction"    : "override",
+			// Custom validator for the module.
+			"validator"                     : "JwtAuthValidator@cbsecurity"
+			// You can define your security rules here or externally via a source
+			"rules"                         : [
+				{
+					"secureList"    : "mod1:home"
+				},
+				{
+					"secureList"    : "mod1/modOverride",
+					"match"         : "url",
+					"action"        : "override"
+				}
+			]
+		}
     }
 
 };
@@ -477,10 +521,11 @@ private function permissionValidator( permissions, controller, rule ){
 
 ## Interceptions
 
+### Authentication / Authorization
 When invalid access or authorizations occur, the interceptor will announce the following events:
 
-- `cbSecurity_onInvalidAuthentication`
-- `cbSecurity_onInvalidAuthorization`
+- `cbSecurity_onInvalidAuthentication` - When an invalid authentication is detected
+- `cbSecurity_onInvalidAuthorization` - When an invalid authorization is detected
 
 You will receive the following data in the `interceptData` struct:
 
@@ -491,9 +536,20 @@ You will receive the following data in the `interceptData` struct:
 - `annotationType` : The annotation type intercepted, `handler` or `action` or empty if rule driven
 - `processActions` : A boolean indicator that defaults to true.  If you change this to false, then the interceptor won't fire the invalid actions. Usually this means, you manually will do them.
 
+### Firewall Blocks
+
+- `cbSecurity_onFirewallBlock` - When the firewall blocks an incoming request with a 403
+
+You will receive the following data in the `interceptData` struct:
+
+- `type` : The type of block: `hostheader` or `ipvalidation`
+- `config` : The configuration structure of the rule
+- `incomingIP` : The incoming ip if the type is `ipValiation`
+- `incomingHost` : The incoming host if the type is `hostHeader`
+
 ## Security Visualizer
 
-This module also ships with a security visualizer that will document all your security rules and settings in a nice panel. In order to activate it you must add the `enableSecurityVisualizer` setting to your config and mark it as `true`. Once enabled you can navigate to: `/cbsecurity,` and you will be presented with the visualizer.
+This module also ships with a security visualizer that will document all your security rules and settings in a nice panel. In order to activate it you must add the `visualizer` setting to your config and mark it as `enabled`. Once enabled you can navigate to: `/cbsecurity,` and you will be presented with the visualizer.
 
 > **Important** The visualizer is disabled by default, and if it detects an environment of production, it will disable itself.
 
@@ -517,6 +573,8 @@ docker run -d \
 ```
 
 Finally, run the tests by visiting your server's `/tests/runner.cfm` file.
+
+
 ********************************************************************************
 Copyright Since 2005 ColdBox Framework by Luis Majano and Ortus Solutions, Corp
 www.coldbox.org | www.luismajano.com | www.ortussolutions.com
