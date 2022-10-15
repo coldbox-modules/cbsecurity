@@ -247,7 +247,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		arguments.event.secureView = variables.cbSecurity.secureViewProxy;
 
 		// Execute Rule Security
-		if ( variables.properties.firewall.rules.len() ) {
+		if ( variables.properties.firewall.rules.inline.len() ) {
 			processRules(
 				arguments.event,
 				arguments.interceptData,
