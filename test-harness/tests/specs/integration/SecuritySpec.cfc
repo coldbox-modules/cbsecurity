@@ -43,7 +43,11 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 			describe( "Rule based Security", function(){
 				it( "should load the rules from inline declaration", function(){
-					var rules = getWireBox().getInstance( "interceptor-cbsecurity@global" ).getProperty( "rules" );
+					var rules = getWireBox()
+						.getInstance( "interceptor-cbsecurity@global" )
+						.getProperty( "firewall" )
+						.rules
+						.inline;
 					expect( rules ).notToBeEmpty();
 				} );
 
@@ -61,13 +65,13 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					when( "when logged in and using a put or post", function(){
 						then( "it should do allow it to be executed", function(){
 							cbauth.authenticate( "test", "test" );
-							var event = put( "public" );
-							expect( "public" ).toBe( event.getRenderedContent() );
+							var event = put( "putpost" );
+							expect( "putpost" ).toBe( event.getRenderedContent() );
 						} );
 					} );
 					when( "when logged in and using a GET", function(){
 						then( "it should NOT allow it to be executed", function(){
-							var event = get( "public" );
+							var event = get( "putpost" );
 							expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
 						} );
 					} );
@@ -128,14 +132,16 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					given( "a module unload call", function(){
 						then( "it should unload module rules if the module is unloaded", function(){
 							var security = getWireBox().getInstance( "interceptor-cbsecurity@global" );
-							var oldRules = security.getProperty( "rules" );
+							var oldRules = security.getProperty( "firewall" ).rules.inline;
 
 							// Issue unload
 							getController().getModuleService().unload( "mod1" );
 
 							// Verify
 							expect( security.getSecurityModules() ).notToHaveKey( "mod1" );
-							expect( security.getProperty( "rules" ).len() ).toBeLT( oldRules.len() );
+							expect( security.getProperty( "firewall" ).rules.inline.len() ).toBeLT(
+								oldRules.len()
+							);
 						} );
 					} );
 				} );

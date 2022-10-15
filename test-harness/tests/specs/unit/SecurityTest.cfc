@@ -1,7 +1,4 @@
-component
-	extends    ="coldbox.system.testing.BaseInterceptorTest"
-	interceptor="cbsecurity.interceptors.Security"
-{
+component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbsecurity.interceptors.Security" {
 
 	function beforeAll(){
 		super.beforeAll();
@@ -30,123 +27,102 @@ component
 					.$args( "modules" )
 					.$results( [] );
 
+				mockSecurityService = getMockBox().prepareMock( new cbsecurity.models.CBSecurity() );
+
 				security = interceptor;
-				security.setInvalidEventHandler( "" );
 				settings = {
-					// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
-					"invalidAuthenticationEvent"  : "",
-					// Default Auhtentication Action: override or redirect when a user has not logged in
-					"defaultAuthenticationAction" : "redirect",
-					// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
-					"invalidAuthorizationEvent"   : "",
-					// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
-					"defaultAuthorizationAction"  : "redirect",
-					"rules"                       : [],
-					// Where are the rules, valid options: json,xml,db,model
-					"rulesSource"                 : "",
-					// The location of the rules file, applies to json|xml ruleSource
-					"rulesFile"                   : "",
-					// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
-					"validator"                   : "tests.resources.security",
-					// If source is model, the wirebox Id to use for retrieving the rules
-					"rulesModel"                  : "",
-					// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
-					"rulesModelMethod"            : "getSecurityRules",
-					// If source is db then the datasource name to use
-					"rulesDSN"                    : "",
-					// If source is db then the table to get the rules from
-					"rulesTable"                  : "",
-					// If source is db then the ordering of the select
-					"rulesOrderBy"                : "",
-					// If source is db then you can have your custom select SQL
-					"rulesSql"                    : "",
-					// Use regular expression matching on the rules
-					"useRegex"                    : true,
-					// Force SSL for all relocations
-					"useSSL"                      : false,
-					// Auto load the global security firewall
-					"autoLoadFirewall"            : true,
-					// Activate handler/action based annotation security
-					"handlerAnnotationSecurity"   : true
+					firewall : {
+						// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
+						"invalidAuthenticationEvent"  : "",
+						// Default Auhtentication Action: override or redirect when a user has not logged in
+						"defaultAuthenticationAction" : "redirect",
+						// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
+						"invalidAuthorizationEvent"   : "",
+						// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
+						"defaultAuthorizationAction"  : "redirect",
+						// The rule validator model, this must have a method like this `userValidator( rule, controller ):boolean`
+						"validator"                   : "tests.resources.security",
+						// Auto load the global security firewall
+						"autoLoadFirewall"            : true,
+						// Activate handler/action based annotation security
+						"handlerAnnotationSecurity"   : true,
+						"rules"                       : {
+							// Use regular expression matching on the rules
+							"useRegex" : true,
+							// Force SSL for all relocations
+							"useSSL"   : false,
+							"inline"   : [],
+							"provider" : { source : "", properties : {} },
+							"defaults" : {}
+						}
+					}
 				};
-				// Set Rule Loader
-				security.setRulesLoader( createRuleLoader() );
+
+				// Prepare for testing
+				security
+					.setCBSecurity( mockSecurityService )
+					.setInvalidEventHandler( "" )
+					.setRulesLoader( createRuleLoader() )
+					.setProperties( settings );
 			} );
 
-			it( "can configure with invalid settings", function(){
-				security.setProperties( settings );
+			it( "can configure with default settings", function(){
+				security.configure();
+				expect( security.getProperty( "firewall" ).rules.inline ).toBeEmpty();
+				expect( security.getProperty( "firewall" ).validator ).toBe( "tests.resources.security" );
+			} );
 
-				settings.rulessource = "json";
+			it( "can configure with invalid settings and throw exceptions", function(){
+				settings.firewall.rules.provider.source = "json";
 				expect( function(){
 					security.configure();
-				} ).toThrow( "Security.RulesFileNotDefined" );
+				} ).toThrow( "Security.MissingSourceProperty" );
 
-				settings.rulessource = "hello";
-				security.setProperties( settings );
+				settings.firewall.rules.provider.source = "hello";
 				expect( function(){
 					security.configure();
 				} ).toThrow( "Security.InvalidRuleSource" );
 
-				settings.rulessource = "db";
+				settings.firewall.rules.provider.source = "db";
 				expect( function(){
 					security.configure();
-				} ).toThrow( "Security.RuleDSNNotDefined" );
+				} ).toThrow( "Security.MissingSourceProperty" );
 
-				settings.rulesDSN = "test";
+				settings.firewall.rules.provider.source = "model";
 				expect( function(){
 					security.configure();
-				} ).toThrow( "Security.RulesTableNotDefined" );
-
-				settings.rulesSource = "model";
-				expect( function(){
-					security.configure();
-				} ).toThrow( "Security.RulesModelNotDefined" );
-			} );
-
-			it( "can configure with default settings", function(){
-				security.setProperties( settings );
-				security
-					.$( "getInstance" )
-					.$args( settings.validator )
-					.$results( wirebox.getInstance( settings.validator ) );
-				security.configure();
-				expect( security.getProperty( "rules", [] ) ).toBeEmpty();
+				} ).toThrow( "Security.MissingSourceProperty" );
 			} );
 
 			it( "can load a valid validator", function(){
-				settings.rulesSource = "json";
-				settings.rulesFile   = expandPath( "/tests/resources/security.json.cfm" );
-				settings.validator   = "tests.resources.security";
+				settings.firewall.rules.provider.source          = "json";
+				settings.firewall.rules.provider.properties.file = expandPath( "/tests/resources/security.json.cfm" );
+				settings.firewall.validator                      = "tests.resources.security";
 				security.getRulesLoader().$( "loadRules", [] );
 
 				security
-					.setProperties( settings )
 					.$( "getInstance" )
-					.$args( settings.validator )
-					.$results( wirebox.getInstance( settings.validator ) );
+					.$args( settings.firewall.validator )
+					.$results( wirebox.getInstance( settings.firewall.validator ) );
 
 				security.afterAspectsLoad();
 
 				expect(
 					security.getValidator(
-						createMock( "coldbox.system.web.context.RequestContext" ).$(
-							"getCurrentModule",
-							""
-						)
+						createMock( "coldbox.system.web.context.RequestContext" ).$( "getCurrentModule", "" )
 					)
 				).toBeComponent();
 			} );
 
 			it( "can detect an invalid validator", function(){
-				settings.rulesSource = "json";
-				settings.rulesFile   = expandPath( "/tests/resources/security.json.cfm" );
-				settings.validator   = "invalid.path";
+				settings.firewall.rules.provider.source          = "json";
+				settings.firewall.rules.provider.properties.file = expandPath( "/tests/resources/security.json.cfm" );
+				settings.firewall.validator                      = "tests.invalidty";
 				security.getRulesLoader().$( "loadRules", [] );
 
 				security
-					.setProperties( settings )
 					.$( "getInstance" )
-					.$args( settings.validator )
+					.$args( settings.firewall.validator )
 					.$results( createStub() );
 
 				expect( function(){
@@ -158,8 +134,8 @@ component
 				security.setProperties( settings );
 				security
 					.$( "getInstance" )
-					.$args( settings.validator )
-					.$results( wirebox.getInstance( settings.validator ) );
+					.$args( settings.firewall.validator )
+					.$results( wirebox.getInstance( settings.firewall.validator ) );
 				security.configure();
 				expect( security.$getProperty( "enableInvalidHandlerCheck" ) ).toBeFalse();
 			} );
@@ -170,86 +146,82 @@ component
 					{ "version" : "5.0.0" },
 					false
 				);
-
-				security.setProperties( settings );
 				security
 					.$( "getInstance" )
-					.$args( settings.validator )
-					.$results( wirebox.getInstance( settings.validator ) );
+					.$args( settings.firewall.validator )
+					.$results( wirebox.getInstance( settings.firewall.validator ) );
 				security.configure();
 				expect( security.$getProperty( "enableInvalidHandlerCheck" ) ).toBeTrue();
 			} );
 
 			describe( "It can load many types of rules", function(){
 				beforeEach( function( currentSpec ){
-					settings.validator = "tests.resources.security";
+					settings.firewall.validator = "tests.resources.security";
 					security
 						.$( "getInstance" )
-						.$args( settings.validator )
-						.$results( wirebox.getInstance( settings.validator ) );
+						.$args( settings.firewall.validator )
+						.$results( wirebox.getInstance( settings.firewall.validator ) );
 				} );
 
 				it( "can load JSON Rules", function(){
-					settings.rulesSource = "json";
-					settings.rulesFile   = expandPath( "/tests/resources/security.json.cfm" );
-					mockController.$( "locateFilePath", settings.rulesFile );
-					security.setProperties( settings );
+					settings.firewall.rules.provider.source          = "json";
+					settings.firewall.rules.provider.properties.file = expandPath( "/tests/resources/security.json.cfm" );
+					mockController.$( "locateFilePath", settings.firewall.rules.provider.properties.file );
 
 					security.configure();
 
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 2 );
+					expect( security.getProperty( "firewall" ).rules.inline ).toHaveLength( 2 );
 				} );
 
 				it( "can load XML Rules", function(){
-					settings.rulesSource = "xml";
-					settings.rulesFile   = expandPath( "/tests/resources/security.xml.cfm" );
-					mockController.$( "locateFilePath", settings.rulesFile );
-					security.setProperties( settings );
+					settings.firewall.rules.provider.source          = "xml";
+					settings.firewall.rules.provider.properties.file = expandPath( "/tests/resources/security.xml.cfm" );
+					mockController.$( "locateFilePath", settings.firewall.rules.provider.properties.file );
 
 					security.configure();
 
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 3 );
+					expect( security.getProperty( "firewall" ).rules.inline ).toHaveLength( 3 );
 				} );
 
 				it( "can load model Rules", function(){
-					settings.rulesSource = "model";
-					settings.rulesModel  = "tests.resources.security";
-					security.setProperties( settings );
+					settings.firewall.rules.provider.source           = "model";
+					settings.firewall.rules.provider.properties.model = "tests.resources.security";
 
 					security.configure();
 
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
+					expect( security.getProperty( "firewall" ).rules.inline ).toHaveLength( 1 );
 				} );
 			} );
 
-			describe( "module setting load", function(){
+			describe( "module settings rule loading", function(){
 				beforeEach( function( currentSpec ){
-					settings.rules     = [];
-					settings.validator = "tests.resources.security";
-					security.$property( propertyName = "securityModules", mock = {} );
-					security.$property(
-						propertyName = "log",
-						mock         = {
-							info : function(){
-							}
-						}
-					);
+					settings.firewall.rules.inline = [];
 					security
+						.$property( propertyName = "securityModules", mock = {} )
+						.$property(
+							propertyName = "log",
+							mock         = {
+								info : function(){
+								}
+							}
+						)
 						.$( "getInstance" )
-						.$args( settings.validator )
-						.$results( wirebox.getInstance( settings.validator ) );
-					security.setProperties( settings );
+						.$args( settings.firewall.validator )
+						.$results( wirebox.getInstance( settings.firewall.validator ) );
 				} );
 
 				it( "can load JSON Rules based on module settings", function(){
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 0 );
+					expect( security.getProperty( "firewall" ).rules.inline ).toHaveLength( 0 );
 					var source = expandPath( "/tests/resources/security.json.cfm" );
 					mockController.$( "locateFilePath", source );
 
 					// initiate cbSecurity's module registration rule parsing
-					security.registerModule( "myTestModule", { rules : source } );
+					security.registerModule(
+						"myTestModule",
+						{ firewall : { rules : { provider : { source : source } } } }
+					);
 
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 2 );
+					expect( security.getProperty( "firewall" ).rules.inline ).toHaveLength( 2 );
 				} );
 
 				it( "can load XML Rules based on module settings", function(){
@@ -257,22 +229,33 @@ component
 					mockController.$( "locateFilePath", source );
 
 					// initiate cbSecurity's module registration rule parsing
-					security.registerModule( "myTestModule", { rules : source } );
+					security.registerModule(
+						"myTestModule",
+						{ firewall : { rules : { provider : { source : source } } } }
+					);
 
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 3 );
+					expect( security.getProperty( "firewall" ).rules.inline ).toHaveLength( 3 );
 				} );
 
 				it( "can load model Rules based on module settings", function(){
 					var moduleSettings = {
-						rules            : "model",
-						rulesModel       : "tests.resources.security",
-						rulesModelMethod : "getSecurityRules"
+						firewall : {
+							rules : {
+								provider : {
+									source     : "model",
+									properties : {
+										model  : "tests.resources.security",
+										method : "getSecurityRules"
+									}
+								}
+							}
+						}
 					};
 
 					// initiate cbSecurity's module registration rule parsing
 					security.registerModule( "myTestModule", moduleSettings );
 
-					expect( security.getProperty( "rules", [] ) ).toHaveLength( 1 );
+					expect( security.getProperty( "firewall" ).rules.inline ).toHaveLength( 1 );
 				} );
 			} );
 		} );

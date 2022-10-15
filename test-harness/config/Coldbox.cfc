@@ -100,10 +100,10 @@
 							"action"      : "redirect",
 							"httpMethods" : "*"
 						},
-						// Match only public put/post
+						// Match only put/post
 						{
 							"whitelist"   : "",
-							"securelist"  : "public",
+							"securelist"  : "putpost",
 							"match"       : "event",
 							"roles"       : "",
 							"permissions" : "",
@@ -111,7 +111,6 @@
 							"redirect"    : "main.index",
 							"httpMethods" : "put,post"
 						},
-						// Match only public put/post
 						{
 							"whitelist"   : "",
 							"securelist"  : "cfide",
