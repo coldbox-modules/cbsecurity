@@ -159,6 +159,8 @@ component accessors="true" singleton threadsafe {
 			}
 		}
 		// end of switch statement
+
+		return this;
 	}
 
 	/**
