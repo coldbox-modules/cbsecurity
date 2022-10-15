@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* DBTokenStorage now rotates using async scheduler and not direct usage anymore.
 * Ability to set the `cbcsrf` module settings into the `cbsecurity` settings as `csrf`.
 * We now default the user service class and the auth token rotation events according to used authentication service (cbauth, etc), no need to duplicate work.
 * New rule based IP security. You can add a `allowedIPs` key into any rule and add which IP Addresses are allowed into the match. By default, it matches all IPs.

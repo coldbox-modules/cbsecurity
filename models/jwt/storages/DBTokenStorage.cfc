@@ -23,11 +23,12 @@
 component accessors="true" singleton threadsafe {
 
 	// DI
-	property name="wirebox" inject="wirebox";
-	property name="cachebox" inject="cachebox";
-	property name="settings" inject="coldbox:moduleSettings:cbSecurity";
+	property name="wirebox"    inject="wirebox";
+	property name="cachebox"   inject="cachebox";
+	property name="settings"   inject="coldbox:moduleSettings:cbSecurity";
 	property name="jwtService" inject="JwtService@cbSecurity";
-	property name="log" inject="logbox:logger:{this}";
+	property name="log"        inject="logbox:logger:{this}";
+	property name="scheduler"  inject="executor:coldbox-tasks";
 
 	/**
 	 * Storage properties
@@ -65,16 +66,15 @@ component accessors="true" singleton threadsafe {
 	 * @properties The storage properties
 	 *
 	 * @return JWTStorage
+	 *
+	 * @throws PropertyNotDefined - When no table property is defined
 	 */
 	any function configure( required properties ){
 		variables.properties = arguments.properties;
 
 		// Setup Properties
 		if ( isNull( variables.properties.table ) ) {
-			throw(
-				message = "No table property defined for DBTokenStorage",
-				type    = "PropertyNotDefined"
-			);
+			throw( message = "No table property defined for DBTokenStorage", type = "PropertyNotDefined" );
 		}
 		if ( isNull( variables.properties.autoCreate ) ) {
 			variables.properties.autoCreate = true;
@@ -101,24 +101,16 @@ component accessors="true" singleton threadsafe {
 		// DB Rotation Time
 		variables.lastDBRotation = "";
 
+		// Create Rotation Scheduler
+		variables.scheduler
+			.newSchedule( this, "doRotation" )
+			.delay( variables.properties.rotationFrequency ) // Don't start immediately, give it a breathing room
+			.spacedDelay( variables.properties.rotationFrequency ) // Runs again, after this spaced delay once each reap finalizes
+			.inMinutes()
+			.start();
+		variables.log.info( "Rotation scheduled task started for DBTokenStorage" );
+
 		return this;
-	}
-
-	/**
-	 * Rotation checks
-	 */
-	function rotationCheck(){
-		// Verify if in rotation frequency
-		if (
-			isDate( variables.lastDBRotation )
-			AND
-			dateDiff( "n", variables.lastDBRotation, now() ) LTE variables.properties.rotationFrequency
-		) {
-			return;
-		}
-
-		// Rotations
-		this.doRotation();
 	}
 
 	/**
@@ -149,9 +141,6 @@ component accessors="true" singleton threadsafe {
 			}
 		);
 
-		// Store last profile time
-		variables.lastDBRotation = now();
-
 		if ( variables.log.canInfo() ) {
 			variables.log.info( "DBTokenStorage finalized rotation", qResults );
 		}
@@ -162,10 +151,10 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Set a token in the storage
 	 *
-	 * @key The cache key
-	 * @token The token to store
+	 * @key        The cache key
+	 * @token      The token to store
 	 * @expiration The token expiration
-	 * @payload The payload
+	 * @payload    The payload
 	 *
 	 * @return JWTStorage
 	 */
@@ -206,9 +195,6 @@ component accessors="true" singleton threadsafe {
 			{ datasource : variables.properties.dsn }
 		);
 
-		// Run rotation checks
-		rotationCheck();
-
 		return this;
 	}
 
@@ -218,9 +204,6 @@ component accessors="true" singleton threadsafe {
 	 * @key The cache key
 	 */
 	boolean function exists( required key ){
-		// Run rotation checks first!
-		rotationCheck();
-
 		// Verify now
 		var qResults = queryExecute(
 			"SELECT cacheKey
@@ -241,15 +224,12 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Retrieve the token via the cache key, if the key doesn't exist a TokenNotFoundException will be thrown
 	 *
-	 * @key The cache key
+	 * @key          The cache key
 	 * @defaultValue If not found, return a default value
 	 *
 	 * @throws TokenNotFoundException
 	 */
 	struct function get( required key, struct defaultValue ){
-		// Run rotation checks first
-		rotationCheck();
-
 		// select entry
 		var q = queryExecute(
 			"SELECT cacheKey, token, expiration, issued
@@ -284,9 +264,6 @@ component accessors="true" singleton threadsafe {
 	 * @return JWTStorage
 	 */
 	any function clear( required any key ){
-		// Run rotation checks
-		rotationCheck();
-
 		queryExecute(
 			"DELETE
 			   FROM #getTable()#
@@ -359,12 +336,7 @@ component accessors="true" singleton threadsafe {
 		var settings = getApplicationMetadata();
 
 		// check orm settings first
-		if (
-			structKeyExists( settings, "ormsettings" ) AND structKeyExists(
-				settings.ormsettings,
-				"datasource"
-			)
-		) {
+		if ( structKeyExists( settings, "ormsettings" ) AND structKeyExists( settings.ormsettings, "datasource" ) ) {
 			return settings.ormsettings.datasource;
 		}
 
@@ -373,10 +345,7 @@ component accessors="true" singleton threadsafe {
 			return settings.datasource;
 		}
 
-		throw(
-			message = "No default datasource defined and no dsn property found",
-			type    = "PropertyNotDefined"
-		);
+		throw( message = "No default datasource defined and no dsn property found", type = "PropertyNotDefined" );
 	}
 
 	/**

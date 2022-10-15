@@ -2,7 +2,8 @@
  * Copyright since 2016 by Ortus Solutions, Corp
  * www.ortussolutions.com
  * ---
- * This is a JWT authentication validator
+ * This is a JWT authentication validator.  It is in charge of validating rules and annotations
+ * against an incoming JWT token.
  */
 component singleton threadsafe {
 

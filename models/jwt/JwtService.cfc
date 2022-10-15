@@ -115,7 +115,7 @@ component accessors="true" singleton threadsafe {
 
 		// Check if issuer is set, if not, default to the home page URI
 		if ( !len( variables.settings.jwt.issuer ) ) {
-			variables.settings.jwt.issuer = requestService.getContext().buildLink( "" );
+			variables.settings.jwt.issuer = variables.requestService.getContext().buildLink( "" );
 		}
 	}
 
@@ -148,7 +148,9 @@ component accessors="true" singleton threadsafe {
 		var oUser = variables.cbSecurity.getAuthService().authenticate( arguments.username, arguments.password );
 
 		// Store User in ColdBox data bus
-		variables.requestService.getContext().setPrivateValue( variables.settings.prcUserVariable, oUser );
+		variables.requestService
+			.getContext()
+			.setPrivateValue( variables.settings.authentication.prcUserVariable, oUser );
 
 		// Create the token(s) and return it
 		return fromUser(
@@ -254,7 +256,9 @@ component accessors="true" singleton threadsafe {
 		variables.cbSecurity.getAuthService().login( oUser );
 
 		// Store in ColdBox data bus
-		variables.requestService.getContext().setPrivateValue( variables.settings.prcUserVariable, oUser );
+		variables.requestService
+			.getContext()
+			.setPrivateValue( variables.settings.authentication.prcUserVariable, oUser );
 
 		// Announce the valid authentication
 		variables.interceptorService.processState(
