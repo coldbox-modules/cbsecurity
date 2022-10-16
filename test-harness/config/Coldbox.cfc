@@ -74,7 +74,7 @@
 
 				authentication : {
 					// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
-					"authenticationService"      : "authenticationService@cbauth",
+					"provider"      : "authenticationService@cbauth",
 					// WireBox ID of the user service to use
 					"userService"                : "UserService"
 				},

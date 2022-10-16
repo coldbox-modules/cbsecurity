@@ -21,17 +21,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	property name="validator";
 
 	/**
-	 * A map of registered modules that leverage cbSecurity rules
-	 */
-	property name="securityModules" type="struct";
-
-	/**
 	 * Configure the security firewall
 	 */
 	function configure(){
-		// init the security modules dictionary
-		variables.securityModules = {};
-
 		// Shorthand for rules
 		if ( isArray( variables.properties.firewall.rules ) && arrayLen( variables.properties.firewall.rules ) ) {
 			variables.properties.firewall.rules = variables.cbSecurity
@@ -90,7 +82,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				return (
 					arguments.config.settings.keyExists( "cbSecurity" )
 					&&
-					!structKeyExists( variables.securityModules, arguments.module )
+					!structKeyExists( variables.properties.securityModules, arguments.module )
 				);
 			} )
 			// Register module settings
@@ -142,7 +134,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		variables.rulesLoader.rulesSourceChecks( arguments.settings.firewall.rules.provider );
 
 		// Store configuration in this firewall
-		variables.securityModules[ arguments.module ] = arguments.settings;
+		variables.properties.securityModules[ arguments.module ] = arguments.settings;
 
 		// Process Module Rules
 		// Incorporate global defaults as well.
@@ -201,7 +193,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		if (
 			structKeyExists( arguments.interceptData.moduleConfig.settings, "cbSecurity" )
 			&&
-			!structKeyExists( variables.securityModules, arguments.interceptData.moduleName )
+			!structKeyExists( variables.properties.securityModules, arguments.interceptData.moduleName )
 		) {
 			registerModule(
 				arguments.interceptData.moduleName,
@@ -221,9 +213,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 */
 	function postModuleUnload( event, interceptData, rc, prc, buffer ){
 		// Is the module registered?
-		if ( structKeyExists( variables.securityModules, arguments.interceptData.moduleName ) ) {
+		if ( structKeyExists( variables.properties.securityModules, arguments.interceptData.moduleName ) ) {
 			// Delete registration
-			structDelete( variables.securityModules, arguments.interceptData.moduleName );
+			structDelete( variables.properties.securityModules, arguments.interceptData.moduleName );
 			// Delete rules
 			variables.properties.firewall.rules.inline = variables.properties.firewall.rules.inline.filter( function( item ){
 				return item.module != interceptData.moduleName;
@@ -547,20 +539,20 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			currentModule.len()
 			&&
 			// Does the module have cbSecurity overrides?
-			structKeyExists( variables.securityModules, currentModule )
+			structKeyExists( variables.properties.securityModules, currentModule )
 			&&
 			// Does the setting have value?
-			variables.securityModules[ currentModule ].firewall[ "validator" ].len()
+			variables.properties.securityModules[ currentModule ].firewall[ "validator" ].len()
 		) {
 			// Debug
 			if ( log.canDebug() ) {
 				log.debug(
 					"validator setting overriden by #currentModule# module",
-					variables.securityModules[ currentModule ].firewall[ "validator" ]
+					variables.properties.securityModules[ currentModule ].firewall[ "validator" ]
 				);
 			}
 			return variables.wirebox.getInstance(
-				variables.securityModules[ currentModule ].firewall[ "validator" ]
+				variables.properties.securityModules[ currentModule ].firewall[ "validator" ]
 			);
 		}
 
@@ -583,19 +575,19 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			currentModule.len()
 			&&
 			// Does the module have cbSecurity overrides?
-			structKeyExists( variables.securityModules, currentModule )
+			structKeyExists( variables.properties.securityModules, currentModule )
 			&&
 			// Does the setting have value?
-			variables.securityModules[ currentModule ].firewall[ arguments.property ].len()
+			variables.properties.securityModules[ currentModule ].firewall[ arguments.property ].len()
 		) {
 			// Debug
 			if ( log.canDebug() ) {
 				log.debug(
 					"#arguments.property# setting overriden by #currentModule# module",
-					variables.securityModules[ currentModule ].firewall[ arguments.property ]
+					variables.properties.securityModules[ currentModule ].firewall[ arguments.property ]
 				);
 			}
-			return variables.securityModules[ currentModule ].firewall[ arguments.property ];
+			return variables.properties.securityModules[ currentModule ].firewall[ arguments.property ];
 		}
 
 		// Debug

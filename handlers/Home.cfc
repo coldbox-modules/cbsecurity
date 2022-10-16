@@ -5,6 +5,7 @@ component extends="coldbox.system.RestHandler" {
 
 	// DI
 	property name="settings"   inject="coldbox:moduleSettings:cbsecurity";
+	property name="cbSecurity" inject="cbSecurity@cbSecurity";
 	property name="jwtService" inject="jwtService@cbSecurity";
 
 	/**

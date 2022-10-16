@@ -103,7 +103,8 @@ component threadsafe singleton accessors="true" {
 			}
 		},
 		visualizer      : { "enabled" : false },
-		securityHeaders : { "enabled" : true }
+		securityHeaders : { "enabled" : true },
+		securityModules : {}
 	};
 
 	/**
