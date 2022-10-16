@@ -68,13 +68,13 @@
 	<li class="nav-item" role="presentation">
 		<a
 			class="nav-link"
-			id="JWT-tab"
+			id="jwt-tab"
 			data-bs-toggle="tab"
-			data-bs-target="##JWT-pane"
-			aria-controls="JWT-pane"
+			data-bs-target="##jwt-pane"
+			aria-controls="jwt-pane"
 			aria-selected="true"
 			role="tab"
-			href="##JWT"
+			href="##jwt"
 		>
 			JWT
 		</a>
