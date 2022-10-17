@@ -2,7 +2,7 @@
 	<div class="m-4">
 
 		<h2>CSRF Settings</h2>
-		<p>These settings are used by the <code>cbcsrf</code> module.</p>
+		<p>These settings are used by the <code>cbcsrf</code> module, you can find much more information about it <a href="https://github.com/coldbox-modules/cbcsrf" target="_blank">here</a>.</p>
 
 		<ul class="list-group mt-3">
 			<li class="list-group-item d-flex justify-content-between align-items-center">

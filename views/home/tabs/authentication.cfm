@@ -5,7 +5,14 @@
 
 	<ul class="list-group mt-3">
 		<li class="list-group-item d-flex justify-content-between align-items-center">
-			<span class="fw-semibold w-25 text-secondary">Authentication Provider</span>
+			<span class="fw-semibold w-25 text-secondary">
+				Authentication Provider
+				<cfif prc.settings.authentication.provider.findNoCase( "@cbauth" )>
+					<a href="https://github.com/coldbox-modules/cbauth" target="_blank" data-bs-toggle="tooltip" data-bs-title="More about cbauth">
+						<i class="bi bi-info-circle-fill"></i>
+					</a>
+				</cfif>
+			</span>
 			<span class="flex-grow-1">
 				<code>#prc.settings.authentication.provider#</code>
 			</span>

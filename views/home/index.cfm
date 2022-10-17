@@ -136,6 +136,4 @@
 	</div>
 </div>
 
-<cfdump var="#prc.settings#">
-
 </cfoutput>

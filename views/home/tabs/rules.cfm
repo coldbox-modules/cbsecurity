@@ -1,99 +1,126 @@
 <cfoutput>
-<div class="form-group">
-	<input type="text" name="filter" id="filter" placeholder="Filter Rules" autofocus class="form-control">
+<div class="m-4"
+	x-data="{
+		rules : #forAttribute( prc.settings.firewall.rules.inline )#,
+		search : '',
+		get filteredRules(){
+			if( this.search === '' ){
+				return this.rules;
+			}
+			return this.rules.filter( (item) => {
+				this.search = this.search.toLowerCase();
+				return item.secureList.toLowerCase().includes( this.search ) ||
+				item.whiteList.toLowerCase().includes( this.search ) ||
+				item.module.toLowerCase().includes( this.search ) ||
+				item.redirect.toLowerCase().includes( this.search ) ||
+				item.overrideEvent.toLowerCase().includes( this.search );
+			} )
+		},
+		clearSearch(){
+			this.search = '';
+		}
+	}"
+>
+
+	<div class="input-group mb-3">
+		<input
+			type="text"
+			name="filter"
+			id="filter"
+			x-model="search"
+			placeholder="Filter Rules"
+			autofocus
+			class="form-control"
+		>
+		<button
+			@click="clearSearch"
+			class="btn btn-outline-secondary"
+			type="button"
+			:disabled="!search.length"
+			id="button-addon2">Clear</button>
+	</div>
+
+	<div x-show="filteredRules.length == 0" class="alert alert-warning">
+		No rules matched
+	</div>
+
+	<table class="table table-striped table-condensed table-hover" id="table-rules">
+		<thead class="thead-dark">
+			<tr>
+				<th width="50">order</th>
+				<th width="50">match</th>
+				<th>secure</th>
+				<th>whitelist</th>
+				<th>roles</th>
+				<th>permissions</th>
+				<th>redirect</th>
+				<th>override</th>
+				<th>ssl</th>
+				<th>action</th>
+				<th>module</th>
+				<th>http methods</th>
+				<th>allowed ips</th>
+			</tr>
+		</thead>
+
+		<tbody>
+		<template x-for="(rule, index) in filteredRules">
+			<tr class="rules">
+				<td x-text="index">
+				</td>
+				<td class="text-center">
+					<span
+						class="badge"
+						:class="rule.match == 'event' ? 'text-bg-primary' : 'text-bg-info'"
+						x-text="rule.match"
+					>
+					</span>
+				</td>
+				<td>
+					<code x-text="rule.secureList"></code>
+				</td>
+				<td>
+					<code x-text="rule.whiteList"></code>
+				</td>
+				<td>
+					<span x-text="rule.roles"></span>
+				</td>
+				<td>
+					<span x-text="rule.permissions"></span>
+				</td>
+				<td>
+					<code x-text="rule.redirect"></code>
+				</td>
+				<td>
+					<code x-text="rule.overrideEvent"></code>
+				</td>
+				<td>
+					<span
+						class="badge"
+						:class="rule.useSSL ? 'text-bg-danger' : 'text-bg-light'"
+						x-text="rule.useSSL"
+						></span>
+				</td>
+				<td>
+					<span
+						class="badge"
+						:class="rule.action == 'override' ? 'text-bg-primary' : 'text-bg-info'"
+						x-text="rule.action"
+						x-show="rule.action.len"
+						></span>
+				</td>
+				<td>
+					<code x-text="rule.module"></code>
+				</td>
+				<td>
+					<code x-text="rule.httpMethods"></code>
+				</td>
+				<td>
+					<code x-text="rule.allowedIps"></code>
+				</td>
+			</tr>
+		</template>
+		</tbody>
+	</table>
 </div>
-
-<table class="table table-striped table-condensed table-hover" id="table-rules">
-	<thead class="thead-dark">
-		<tr>
-			<th width="50">order</th>
-			<th width="50">match</th>
-			<th>securelist</th>
-			<th>whitelist</th>
-			<th>roles</th>
-			<th>permissions</th>
-			<th>redirect</th>
-			<th>override</th>
-			<th>useSSL</th>
-			<th>action</th>
-			<th>module</th>
-			<th>http methods</th>
-			<th>allowed ips</th>
-			<th width="150" class="text-center">actions</th>
-		</tr>
-	</thead>
-
-	<tbody>
-	<cfset index = 1>
-	<cfloop array="#prc.settings.firewall.rules.inline#" index="thisRule">
-		<cfset thisRule.id = hash( thisRule.toString() )>
-		<tr class="rules">
-			<td>
-				#index++#
-			</td>
-			<td class="text-center">
-				<span class="badge #( thisRule.match == "event" ? "badge-primary" : "badge-warning" )#">
-				#thisRule.match#
-				</span>
-			</td>
-			<td>
-				#thisRule.securelist#
-			</td>
-			<td>
-				#thisRule.whitelist#
-			</td>
-			<td>
-				#thisRule.roles#
-			</td>
-			<td>
-				#thisRule.permissions#
-			</td>
-			<td>
-				#thisRule.redirect#
-			</td>
-			<td>
-				#thisRule.overrideEvent#
-			</td>
-			<td>
-				<span class="badge #(thisRule.useSSL ? "badge-success" : "badge-secondary" )#">
-					#thisRule.useSSL#
-				</span>
-			</td>
-			<td>
-				<cfif len( thisRule.action )>
-					<cfif thisRule.action == "override">
-						<span class="badge badge-primary">override</span>
-					<cfelse>
-						<span class="badge badge-danger">redirect</span>
-					</cfif>
-				<cfelse>
-					<span class="badge badge-secondary">default</span>
-				</cfif>
-			</td>
-			<td>
-				#thisRule.module#
-			</td>
-			<td>
-				#thisRule.httpMethods#
-			</td>
-			<td>
-				#thisRule.allowedIps#
-			</td>
-			<td class="text-center">
-				<button class="btn btn-danger btn-sm" onclick="$( '##debug-#thisRule.id#' ).toggle()">Dump</button>
-			</td>
-		</tr>
-
-		<!-- Debug Span -->
-		<tr class="table-danger" id="debug-#thisRule.id#" style="display:none">
-			<td colspan="7">
-				<button class="float-right btn btn-danger btn-sm" onclick="$( '##debug-#thisRule.id#' ).toggle()">Close</button>
-				<h3>Rule Dump</h3>
-				<cfdump var="#thisRule#">
-			</td>
-		</tr>
-
-	</cfloop>
-	</tbody>
-</table>
 </cfoutput>

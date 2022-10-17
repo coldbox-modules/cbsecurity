@@ -15,36 +15,7 @@ component extends="coldbox.system.Interceptor" {
 	// Static Defaults Config
 	variables.DEFAULT_SETTINGS = {
 		// If you trust the upstream then we will check the upstream first for specific headers
-		"trustUpstream"      : false,
-		// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-		"frameOptions"       : { "enabled" : true, "value" : "SAMEORIGIN" },
-		// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
-		// X-XSS-Protection: 1; mode=block
-		"xssProtection"      : { "enabled" : true, "mode" : "block" },
-		// The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised in
-		// the Content-Type headers should be followed and not be changed => X-Content-Type-Options: nosniff
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
-		"contentTypeOptions" : { "enabled" : true },
-		// The Referrer-Policy HTTP header controls how much referrer information (sent with the Referer header) should be included with requests.
-		// Aside from the HTTP header, you can set this policy in HTML.
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
-		"referrerPolicy"     : { "enabled" : true, "policy" : "same-origin" },
-		// HTTP Strict Transport Security (HSTS)
-		// The HTTP Strict-Transport-Security response header (often abbreviated as HSTS)
-		// informs browsers that the site should only be accessed using HTTPS, and that any future attempts to access it
-		// using HTTP should automatically be converted to HTTPS.
-		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security,
-		"hsts"               : {
-			"enabled"           : true,
-			// The time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS, 1 year is the default
-			"max-age"           : "31536000",
-			// See Preloading Strict Transport Security for details. Not part of the specification.
-			"preload"           : false,
-			// If this optional parameter is specified, this rule applies to all of the site's subdomains as well.
-			"includeSubDomains" : false
-		},
+		"trustUpstream"         : false,
 		// Content Security Policy
 		// Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks,
 		// including Cross-Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft, to
@@ -56,8 +27,29 @@ component extends="coldbox.system.Interceptor" {
 			// The custom policy to use, by default we don't include any
 			"policy"  : ""
 		},
-		"customHeaders" : {
+		// The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised in
+		// the Content-Type headers should be followed and not be changed => X-Content-Type-Options: nosniff
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+		"contentTypeOptions" : { "enabled" : true },
+		"customHeaders"      : {
 			 // Name : value pairs as you see fit.
+		},
+		// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+		"frameOptions" : { "enabled" : true, "value" : "SAMEORIGIN" },
+		// HTTP Strict Transport Security (HSTS)
+		// The HTTP Strict-Transport-Security response header (often abbreviated as HSTS)
+		// informs browsers that the site should only be accessed using HTTPS, and that any future attempts to access it
+		// using HTTP should automatically be converted to HTTPS.
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security,
+		"hsts"         : {
+			"enabled"           : true,
+			// The time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS, 1 year is the default
+			"max-age"           : "31536000",
+			// See Preloading Strict Transport Security for details. Not part of the specification.
+			"preload"           : false,
+			// If this optional parameter is specified, this rule applies to all of the site's subdomains as well.
+			"includeSubDomains" : false
 		},
 		// Validates the host or x-forwarded-host to an allowed list of valid hosts
 		"hostHeaderValidation" : {
@@ -71,8 +63,16 @@ component extends="coldbox.system.Interceptor" {
 			// Allowed IP list
 			"allowedIPs" : ""
 		},
+		// The Referrer-Policy HTTP header controls how much referrer information (sent with the Referer header) should be included with requests.
+		// Aside from the HTTP header, you can set this policy in HTML.
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+		"referrerPolicy"     : { "enabled" : true, "policy" : "same-origin" },
 		// Detect if the incoming requests are NON-SSL and if enabled, redirect with SSL
-		"secureSSLRedirects" : { "enabled" : false }
+		"secureSSLRedirects" : { "enabled" : false },
+		// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
+		// X-XSS-Protection: 1; mode=block
+		"xssProtection"      : { "enabled" : true, "mode" : "block" }
 	};
 
 	/**

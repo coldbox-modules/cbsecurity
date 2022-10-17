@@ -35,10 +35,8 @@ component accessors="true" singleton threadsafe {
 		defaults = {}
 	){
 		return arguments.rules.map( function( item ){
-			// Append template
-			structAppend( arguments.item, getRuleTemplate(), false );
-			// Append defaults
-			structAppend( arguments.item, defaults, false );
+			// Append template + defaults
+			arguments.item        = getRuleTemplate().append( arguments.item ).append( defaults, false );
 			arguments.item.module = module;
 			return arguments.item;
 		} );
@@ -189,7 +187,7 @@ component accessors="true" singleton threadsafe {
 
 		// Read in and parse
 		return xmlSearch( xmlParse( arguments.provider.properties.file ), "/rules/rule" ).map( function( node ){
-			return parseXmlRule( arguments.node.xmlChildren, defaults ).append( defaults, false );
+			return getRuleTemplate().append( parseXmlRule( arguments.node.xmlChildren ) ).append( defaults, false );
 		} );
 	}
 
@@ -232,9 +230,7 @@ component accessors="true" singleton threadsafe {
 		}
 
 		return deserializeJSON( jsonRules ).map( function( item ){
-			structAppend( item, getRuleTemplate(), false );
-			structAppend( item, defaults, false );
-			return item;
+			return getRuleTemplate().append( arguments.item ).append( defaults, false );
 		} );
 	}
 
@@ -258,9 +254,7 @@ component accessors="true" singleton threadsafe {
 				{ datasource : arguments.provider.properties.dsn }
 			)
 		).map( function( item ){
-			structAppend( item, getRuleTemplate(), false );
-			structAppend( item, defaults, false );
-			return item;
+			return getRuleTemplate().append( arguments.item ).append( defaults, false );
 		} );
 	}
 
@@ -283,9 +277,7 @@ component accessors="true" singleton threadsafe {
 		}
 
 		return rules.map( function( item ){
-			structAppend( item, getRuleTemplate(), false );
-			structAppend( item, defaults, false );
-			return item;
+			return getRuleTemplate().append( arguments.item ).append( defaults, false );
 		} );
 	}
 
@@ -294,8 +286,9 @@ component accessors="true" singleton threadsafe {
 	 */
 	struct function getRuleTemplate(){
 		return {
-			"whitelist"     : "", // A list of white list events or Uri's
-			"securelist"    : "", // A list of secured list events or Uri's
+			"id"            : createUUID(),
+			"whiteList"     : "", // A list of white list events or Uri's
+			"secureList"    : "", // A list of secured list events or Uri's
 			"match"         : "event", // Match the event or a url
 			"roles"         : "", // Attach a list of roles to the rule
 			"permissions"   : "", // Attach a list of permissions to the rule
@@ -332,7 +325,7 @@ component accessors="true" singleton threadsafe {
 		return arguments.xmlNode.reduce( function( results, item ){
 			results[ trim( item.xmlName ) ] = trim( item.xmlText );
 			return results;
-		}, getRuleTemplate() );
+		}, {} );
 	}
 
 }
