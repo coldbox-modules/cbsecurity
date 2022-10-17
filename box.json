@@ -50,7 +50,7 @@
         "format:check":"cfformat check handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc",
         "cfpm":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\"' | run",
         "cfpm:install":"echo '\".engine/adobe2021/WEB-INF/cfusion/bin/cfpm.sh\" install ${1}' | run",
-        "install:2021":"run-script cfpm:install zip:2021.0.02.328618,debugger:2021.0.02.328618,mysql:2021.0.02.328618",
+        "install:2021":"run-script cfpm:install zip,debugger,mysql",
         "install:dependencies":"install && cd test-harness && install"
     },
     "installPaths":{
