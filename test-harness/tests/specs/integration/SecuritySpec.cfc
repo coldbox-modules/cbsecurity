@@ -138,7 +138,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							getController().getModuleService().unload( "mod1" );
 
 							// Verify
-							expect( security.getSecurityModules() ).notToHaveKey( "mod1" );
+							expect( security.getProperties().securityModules ).notToHaveKey( "mod1" );
 							expect( security.getProperty( "firewall" ).rules.inline.len() ).toBeLT(
 								oldRules.len()
 							);
