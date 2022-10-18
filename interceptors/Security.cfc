@@ -373,7 +373,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			"annotationType"   : arguments.type,
 			"processActions"   : true // Boolean indicator if the invalid actions should process or not
 		};
-		announce( state = "cbSecurity_onInvalid#arguments.validatorResults.type#", interceptData = iData );
+		announce( "cbSecurity_onInvalid#arguments.validatorResults.type#", iData );
 
 		// Are we processing the invalid actions?
 		if ( iData.processActions ) {
@@ -426,18 +426,18 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				);
 
 				// Verify type, else default to "authentication"
-				if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
+				if ( !reFindNoCase( "(authentication|authorization|block)", validatorResults.type ) ) {
 					validatorResults.type = "authentication";
 				}
 
-				// Verify IP
+				// Verify IP or block
 				if ( !isValidIP( thisRule.allowedIPs ) ) {
 					validatorResults.type     = "authorization";
 					validatorResults.allow    = false;
 					validatorResults.messages = "Detected IP is not allowed";
 				}
 
-				// Verify HTTP Verbs
+				// Verify HTTP Verbs or block
 				if ( !isValidHTTPmethod( event, thisRule.httpMethods ) ) {
 					validatorResults.type     = "authorization";
 					validatorResults.allow    = false;
@@ -449,7 +449,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					// Log Block
 					if ( log.canWarn() ) {
 						log.warn(
-							"Invalid #validatorResults.type# by User (#variables.cbSecurity.getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#",
+							"Invalid #validatorResults.type# by (#variables.cbSecurity.getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#",
 							validatorResults
 						);
 					}
@@ -469,11 +469,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						"validatorResults" : validatorResults,
 						"settings"         : getProperties(), // All the config settings, just in case
 						"annotationType"   : "",
-						"processActions"   : true // Boolean indicator if the invalid actions should process or not
+						"processActions"   : true // Boolean indicator if the invalid actions should process or hard block
 					};
-					announce( state = "cbSecurity_onInvalid#validatorResults.type#", interceptData = iData );
+					announce( "cbSecurity_onInvalid#validatorResults.type#", iData );
 
-					// Are we processing the invalid actions?
+					// Are we processing the invalid actions or a hard block
 					if ( iData.processActions ) {
 						processInvalidActions(
 							rule  = thisRule,
@@ -481,8 +481,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 							type  = validatorResults.type
 						);
 					}
-					// end invalid actions processing
-
 					break;
 				}
 				// end if valid state
@@ -494,12 +492,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						);
 					}
 					break;
-				}
-			}
-			// No match, continue to next rule
-			else {
-				if ( log.canDebug() ) {
-					log.debug( "Incoming '#matchTarget#' did not match this rule: #thisRule.toString()#" );
 				}
 			}
 		}
@@ -723,9 +715,20 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				break;
 			}
 
+			case "block": {
+				arguments.event
+					.renderData(
+						data       = "<h1>Unathorized</h1>",
+						statusCode = "401",
+						statusText = "Unathorized"
+					)
+					.noExecution();
+				break;
+			}
+
 			default: {
 				throw(
-					message = "The type [#defaultAction#] is not a valid rule action.  Valid types are [ 'redirect', 'override' ].",
+					message = "The type [#defaultAction#] is not a valid rule action.  Valid types are [ 'redirect', 'override', 'block' ].",
 					type    = "InvalidRuleActionType"
 				);
 			}

@@ -1,7 +1,7 @@
 <cfoutput>
 <h1 class="display-4">ColdBox Security Visualizer</h1>
 
-<p class="lead">From here you can inspect the way cbSecurity is configured for your application.</p>
+<p class="lead">From here you can inspect the way <code>cbSecurity</code> is configured for your application.</p>
 
 <ul class="nav nav-tabs" role="tablist">
 	<!--- Authentication --->
@@ -16,7 +16,22 @@
 			role="tab"
 			href="##authentication"
 		>
-			Authentication
+			<i class="bi bi-door-open"></i> Authentication
+		</a>
+	</li>
+	<!--- Basic Auth --->
+	<li class="nav-item" role="presentation">
+		<a
+			class="nav-link"
+			id="basicAuth-tab"
+			data-bs-toggle="tab"
+			data-bs-target="##basicAuth-pane"
+			aria-controls="basicAuth-pane"
+			aria-selected="true"
+			role="tab"
+			href="##basicAuth"
+		>
+			<i class="bi bi-person-bounding-box"></i> Basic Auth
 		</a>
 	</li>
 	<!--- CSRF --->
@@ -31,7 +46,7 @@
 			role="tab"
 			href="##csrf"
 		>
-			CSRF
+			<i class="bi bi-bezier2"></i> CSRF
 		</a>
 	</li>
 	<!--- Firewall Settings --->
@@ -46,7 +61,7 @@
 			role="tab"
 			href="##firewall"
 		>
-			Firewall
+			<i class="bi bi-bricks"></i> Firewall
 		</a>
 	</li>
 	<!--- Firewall Rules --->
@@ -61,7 +76,7 @@
 			role="tab"
 			href="##rules"
 		>
-			Firewall Rules
+			<i class="bi bi-file-ruled-fill"></i> Firewall Rules
 		</a>
 	</li>
 	<!--- JWT --->
@@ -76,7 +91,7 @@
 			role="tab"
 			href="##jwt"
 		>
-			JWT
+			<i class="bi bi-filetype-json"></i> JWT
 		</a>
 	</li>
 	<!--- Security Headers --->
@@ -91,7 +106,7 @@
 			role="tab"
 			href="##security-headers"
 		>
-			Security Headers
+			<i class="bi bi-shield-exclamation"></i> Security Headers
 		</a>
 	</li>
 
@@ -101,6 +116,12 @@
 	<div class="tab-pane fade show active" id="authentication-pane" role="tabpanel" aria-labelledby="authentication-tab" tabindex="0">
 		#renderView(
 			view = "home/tabs/authentication",
+			module = "cbsecurity"
+		)#
+	</div>
+	<div class="tab-pane fade show" id="basicAuth-pane" role="tabpanel" aria-labelledby="basicAuth-tab" tabindex="0">
+		#renderView(
+			view = "home/tabs/basicAuth",
 			module = "cbsecurity"
 		)#
 	</div>

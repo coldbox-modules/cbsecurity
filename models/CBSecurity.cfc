@@ -79,7 +79,7 @@ component threadsafe singleton accessors="true" {
 			"handlerAnnotationSecurity"   : true,
 			// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
 			"invalidAuthenticationEvent"  : "",
-			// Default Auhtentication Action: override or redirect when a user has not logged in
+			// Default Auhtentication Action: override or block or redirect when a user has not logged in
 			"defaultAuthenticationAction" : "redirect",
 			// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
 			"invalidAuthorizationEvent"   : "",
@@ -126,18 +126,21 @@ component threadsafe singleton accessors="true" {
 			variables.settings.firewall.rules.append( variables.DEFAULT_SETTINGS.firewall.rules, false );
 		}
 
-		// Try to discover defaults for known authentication services
-		switch ( variables.settings.authentication.provider ) {
-			case "authenticationService@cbauth": {
-				param variables.settings.csrf.enableAuthTokenRotator = true;
-				param variables.settings.authentication.userService  = variables.moduleSettings.cbauth.settings.userServiceClass;
-				break;
-			}
-			case "BasicAuthService@cbsecurity": {
-				param variables.settings.csrf.enableAuthTokenRotator = true;
-				param variables.settings.authentication.userService  = "BasicAuthService@cbsecurity";
-				break;
-			}
+		// Try to discover user service default for cbauth
+		if (
+			variables.settings.authentication.provider.findNoCase( "@cbauth" ) &&
+			!len( variables.settings.authentication.userService ) && len(
+				variables.moduleSettings.cbauth.settings.userServiceClass
+			)
+		) {
+			variables.settings.authentication.userService = variables.moduleSettings.cbauth.settings.userServiceClass;
+		}
+
+		// User service default if basic auth is selected
+		if (
+			!len( variables.settings.authentication.userService ) && variables.settings.firewall.validator == "BasicAuthValidator@cbsecurity"
+		) {
+			variables.settings.authentication.userService = "BasicAuthUserService@cbsecurity";
 		}
 
 		// cbcsrf settings incorporation
@@ -388,7 +391,7 @@ component threadsafe singleton accessors="true" {
 	 * @message The error message to throw in the exception
 	 *
 	 * @throws NoUserLoggedIn
-	 * @throws NotAuthorized 
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secureSameUser( required user, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !sameUser( arguments.user ) ) {

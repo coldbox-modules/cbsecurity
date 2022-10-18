@@ -295,7 +295,7 @@ component accessors="true" singleton threadsafe {
 			"redirect"      : "", // If rule breaks, and you have a redirect it will redirect here
 			"overrideEvent" : "", // If rule breaks, and you have an event, it will override it
 			"useSSL"        : false, // Force SSL,
-			"action"        : "", // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
+			"action"        : "", // The action to use (redirect|override|block) when no redirect or overrideEvent is defined in the rule.
 			"module"        : "", // metadata we can add so mark rules that come from modules
 			"httpMethods"   : "*", // Match all HTTP methods or particular ones as a list
 			"allowedIPs"    : "*" // The rule only matches if the IP list matches. It can be a list of IPs to match.

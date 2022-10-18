@@ -71,8 +71,10 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					} );
 					when( "when logged in and using a GET", function(){
 						then( "it should NOT allow it to be executed", function(){
-							var event = get( "putpost" );
-							expect( "main.index" ).toBe( event.getValue( "relocate_event" ) );
+							var event      = get( "putpost" );
+							var renderData = event.getRenderData();
+							expect( renderData.statusCode ).toBe( 401 );
+							expect( renderData.data ).toInclude( "Unathorized" );
 						} );
 					} );
 				} );

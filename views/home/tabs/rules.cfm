@@ -44,7 +44,7 @@
 		No rules matched
 	</div>
 
-	<table class="table table-striped table-condensed table-hover" id="table-rules">
+	<table class="table table-condensed table-hover" id="table-rules">
 		<thead class="thead-dark">
 			<tr>
 				<th width="50">order</th>
@@ -53,10 +53,10 @@
 				<th>whitelist</th>
 				<th>roles</th>
 				<th>permissions</th>
+				<th>action</th>
 				<th>redirect</th>
 				<th>override</th>
 				<th>ssl</th>
-				<th>action</th>
 				<th>module</th>
 				<th>http methods</th>
 				<th>allowed ips</th>
@@ -89,6 +89,23 @@
 					<span x-text="rule.permissions"></span>
 				</td>
 				<td>
+					<span
+						class="badge"
+						:class="{
+							'text-bg-primary' : rule.action == 'override',
+							'text-bg-danger' : rule.action == 'block',
+							'text-bg-info' : rule.action == 'redirect'
+						}"
+						x-text="rule.action"
+						></span>
+						<span
+							class="badge text-bg-light"
+							x-show="rule.action.length == 0"
+						>
+							<code>Inherit</code>
+						</span>
+				</td>
+				<td>
 					<code x-text="rule.redirect"></code>
 				</td>
 				<td>
@@ -99,14 +116,6 @@
 						class="badge"
 						:class="rule.useSSL ? 'text-bg-danger' : 'text-bg-light'"
 						x-text="rule.useSSL"
-						></span>
-				</td>
-				<td>
-					<span
-						class="badge"
-						:class="rule.action == 'override' ? 'text-bg-primary' : 'text-bg-info'"
-						x-text="rule.action"
-						x-show="rule.action.len"
 						></span>
 				</td>
 				<td>

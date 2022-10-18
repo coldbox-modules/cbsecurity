@@ -42,6 +42,7 @@ component {
 				// The WireBox ID of the authentication service to use which must adhere to the cbsecurity.interfaces.IAuthService interface.
 				"provider" : "authenticationService@cbauth"
 			},
+			basicAuth : { users : {} },
 			/**
 			 * --------------------------------------------------------------------------
 			 * CSRF - Cross Site Request Forgery Settings
@@ -117,6 +118,7 @@ component {
 	function onLoad(){
 		// Startup the security services, we can't lazy load as we need them immediately so it can protect the application
 		wirebox.getInstance( "cbSecurity@cbSecurity" );
+		wirebox.getInstance( "BasicAuthUserService@cbSecurity" );
 
 		// Are we auto loading the firewall?
 		if ( settings.firewall.autoLoadFirewall ) {

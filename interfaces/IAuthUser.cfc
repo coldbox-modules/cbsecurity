@@ -12,11 +12,19 @@ interface{
     function getId();
 
     /**
-     * Verify if the user has the permission passed in
+     * Verify if the user has one or more of the passed in permissions
      *
-     * @permission A single permission to check for access
+     * @permission One or a list of permissions to check for access
      *
      */
     boolean function hasPermission( required permission );
+
+	/**
+     * Verify if the user has one or more of the passed in roles
+     *
+     * @role One or a list of roles to check for access
+     *
+     */
+    boolean function hasRole( required role );
 
 }

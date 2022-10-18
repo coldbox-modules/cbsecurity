@@ -72,11 +72,16 @@
 			// CB Security
 			cbSecurity : {
 
+				basicAuth : {
+					users : {
+						"lmajano" : { password : 'test', permissions : "", roles : "admin" },
+						"test" : { password: "test", roles : "guest" }
+					}
+				},
+
 				authentication : {
 					// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
-					"provider"      : "authenticationService@cbauth",
-					// WireBox ID of the user service to use
-					"userService"                : "UserService"
+					"provider"      : "authenticationService@cbauth"
 				},
 
 				firewall : {
@@ -88,6 +93,8 @@
 					"invalidAuthorizationEvent"  : "main.index",
 					// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
 					"defaultAuthorizationAction" : "redirect",
+					// Firewall Validator
+					//"validator"                   : "BasicAuthValidator@cbsecurity",
 					// The global security rules
 					"rules"                      : [
 						// should use direct action and do a global redirect
@@ -107,8 +114,7 @@
 							"match"       : "event",
 							"roles"       : "",
 							"permissions" : "",
-							"action"      : "redirect",
-							"redirect"    : "main.index",
+							"action"      : "block",
 							"httpMethods" : "put,post"
 						},
 						{
@@ -130,7 +136,12 @@
 							"httpMethods" : "*"
 						},
 						// Using overrideEvent only, so use an explicit override
-						{ "securelist" : "ruleActionOverride", "match" : "url", "overrideEvent" : "main.login", "httpMethods" : "*" },
+						{
+							"securelist" : "ruleActionOverride",
+							"match" : "url",
+							"overrideEvent" : "main.login",
+							"httpMethods" : "*"
+						},
 						// direct action, use global override
 						{
 							"whitelist"   : "",
@@ -142,7 +153,12 @@
 							"httpMethods" : "*"
 						},
 						// Using redirect only, so use an explicit redirect
-						{ "securelist" : "ruleActionRedirect", "match" : "url", "redirect" : "main.login", "httpMethods" : "*" }
+						{
+							"securelist" : "ruleActionRedirect",
+							"match" : "url",
+							"redirect" : "main.login",
+							"httpMethods" : "*"
+						}
 					]
 				},
 

@@ -33,17 +33,50 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 	/*********************************** BDD SUITES ***********************************/
 
 	function run(){
-		describe( "CBSecurity Integrations", function(){
+		describe( "CBSecurity Basic Auth User Service", function(){
 			beforeEach( function( currentSpec ){
 				// Setup as a new ColdBox request for this suite, VERY IMPORTANT. ELSE EVERYTHING LOOKS LIKE THE SAME REQUEST.
 				setup();
-				cbauth = getInstance( "authenticationService@cbauth" );
-				cbauth.logout();
+				userService = getInstance( "BasicAuthUserService@cbsecurity" );
 			} );
 
-			it( "can retrieve user,auth and mixin services", function(){
-				var e = request( "/main/cbsecuremixin" );
-				expect( e.getRenderedContent() ).toBeJSON();
+			it( "can be created and user storage configured", function(){
+				expect( userService ).toBeComponent();
+				var users = userService.getSettings().basicAuth.users;
+				expect( users ).notToBeEmpty();
+				// Verify normalization
+				users.each( ( k, v ) => {
+					expect( v ).toHaveKey( "id,username,password,permissions,roles" );
+				} );
+			} );
+
+			it( "can dispense new users", function(){
+				expect( userService.new().isLoaded() ).toBeFalse();
+			} );
+
+			it( "can retrieve a valid user by id", function(){
+				var target = userService.getSettings().basicAuth.users[ "test" ];
+				expect( userService.retrieveUserById( target.id ).isLoaded() ).toBeTrue();
+			} );
+
+			it( "can retrieve an invalid user by id", function(){
+				expect( userService.retrieveUserById( 1234 ).isLoaded() ).toBeFalse();
+			} );
+
+			it( "can retrieve a valid user by username", function(){
+				expect( userService.retrieveUserByUsername( "lmajano" ).isLoaded() ).toBeTrue();
+			} );
+
+			it( "can retrieve an invalid user by username", function(){
+				expect( userService.retrieveUserByUsername( "bogus" ).isLoaded() ).toBeFalse();
+			} );
+
+			it( "can validate valid user credentials", function(){
+				expect( userService.isValidCredentials( "lmajano", "test" ) ).toBeTrue();
+			} );
+
+			it( "can invalidate invalid user credentials", function(){
+				expect( userService.isValidCredentials( "bogus", "test" ) ).toBeFalse();
 			} );
 		} );
 	}

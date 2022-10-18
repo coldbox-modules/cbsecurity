@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* New Basic Auth validator and basic auth user credentials storage system. This will allow you to secure your apps where no database interaction is needed or required.
+* New global and rule action: `block` and the fireall will block the request with a 401 Unathorized page.
 * New event `cbSecurity_onFirewallBlock` announced whenever the firewall blocks a request into the system with a 403.
 * `DBTokenStorage` now rotates using async scheduler and not direct usage anymore.
 * Ability to set the `cbcsrf` module settings into the `cbsecurity` settings as `csrf`.
