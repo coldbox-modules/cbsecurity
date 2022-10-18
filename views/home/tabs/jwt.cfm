@@ -4,7 +4,7 @@
 	<h2>JWT Settings</h2>
 	<p>These settings are used by the <code>jwt + cbsecurity</code> module.</p>
 
-	<ul class="list-group mt-3 mb-3">
+	<ul class="list-group mt-3 mb-5">
 		<li class="list-group-item d-flex justify-content-between align-items-center">
 			<span class="fw-semibold w-25 text-secondary">Encryption Algorithm</span>
 			<span class="flex-grow-1">
@@ -102,7 +102,7 @@
 
 	<h2>Token Storage</h2>
 
-	<ul class="list-group mt-3 mb-3">
+	<ul class="list-group mt-3 mb-5">
 
 		<li class="list-group-item d-flex justify-content-between align-items-center">
 			<span class="fw-semibold w-25 text-secondary">Storage Enabled</span>

@@ -3,7 +3,7 @@
 
 		<h2>Security Header Settings</h2>
 
-		<ul class="list-group mt-3 mb-3">
+		<ul class="list-group mt-3 mb-5">
 			<li class="list-group-item d-flex justify-content-between align-items-center">
 				<span class="w-50 me-2">
 					<div class="text-secondary fw-semibold">Trust Upstream</div>
@@ -131,7 +131,7 @@
 
 		<h2>Security Response Headers</h2>
 
-		<ul class="list-group mt-3 mb-3">
+		<ul class="list-group mt-3 mb-5">
 
 			<li class="list-group-item d-flex justify-content-between align-items-center">
 				<span class="w-50">

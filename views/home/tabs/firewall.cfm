@@ -3,7 +3,7 @@
 
 		<h2>Global Settings</h2>
 
-		<ul class="list-group mt-3 mb-3">
+		<ul class="list-group mt-3 mb-5">
 
 			<li class="list-group-item d-flex justify-content-between align-items-center">
 				<span class="fw-semibold w-25 text-secondary">Autoload Firewall</span>
@@ -78,7 +78,7 @@
 
 		<h2>Rule Settings</h2>
 
-		<ul class="list-group mt-3 mb-3">
+		<ul class="list-group mt-3 mb-5">
 			<li class="list-group-item d-flex justify-content-between align-items-center">
 				<span class="fw-semibold w-25 text-secondary">Use Regular Expressions</span>
 				<span class="flex-grow-1">
@@ -148,7 +148,7 @@
 							#thisModule#
 						</td>
 						<td>
-							<ul class="list-group mt-3 mb-3">
+							<ul class="list-group mt-3 mb-5">
 
 								<li class="list-group-item d-flex justify-content-between align-items-center">
 									<span class="fw-semibold w-25 text-secondary">Module Validator</span>

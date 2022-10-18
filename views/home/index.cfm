@@ -1,6 +1,4 @@
 <cfoutput>
-<h1 class="display-4">ColdBox Security Visualizer</h1>
-
 <p class="lead">From here you can inspect the way <code>cbSecurity</code> is configured for your application.</p>
 
 <div class="d-flex align-items-start mt-3">
