@@ -1,5 +1,5 @@
 <cfoutput>
-	<div class="m-4">
+	<div>
 
 		<h2>CSRF Settings</h2>
 		<p>These settings are used by the <code>cbcsrf</code> module, you can find much more information about it <a href="https://github.com/coldbox-modules/cbcsrf" target="_blank">here</a>.</p>

@@ -1,5 +1,5 @@
 <cfoutput>
-<div class="m-4">
+<div>
 
 	<h2>Authentication Settings</h2>
 

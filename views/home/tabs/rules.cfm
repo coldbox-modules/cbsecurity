@@ -1,6 +1,5 @@
 <cfoutput>
-<div class="m-4"
-	x-data="{
+<div x-data="{
 		rules : #forAttribute( prc.settings.firewall.rules.inline )#,
 		search : '',
 		get filteredRules(){

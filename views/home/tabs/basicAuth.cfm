@@ -1,6 +1,5 @@
 <cfoutput>
-<div class="m-4"
-	x-data="{
+<div x-data="{
 		users : #forAttribute( getInstance( "BasicAuthUserService@cbsecurity" ).getUsers() )#,
 		search : '',
 		get filteredUsers(){

@@ -1,5 +1,5 @@
 <cfoutput>
-<div class="m-4">
+<div>
 
 	<h2>JWT Settings</h2>
 	<p>These settings are used by the <code>jwt + cbsecurity</code> module.</p>

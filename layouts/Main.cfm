@@ -14,7 +14,7 @@
 	</head>
 
 	<body>
-		<div class="container-fluid m-4">
+		<div class="container-fluid m-2">
 			#renderView()#
 		</div>
 
