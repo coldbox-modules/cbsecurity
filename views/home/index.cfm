@@ -3,7 +3,7 @@
 
 <p class="lead">From here you can inspect the way <code>cbSecurity</code> is configured for your application.</p>
 
-<div class="d-flex align-items-start">
+<div class="d-flex align-items-start mt-3">
 	<ul class="nav flex-column w-25 nav-pills" role="tablist" aria-orientation="vertical">
 		<!--- Authentication --->
 		<li class="nav-item p-1" role="presentation">
@@ -16,8 +16,9 @@
 				aria-selected="true"
 				role="tab"
 				href="##authentication"
+				title="Authentication"
 			>
-				<i class="m-2 bi bi-door-open"></i> Authentication
+				<i class="m-2 bi bi-door-open"></i> <span class="d-none d-lg-inline">Authentication</span>
 			</a>
 		</li>
 		<!--- Basic Auth --->
@@ -31,8 +32,9 @@
 				aria-selected="true"
 				role="tab"
 				href="##basicAuth"
+				title="Basic Auth"
 			>
-				<i class="m-2 bi bi-person-bounding-box"></i> Basic Auth
+				<i class="m-2 bi bi-person-bounding-box"></i> <span class="d-none d-lg-inline">Basic Auth</span>
 			</a>
 		</li>
 		<!--- CSRF --->
@@ -46,8 +48,9 @@
 				aria-selected="true"
 				role="tab"
 				href="##csrf"
+				title="CSRF"
 			>
-				<i class="m-2 bi bi-bezier2"></i> CSRF
+				<i class="m-2 bi bi-bezier2"></i> <span class="d-none d-lg-inline">CSRF</span>
 			</a>
 		</li>
 		<!--- Firewall Settings --->
@@ -61,8 +64,9 @@
 				aria-selected="true"
 				role="tab"
 				href="##firewall"
+				title="Firewall"
 			>
-				<i class="m-2 bi bi-bricks"></i> Firewall
+				<i class="m-2 bi bi-bricks"></i> <span class="d-none d-lg-inline">Firewall</span>
 			</a>
 		</li>
 		<!--- Firewall Rules --->
@@ -76,8 +80,9 @@
 				aria-selected="true"
 				role="tab"
 				href="##rules"
+				title="Firewall Rules"
 			>
-				<i class="m-2 bi bi-file-ruled-fill"></i> Firewall Rules
+				<i class="m-2 bi bi-file-ruled-fill"></i> <span class="d-none d-lg-inline">Firewall Rules</span>
 			</a>
 		</li>
 		<!--- JWT --->
@@ -91,8 +96,9 @@
 				aria-selected="true"
 				role="tab"
 				href="##jwt"
+				title="JWT"
 			>
-				<i class="m-2 bi bi-filetype-json"></i> JWT
+				<i class="m-2 bi bi-filetype-json"></i> <span class="d-none d-lg-inline">JWT</span>
 			</a>
 		</li>
 		<!--- Security Headers --->
@@ -106,13 +112,14 @@
 				aria-selected="true"
 				role="tab"
 				href="##security-headers"
+				title="Security Headers"
 			>
-				<i class="m-2 bi bi-shield-exclamation"></i> Security Headers
+				<i class="m-2 bi bi-shield-exclamation"></i> <span class="d-none d-lg-inline">Security Headers</span>
 			</a>
 		</li>
 	</ul>
 
-	<div class="tab-content w-100 ms-4 me-2">
+	<div class="tab-content w-100 ms-5 me-2">
 		<div class="tab-pane fade show active" id="authentication-pane" role="tabpanel" aria-labelledby="authentication-tab" tabindex="0">
 			#renderView(
 				view = "home/tabs/authentication",

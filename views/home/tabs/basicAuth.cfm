@@ -19,10 +19,15 @@
 
 	<h2>Basic Auth</h2>
 	<p>
-		In order to use basic auth you will have to make sure you use the <code>BasicAuthValidator</code> as your validator of choice.
-		It will connect to <code>cbAuth</code> and use it's configured User's class as well.  This means you can use the basic authentication
+		Basic auth allows you to challenge users with Browser based
+		<a href="https://en.wikipedia.org/wiki/Basic_access_authentication" target="_blank">Basic Authentication</a>.  Not the
+		most secure, but it's efficient and quick to use for small security concerns.
+	</p>
+	<p>
+		In order to use basic auth you will have to make sure you use the <code>BasicAuthValidator@cbsecurity</code> as your validator of choice.
+		It will connect to <code>cbAuth</code> and use it's configured user's class as well.  This means you can use the basic authentication
 		validator with any authentication and/or user system.  However, you can also create a user storage system by leveraging the
-		<code>basicAuth.users</code> structure in your configuration.
+		<code>basicAuth.users</code> structure in your configuration and register a secure user and permission based system.
 	</p>
 
 	<div class="input-group mb-3">

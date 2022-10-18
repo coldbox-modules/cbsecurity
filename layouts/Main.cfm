@@ -11,10 +11,21 @@
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 
 		<title>ColdBox Security Visualizer</title>
+		<style>
+			.nav-pills .nav-link.active {
+				background-color: ##002f75;
+			}
+			.nav-link{
+				color: ##737579;
+			}
+			.nav-link:hover{
+				background-color: ##b0cefb;
+			}
+		</style>
 	</head>
 
 	<body>
-		<div class="container-fluid m-2">
+		<div class="container-fluid m-2 mb-5">
 			#renderView()#
 		</div>
 

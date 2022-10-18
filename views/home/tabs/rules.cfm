@@ -101,7 +101,7 @@
 							class="badge text-bg-light"
 							x-show="rule.action.length == 0"
 						>
-							<code>Inherit</code>
+							<code>inherit</code>
 						</span>
 				</td>
 				<td>
