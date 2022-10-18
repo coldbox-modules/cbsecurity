@@ -42,7 +42,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 			} );
 
 			it( "can retrieve user,auth and mixin services", function(){
-				var e = request( "/main/cbsecuremixin" );
+				var e = get( "/main/cbsecuremixin" );
 				expect( e.getRenderedContent() ).toBeJSON();
 			} );
 		} );
