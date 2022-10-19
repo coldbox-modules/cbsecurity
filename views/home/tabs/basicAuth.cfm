@@ -30,6 +30,37 @@
 		<code>basicAuth.users</code> structure in your configuration and register a secure user and permission based system.
 	</p>
 
+	<h3 class="my-2">Settings</h3>
+
+	<ul class="list-group mt-3 mb-3">
+		<li class="list-group-item d-flex justify-content-between align-items-center">
+			<span class="w-50 me-2">
+				<div class="text-secondary fw-semibold">Hashing Algorithm</div>
+				<small class="text-muted">
+					This is the hashing algorithm used for the passwords of the basic auth user storage (Optional)
+				</small>
+			</span>
+			<span class="flex-grow-1">
+				<code>#prc.settings.basicAuth.hashAlgorithm#</code>
+			</span>
+		</li>
+
+		<li class="list-group-item d-flex justify-content-between align-items-center">
+			<span class="w-50 me-2">
+				<div class="text-secondary fw-semibold">Hashing Iterations</div>
+				<small class="text-muted">
+					Iterates the number of times the hash is computed to create a more computationally intensive hash.
+				</small>
+			</span>
+			<span class="flex-grow-1">
+				<code>#prc.settings.basicAuth.hashIterations#</code>
+			</span>
+		</li>
+
+	</ul>
+
+	<h3 class="my-2">Users</h3>
+
 	<div class="input-group mb-3">
 		<input
 			type="text"

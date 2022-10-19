@@ -42,7 +42,14 @@ component {
 				// The WireBox ID of the authentication service to use which must adhere to the cbsecurity.interfaces.IAuthService interface.
 				"provider" : "authenticationService@cbauth"
 			},
-			basicAuth : { users : {} },
+			basicAuth : {
+				// Hashing algorithm to use
+				hashAlgorithm : "SHA-512",
+				// Iterates the number of times the hash is computed to create a more computationally intensive hash.
+				hashIterations : 5,
+				// User storage
+				users : {}
+			},
 			/**
 			 * --------------------------------------------------------------------------
 			 * CSRF - Cross Site Request Forgery Settings

@@ -11,7 +11,18 @@ component accessors="true" singleton {
 	property name="populator" inject="wirebox:populator";
 	property name="wirebox"   inject="wirebox";
 
-	variables.HASHING_ALGORITHM = "SHA-512";
+	/*********************************************************************************************/
+	/** Static Settings **/
+	/*********************************************************************************************/
+
+	variables.DEFAULT_SETTINGS = {
+		// Hashing algorithm to use
+		"hashAlgorithm" : "SHA-512",
+		// Iterates the number of times the hash is computed to create a more computationally intensive hash.
+		"hashIterations" : 5,
+		// User storage
+		"users" : {}
+	};
 
 	/**
 	 * Constructor
@@ -21,16 +32,23 @@ component accessors="true" singleton {
 	}
 
 	function onDIComplete(){
-		// Normalize user storage
-		param settings.basicAuth       = {};
-		param settings.basicAuth.users = {};
-
+		// Normalize settings
+		variables.settings.basicAuth = duplicate( variables.DEFAULT_SETTINGS ).append( variables.settings.basicAuth, true );
+		// Normalize User Storage + password encryption
 		settings.basicAuth.users = settings.basicAuth.users.map( ( key, value ) => {
 			var user      = getNewUserTemplate().append( arguments.value, true );
 			user.username = key;
-			user.password = hash( user.password, variables.HASHING_ALGORITHM );
+			user.password = hashSecurely( user.password );
 			return user;
 		} );
+	}
+
+	/**
+	 * Hash the incoming target according to our hashing algorithm and settings
+	 * @target The string target to hash
+	 */
+	string function hashSecurely( required string target ){
+		return hash( arguments.target, variables.settings.basicAuth.hashAlgorithm, "UTF-8", variables.settings.basicAuth.hashIterations );
 	}
 
 	/**
@@ -76,6 +94,13 @@ component accessors="true" singleton {
 		return populator.populateFromStruct( new (), userRecord );
 	}
 
+	/**
+	 * Get a user by username
+	 *
+	 * @username The username to get the user with
+	 *
+	 * @return The valid user object representing the username or an empty user object
+	 */
 	BasicAuthUser function retrieveUserByUsername( required username ){
 		return populator.populateFromStruct(
 			new (),
@@ -85,13 +110,21 @@ component accessors="true" singleton {
 		);
 	}
 
-	boolean function isValidCredentials( username, password ){
+	/**
+	 * Verify if the incoming username and password are valid credentials in this user storage
+	 *
+	 * @username The username to test
+	 * @password The password to test
+	 *
+	 * @return true if valid, else false
+	 */
+	boolean function isValidCredentials( required username, required password ){
 		var oUser = retrieveUserByUsername( arguments.username );
 		if ( !oUser.isLoaded() ) {
 			return false;
 		}
 
-		return hash( arguments.password, variables.HASHING_ALGORITHM ) eq oUser.getPassword();
+		return hashSecurely( arguments.password ) eq oUser.getPassword();
 	}
 
 }
