@@ -42,13 +42,22 @@ component {
 				// The WireBox ID of the authentication service to use which must adhere to the cbsecurity.interfaces.IAuthService interface.
 				"provider" : "authenticationService@cbauth"
 			},
+			/**
+			 * --------------------------------------------------------------------------
+			 * Basic Auth
+			 * --------------------------------------------------------------------------
+			 * These settings are used so you can configure the hashing patterns of the user storage
+			 * included with cbsecurity.  These are only used if you are using the `BasicAuthUserService` as
+			 * your service of choice alongside the `BasicAuthValidator`
+			 */
 			basicAuth : {
 				// Hashing algorithm to use
-				hashAlgorithm : "SHA-512",
+				hashAlgorithm  : "SHA-512",
 				// Iterates the number of times the hash is computed to create a more computationally intensive hash.
 				hashIterations : 5,
-				// User storage
-				users : {}
+				// User storage: The `key` is the username. The value is the user credentials that can include
+				// { roles: "", permissions : "", firstName : "", lastName : "", password : "" }
+				users          : {}
 			},
 			/**
 			 * --------------------------------------------------------------------------
@@ -74,8 +83,10 @@ component {
 			 * Security Visualizer
 			 * --------------------------------------------------------------------------
 			 * This is a debugging panel that when active, a developer can visualize security settings and more.
+			 * If `secured` is true, then we will make sure that an authenticated user ONLY can visit the `/cbsecurity` entrypoint.
+			 * The `permissions` key is used to set the permissions needed to visualize the visualizer
 			 */
-			visualizer : { "enabled" : false },
+			visualizer : { "enabled" : false, "secured" : false, "permissions" : "" },
 			/**
 			 * --------------------------------------------------------------------------
 			 * Security Headers

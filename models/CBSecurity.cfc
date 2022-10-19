@@ -102,7 +102,7 @@ component threadsafe singleton accessors="true" {
 				"provider" : { "source" : "", "properties" : {} }
 			}
 		},
-		visualizer      : { "enabled" : false },
+		visualizer      : { "enabled" : false, "secured" : false, "permissions" : "" },
 		securityHeaders : { "enabled" : true },
 		securityModules : {}
 	};
@@ -224,6 +224,27 @@ component threadsafe singleton accessors="true" {
 	 */
 	boolean function isLoggedIn(){
 		return getAuthService().isLoggedIn();
+	}
+
+	/**
+	 * Login Facade
+	 *
+	 * @username The username to log in with
+	 * @password The password to log in with
+	 *
+	 * @return User : The logged in user object
+	 *
+	 * @throws InvalidCredentials
+	 */
+	any function authenticate( required username, required password ){
+		return getAuthService().authenticate( argumentCollection = arguments );
+	}
+
+	/**
+	 * Logout Facade
+	 */
+	void function logout(){
+		getAuthService().logout();
 	}
 
 	/***************************************************************/
@@ -391,7 +412,7 @@ component threadsafe singleton accessors="true" {
 	 * @message The error message to throw in the exception
 	 *
 	 * @throws NoUserLoggedIn
-	 * @throws NotAuthorized
+	 * @throws NotAuthorized 
 	 */
 	CBSecurity function secureSameUser( required user, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !sameUser( arguments.user ) ) {

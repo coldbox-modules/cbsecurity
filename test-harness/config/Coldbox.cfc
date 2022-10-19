@@ -181,7 +181,10 @@
 				},
 
 				visualizer : {
-					enabled : true
+					enabled : true,
+					secured : true,
+					// The needed permissions to view the visualizer
+					permissions : ""
 				},
 
 				// JWT Settings

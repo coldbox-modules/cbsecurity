@@ -9,17 +9,44 @@ component extends="coldbox.system.RestHandler" {
 	property name="jwtService" inject="jwtService@cbSecurity";
 
 	/**
-	 * Visualizer Action
+	 * Visualizer Dashboard
 	 */
 	function index( event, rc, prc ){
-		// If not enabled or in production, just 404 it
-		if ( !variables.settings.visualizer.enabled || getSetting( "environment" ) == "production" ) {
+		// If not enabled just 404 it
+		if ( !variables.settings.visualizer.enabled ) {
 			event.setHTTPHeader( statusCode = 404, statusText = "page not found" );
 			return "Page Not Found";
 		}
+
+		// Is the visualizer secured?
+		if ( variables.settings.visualizer.secured ) {
+			if (
+				!cbSecurity.isLoggedIn() ||
+				(
+					len( variables.settings.visualizer.permissions ) && cbsecure().none(
+						variables.settings.visualizer.permissions
+					)
+				)
+			) {
+				return unauthorized( argumentCollection = arguments );
+			}
+		}
+
+		// Settings the visualizer will visualize :)
 		prc.settings = variables.settings;
 		// Show the visualizer
 		event.setView( "home/index" );
+	}
+
+	/**
+	 * A basic unathorized endpoint
+	 */
+	function unauthorized( event, rc, prc ){
+		arguments.event.renderData(
+			data       = "<h1>Unauthorized - Please log in first</h1>",
+			statusCode = "401",
+			statusText = "Unauthorized"
+		);
 	}
 
 	/**

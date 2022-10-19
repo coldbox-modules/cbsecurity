@@ -24,9 +24,23 @@ component {
 	 * doLogin
 	 */
 	function doLogin( event, rc, prc ){
-		return "login";
+		try {
+			var oUser = cbsecure().authenticate( rc.username ?: "", rc.password ?: "" );
+			return "You are logged in!";
+		} catch ( "InvalidCredentials" e ) {
+			flash.put( "message", "Invalid credentials, try again!" );
+			relocate( "main/login" );
+		}
 	}
 
+	/**
+	 * doLogout
+	 */
+	function doLogout( event, rc, prc ){
+		cbsecure().logout();
+		flash.put( "message", "Bye bye!" );
+		relocate( "main/login" );
+	}
 
 	/**
 	 * cbSecureMixin

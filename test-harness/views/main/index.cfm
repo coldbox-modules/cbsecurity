@@ -4,6 +4,16 @@
 <p>This is the public homepage</p>
 
 <ul>
+	<cfif cbsecure().isLoggedIn()>
+		<li>
+			<a href="/main/doLogout">Logout</a>
+		</li>
+	<cfelse>
+		<li>
+			<a href="/main/login">Login</a>
+		</li>
+	</cfif>
+
 	<li>
 		<a href="/admin">Admin Access Test</a>
 	</li>
