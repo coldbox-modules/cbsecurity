@@ -26,10 +26,10 @@
 
 	<body>
 
-		<nav class="navbar navbar-expand-lg">
+		<nav class="navbar navbar-expand-lg bg-secondary bg-gradient">
 			<div class="container-fluid">
-				<a class="navbar-brand me-5" href="##">
-					<i class="bi bi-shield-lock"></i>
+				<a class="navbar-brand me-5 text-light" href="##">
+					<i class="bi bi-shield-lock text-warning"></i>
 					ColdBox Security Visualizer
 				</a>
 
@@ -45,7 +45,7 @@
 				</button>
 
 				<div class="collapse navbar-collapse" id="navbarNav">
-					<ul class="navbar-nav">
+					<ul class="navbar-nav text-light">
 						<li class="nav-item me-2">
 							<a
 								class="nav-link active"

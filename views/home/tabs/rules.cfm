@@ -43,92 +43,94 @@
 		No rules matched
 	</div>
 
-	<table class="table table-condensed table-hover" id="table-rules">
-		<thead class="thead-dark">
-			<tr>
-				<th width="50">order</th>
-				<th width="50">match</th>
-				<th>secure</th>
-				<th>whitelist</th>
-				<th>roles</th>
-				<th>permissions</th>
-				<th>action</th>
-				<th>redirect</th>
-				<th>override</th>
-				<th>ssl</th>
-				<th>module</th>
-				<th>http methods</th>
-				<th>allowed ips</th>
-			</tr>
-		</thead>
+	<div class="table-responsive">
+		<table class="table table-sm table-hover" id="table-rules">
+			<thead class="table-dark">
+				<tr>
+					<th width="50" class="d-none d-sm-none d-md-none d-lg-table-cell">order</th>
+					<th width="50">match</th>
+					<th>secure</th>
+					<th>whitelist</th>
+					<th>roles</th>
+					<th>permissions</th>
+					<th>action</th>
+					<th class="d-none d-sm-none d-md-none d-lg-table-cell">redirect</th>
+					<th class="d-none d-sm-none d-md-none d-lg-table-cell">override</th>
+					<th class="d-none d-sm-none d-md-none d-lg-table-cell">ssl</th>
+					<th class="d-none d-sm-none d-md-none d-lg-table-cell">module</th>
+					<th class="d-none d-sm-none d-md-none d-lg-table-cell">http methods</th>
+					<th class="d-none d-sm-none d-md-none d-lg-table-cell">allowed ips</th>
+				</tr>
+			</thead>
 
-		<tbody>
-		<template x-for="(rule, index) in filteredRules">
-			<tr class="rules">
-				<td x-text="index">
-				</td>
-				<td class="text-center">
-					<span
-						class="badge"
-						:class="rule.match == 'event' ? 'text-bg-primary' : 'text-bg-info'"
-						x-text="rule.match"
-					>
-					</span>
-				</td>
-				<td>
-					<code x-text="rule.secureList"></code>
-				</td>
-				<td>
-					<code x-text="rule.whiteList"></code>
-				</td>
-				<td>
-					<span x-text="rule.roles"></span>
-				</td>
-				<td>
-					<span x-text="rule.permissions"></span>
-				</td>
-				<td>
-					<span
-						class="badge"
-						:class="{
-							'text-bg-primary' : rule.action == 'override',
-							'text-bg-danger' : rule.action == 'block',
-							'text-bg-info' : rule.action == 'redirect'
-						}"
-						x-text="rule.action"
-						></span>
+			<tbody class="table-group-divider">
+			<template x-for="(rule, index) in filteredRules">
+				<tr class="rules">
+					<td x-text="index" class="d-none d-sm-none d-md-none d-lg-table-cell">
+					</td>
+					<td class="text-center">
 						<span
-							class="badge text-bg-light"
-							x-show="rule.action.length == 0"
+							class="badge"
+							:class="rule.match == 'event' ? 'text-bg-primary' : 'text-bg-info'"
+							x-text="rule.match"
 						>
-							<code>inherit</code>
 						</span>
-				</td>
-				<td>
-					<code x-text="rule.redirect"></code>
-				</td>
-				<td>
-					<code x-text="rule.overrideEvent"></code>
-				</td>
-				<td>
-					<span
-						class="badge"
-						:class="rule.useSSL ? 'text-bg-danger' : 'text-bg-light'"
-						x-text="rule.useSSL"
-						></span>
-				</td>
-				<td>
-					<code x-text="rule.module"></code>
-				</td>
-				<td>
-					<code x-text="rule.httpMethods"></code>
-				</td>
-				<td>
-					<code x-text="rule.allowedIps"></code>
-				</td>
-			</tr>
-		</template>
-		</tbody>
-	</table>
+					</td>
+					<td>
+						<code x-text="rule.secureList"></code>
+					</td>
+					<td>
+						<code x-text="rule.whiteList"></code>
+					</td>
+					<td>
+						<span x-text="rule.roles"></span>
+					</td>
+					<td>
+						<span x-text="rule.permissions"></span>
+					</td>
+					<td>
+						<span
+							class="badge"
+							:class="{
+								'text-bg-primary' : rule.action == 'override',
+								'text-bg-danger' : rule.action == 'block',
+								'text-bg-info' : rule.action == 'redirect'
+							}"
+							x-text="rule.action"
+							></span>
+							<span
+								class="badge text-bg-light"
+								x-show="rule.action.length == 0"
+							>
+								<code>inherit</code>
+							</span>
+					</td>
+					<td class="d-none d-sm-none d-md-none d-lg-table-cell">
+						<code x-text="rule.redirect"></code>
+					</td>
+					<td class="d-none d-sm-none d-md-none d-lg-table-cell">
+						<code x-text="rule.overrideEvent"></code>
+					</td>
+					<td class="d-none d-sm-none d-md-none d-lg-table-cell">
+						<span
+							class="badge"
+							:class="rule.useSSL ? 'text-bg-danger' : 'text-bg-light'"
+							x-text="rule.useSSL"
+							></span>
+					</td>
+					<td class="d-none d-sm-none d-md-none d-lg-table-cell">
+						<code x-text="rule.module"></code>
+					</td>
+					<td class="d-none d-sm-none d-md-none d-lg-table-cell">
+						<code x-text="rule.httpMethods"></code>
+					</td>
+					<td class="d-none d-sm-none d-md-none d-lg-table-cell">
+						<code x-text="rule.allowedIps"></code>
+					</td>
+				</tr>
+			</template>
+			</tbody>
+		</table>
+	</div>
 </div>
 </cfoutput>
