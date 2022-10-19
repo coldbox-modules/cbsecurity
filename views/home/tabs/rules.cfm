@@ -8,11 +8,7 @@
 			}
 			return this.rules.filter( (item) => {
 				this.search = this.search.toLowerCase();
-				return item.secureList.toLowerCase().includes( this.search ) ||
-				item.whiteList.toLowerCase().includes( this.search ) ||
-				item.module.toLowerCase().includes( this.search ) ||
-				item.redirect.toLowerCase().includes( this.search ) ||
-				item.overrideEvent.toLowerCase().includes( this.search );
+				return new RegExp( item.secureList ).exec( this.search ) !== null ? true : false;
 			} )
 		},
 		clearSearch(){
@@ -21,13 +17,20 @@
 	}"
 >
 
+	<h2>Firewall Rules</h2>
+	<p>
+		Here are the global and module rules you have defined in your application in the order of discovery and execution.
+		You can use the input box to run the rule simulator which tries to match the <code>secure expression</code> to the incoming
+		URI or event string.
+	</p>
+
 	<div class="input-group mb-3">
 		<input
 			type="text"
 			name="filter"
 			id="filter"
 			x-model="search"
-			placeholder="Filter Rules"
+			placeholder="Enter a URI or event to simulate"
 			autofocus
 			class="form-control"
 		>
