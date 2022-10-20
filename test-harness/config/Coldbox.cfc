@@ -182,7 +182,7 @@
 
 				visualizer : {
 					enabled : true,
-					secured : true,
+					secured : false,
 					// The needed permissions to view the visualizer
 					permissions : ""
 				},

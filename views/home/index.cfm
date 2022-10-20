@@ -80,7 +80,7 @@
 				href="##rules"
 				title="Firewall Rules"
 			>
-				<i class="m-2 bi bi-file-ruled-fill"></i> <span class="d-none d-lg-inline">Firewall Rules</span>
+				<i class="m-2 bi bi-sort-down"></i> <span class="d-none d-lg-inline">Firewall Rules</span>
 			</a>
 		</li>
 		<!--- JWT --->
