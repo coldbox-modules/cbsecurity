@@ -6,6 +6,7 @@ component extends="coldbox.system.RestHandler" {
 	// DI
 	property name="settings"   inject="coldbox:moduleSettings:cbsecurity";
 	property name="cbSecurity" inject="cbSecurity@cbSecurity";
+	property name="dbLogger"   inject="DBLogger@cbSecurity";
 	property name="jwtService" inject="jwtService@cbSecurity";
 
 	/**
@@ -18,7 +19,14 @@ component extends="coldbox.system.RestHandler" {
 			return "Page Not Found";
 		}
 		// Settings the visualizer will visualize :)
-		prc.settings = variables.settings;
+		prc.settings      = variables.settings;
+		prc.logCounts     = dbLogger.count();
+		prc.actionsReport = dbLogger.getActionsReport();
+		prc.logs          = dbLogger.getLatest(
+			action   : rc.action ?: "",
+			blockType: rc.blockType ?: "",
+			userId   : rc.userId ?: ""
+		);
 		// Show the visualizer
 		event.setView( "home/index" );
 	}

@@ -162,6 +162,17 @@ component accessors="true" singleton threadsafe {
 		return this;
 	}
 
+	array function getActionsReport(){
+		return queryExecute(
+			"select count( id ), action from cbsecurity_logs group by action",
+			{},
+			{ datasource : variables.settings.firewall.logs.dsn }
+		).reduce( ( results, row ) => {
+			results.append( row );
+			return results;
+		}, [] );
+	}
+
 	/**
 	 * Get the top x logs from the table
 	 *
@@ -192,21 +203,26 @@ component accessors="true" singleton threadsafe {
 		switch ( getDatabaseVendor() ) {
 			case "MySQL":
 			case "PostgreSQL": {
-				sql = "SELECT FROM #getTable()# #where# ORDER BY logDate desc LIMIT :top";
+				sql = "SELECT * FROM #getTable()# #where# ORDER BY logDate desc LIMIT :top";
 				break;
 			}
 			case "Microsoft SQL Server": {
-				sql = "SELECT TOP :top FROM #getTable()# #where# ORDER BY logDate desc";
+				sql = "SELECT TOP :top * FROM #getTable()# #where# ORDER BY logDate desc";
 				break;
 			}
 			case "Oracle": {
-				sql = "SELECT :top FROM #getTable()# #where# ORDER BY logDate desc FETCH FIRST :top ROWS ONLY";
+				sql = "SELECT * FROM #getTable()# #where# ORDER BY logDate desc FETCH FIRST :top ROWS ONLY";
 				break;
 			}
 		}
 		return queryExecute(
 			sql,
-			arguments,
+			{
+				top       : { cfsqltype : "integer", value : arguments.top },
+				action    : arguments.action,
+				blockType : arguments.blockType,
+				userId    : arguments.userId
+			},
 			{ datasource : variables.settings.firewall.logs.dsn }
 		);
 	}
