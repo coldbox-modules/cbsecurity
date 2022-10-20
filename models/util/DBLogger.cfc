@@ -31,7 +31,19 @@ component accessors="true" singleton threadsafe {
 	property name="settings" inject="coldbox:moduleSettings:cbSecurity";
 
 	// Columns Used
-	variables.COLUMNS = "id,logDate,action,type,ip,host,userAgent,userId,rule";
+	variables.COLUMNS = [
+		"id",
+		"logDate",
+		"action",
+		"blockType",
+		"ip",
+		"host",
+		"userAgent",
+		"userId",
+		"rule",
+		"incomingUrl",
+		"httpMethod"
+	];
 
 	/**
 	 * Constructor
@@ -110,7 +122,7 @@ component accessors="true" singleton threadsafe {
 		}
 
 		queryExecute(
-			"INSERT INTO #getTable()# (#variables.COLUMNS#)
+			"INSERT INTO #getTable()# (#variables.COLUMNS.toList()#)
 				VALUES (
 					:uuid,
 					:logDate,
@@ -267,7 +279,6 @@ component accessors="true" singleton threadsafe {
 	private function ensureTable(){
 		var tableFound = false;
 		var qCreate    = "";
-		var cols       = variables.COLUMNS;
 
 		// Get Tables on this DSN
 		cfdbinfo(
@@ -306,7 +317,7 @@ component accessors="true" singleton threadsafe {
 				);
 
 				queryExecute(
-					"CREATE INDEX idx_cbsecurity ON #getTable()# (logDate,action,blockType)",
+					"CREATE INDEX idx_cbsecurity ON #getTable()# (logDate,action,blockType,incomingUrl)",
 					{},
 					{ datasource : variables.settings.firewall.logs.dsn }
 				);

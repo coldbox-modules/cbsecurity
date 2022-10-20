@@ -58,6 +58,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			);
 		}
 
+		// Is visualizer secured or not? Add our own rule
+		if ( variables.properties.visualizer.enabled && variables.properties.visualizer.secured ) {
+			variables.properties.firewall.rules.inline.prepend(
+				variables.rulesLoader
+					.getRuleTemplate()
+					.append( variables.properties.visualizer.securityRule )
+					.append( { secureList : "cbsecurity:Home\.index", action : "block" } )
+			);
+		}
+
 		// Coldbox version 5 (and lower) needs a little extra invalid event handler checking.
 		variables.enableInvalidHandlerCheck = (
 			listGetAt(
@@ -66,6 +76,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				"."
 			) <= 5
 		);
+
+		log.info( "√ CBSecurity Firewall started and configured." );
 	}
 
 	/**
@@ -417,7 +429,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					blockType  : "RULE-WHITELIST",
 					ip         : variables.cbSecurity.getRealIp(),
 					host       : variables.cbSecurity.getRealHost(),
-					incomingUrl: event.getCurrentRoutedURL(),
+					incomingUrl: event.getFullUrl(),
 					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
 					rule       : thisRule
 				);
@@ -682,7 +694,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			blockType  : arguments.type,
 			ip         : variables.cbSecurity.getRealIp(),
 			host       : variables.cbSecurity.getRealHost(),
-			incomingUrl: event.getCurrentRoutedURL(),
+			incomingUrl: event.getFullUrl(),
 			userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
 			rule       : arguments.rule
 		);

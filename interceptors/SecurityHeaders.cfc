@@ -108,7 +108,7 @@ component extends="coldbox.system.Interceptor" {
 				blockType  : "NON-SSL",
 				ip         : variables.cbSecurity.getRealIp(),
 				host       : variables.cbSecurity.getRealHost(),
-				incomingUrl: event.getCurrentRoutedURL(),
+				incomingUrl: event.getFullUrl(),
 				userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
 			);
 			relocate( url: arguments.event.getFullUrl(), ssl: true );
@@ -144,7 +144,7 @@ component extends="coldbox.system.Interceptor" {
 					blockType  : "INVALID-HOST",
 					ip         : variables.cbSecurity.getRealIp(),
 					host       : variables.cbSecurity.getRealHost(),
-					incomingUrl: event.getCurrentRoutedURL(),
+					incomingUrl: event.getFullUrl(),
 					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
 				);
 
@@ -193,7 +193,7 @@ component extends="coldbox.system.Interceptor" {
 					blockType  : "INVALID-IP",
 					ip         : variables.cbSecurity.getRealIp(),
 					host       : variables.cbSecurity.getRealHost(),
-					incomingUrl: event.getCurrentRoutedURL(),
+					incomingUrl: event.getFullUrl(),
 					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
 				);
 

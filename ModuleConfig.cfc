@@ -83,10 +83,14 @@ component {
 			 * Security Visualizer
 			 * --------------------------------------------------------------------------
 			 * This is a debugging panel that when active, a developer can visualize security settings and more.
-			 * If `secured` is true, then we will make sure that an authenticated user ONLY can visit the `/cbsecurity` entrypoint.
-			 * The `permissions` key is used to set the permissions needed to visualize the visualizer
+			 * You can use the `securityRule` to define what rule you want to use to secure the visualizer but make sure the `secured` flag is turned to true.
+			 * You don't have to specify the `secureList` key, we will do that for you.
 			 */
-			visualizer : { "enabled" : false, "secured" : false, "permissions" : "" },
+			visualizer : {
+				"enabled"      : false,
+				"secured"      : false,
+				"securityRule" : {}
+			},
 			/**
 			 * --------------------------------------------------------------------------
 			 * Security Headers

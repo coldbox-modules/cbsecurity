@@ -110,7 +110,11 @@ component threadsafe singleton accessors="true" {
 				"autoCreate" : true
 			}
 		},
-		visualizer      : { "enabled" : false, "secured" : false, "permissions" : "" },
+		visualizer : {
+			"enabled"      : false,
+			"secured"      : false,
+			"securityRule" : {}
+		},
 		securityHeaders : { "enabled" : true },
 		securityModules : {}
 	};
@@ -145,6 +149,7 @@ component threadsafe singleton accessors="true" {
 			)
 		) {
 			variables.settings.authentication.userService = variables.moduleSettings.cbauth.settings.userServiceClass;
+			log.info( "+ cbAuth detected and no UserService detected -> User Service set to cbAuth's UserServiceClass" );
 		}
 
 		// User service default if basic auth is selected
@@ -152,6 +157,7 @@ component threadsafe singleton accessors="true" {
 			!len( variables.settings.authentication.userService ) && variables.settings.firewall.validator == "BasicAuthValidator@cbsecurity"
 		) {
 			variables.settings.authentication.userService = "BasicAuthUserService@cbsecurity";
+			log.info( "+ Basic Auth Validator Detected -> User Service set to BasicAuthUserService" );
 		}
 
 		// cbcsrf settings incorporation
@@ -159,7 +165,7 @@ component threadsafe singleton accessors="true" {
 		// DBLogger Configuration
 		variables.dbLogger.configure();
 		// Log it
-		log.info( "** CBSecurity Services started and configured." );
+		log.info( "√ CBSecurity Services started and configured." );
 	}
 
 	/**

@@ -17,21 +17,6 @@ component extends="coldbox.system.RestHandler" {
 			event.setHTTPHeader( statusCode = 404, statusText = "page not found" );
 			return "Page Not Found";
 		}
-
-		// Is the visualizer secured?
-		if ( variables.settings.visualizer.secured ) {
-			if (
-				!cbSecurity.isLoggedIn() ||
-				(
-					len( variables.settings.visualizer.permissions ) && cbsecure().none(
-						variables.settings.visualizer.permissions
-					)
-				)
-			) {
-				return unauthorized( argumentCollection = arguments );
-			}
-		}
-
 		// Settings the visualizer will visualize :)
 		prc.settings = variables.settings;
 		// Show the visualizer
@@ -39,7 +24,7 @@ component extends="coldbox.system.RestHandler" {
 	}
 
 	/**
-	 * A basic unathorized endpoint
+	 * A basic unathorized endpoint that can be used by anyone
 	 */
 	function unauthorized( event, rc, prc ){
 		arguments.event.renderData(
