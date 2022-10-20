@@ -114,7 +114,7 @@ moduleSettings = {
 			}
 		},
 
-		visualizer      : { "enabled" : false },
+		visualizer      : { "enabled" : false, "secured" : false, "permission" : "" },
 
 		// Security Headers
 		securityHeaders                     : {
