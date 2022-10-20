@@ -95,6 +95,9 @@
 					"defaultAuthorizationAction" : "redirect",
 					// Firewall Validator
 					//"validator"                   : "BasicAuthValidator@cbsecurity",
+					"logs" : {
+						enabled : true
+					},
 					// The global security rules
 					"rules"                      : [
 						// should use direct action and do a global redirect

@@ -11,6 +11,7 @@ component extends="coldbox.system.Interceptor" {
 
 	property name="settings"   inject="coldbox:moduleSettings:cbsecurity";
 	property name="cbSecurity" inject="cbSecurity@cbSecurity";
+	property name="DBLogger"   inject="DBLogger@cbSecurity";
 
 	// Static Defaults Config
 	variables.DEFAULT_SETTINGS = {
@@ -102,6 +103,14 @@ component extends="coldbox.system.Interceptor" {
 			if ( log.canDebug() ) {
 				log.debug( "Non-SSL URI detected (#event.getFullUrl()#), redirecting in ssl" );
 			}
+			variables.dbLogger.log(
+				action     : "redirect",
+				blockType  : "NON-SSL",
+				ip         : variables.cbSecurity.getRealIp(),
+				host       : variables.cbSecurity.getRealHost(),
+				incomingUrl: event.getCurrentRoutedURL(),
+				userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
+			);
 			relocate( url: arguments.event.getFullUrl(), ssl: true );
 			return;
 		}
@@ -112,10 +121,9 @@ component extends="coldbox.system.Interceptor" {
 			len( variables.settings.securityHeaders.hostHeaderValidation.allowedHosts ) &&
 			variables.settings.securityHeaders.hostHeaderValidation.allowedHosts != "*"
 		) {
-			var incomingHost = variables.settings.securityHeaders.trustUpstream ? event.getHTTPHeader(
-				"x-forwarded-host",
-				event.getHTTPHeader( "host" )
-			) : event.getHTTPHeader( "host" );
+			var incomingHost = variables.cbSecurity.getRealHost(
+				trustUpstream = variables.settings.securityHeaders.trustUpstream
+			);
 
 			if (
 				!listFindNoCase(
@@ -130,6 +138,15 @@ component extends="coldbox.system.Interceptor" {
 						"Valid hosts are #variables.settings.securityHeaders.hostHeaderValidation.allowedHosts#"
 					);
 				}
+
+				variables.dbLogger.log(
+					action     : "block",
+					blockType  : "INVALID-HOST",
+					ip         : variables.cbSecurity.getRealIp(),
+					host       : variables.cbSecurity.getRealHost(),
+					incomingUrl: event.getCurrentRoutedURL(),
+					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
+				);
 
 				// Announce
 				announce(
@@ -170,6 +187,15 @@ component extends="coldbox.system.Interceptor" {
 						"Valid ips are #variables.settings.securityHeaders.ipValidation.allowedIPs#"
 					);
 				}
+
+				variables.dbLogger.log(
+					action     : "block",
+					blockType  : "INVALID-IP",
+					ip         : variables.cbSecurity.getRealIp(),
+					host       : variables.cbSecurity.getRealHost(),
+					incomingUrl: event.getCurrentRoutedURL(),
+					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
+				);
 
 				// Announce
 				announce(

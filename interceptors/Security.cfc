@@ -14,6 +14,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	property name="requestService"      inject="coldbox:requestService";
 	property name="cbSecurity"          inject="@cbSecurity";
 	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
+	property name="DBLogger"            inject="DBLogger@cbsecurity";
 
 	/**
 	 * The reference to the security validator for this firewall. One-to-One relationship.
@@ -410,6 +411,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				if ( log.canDebug() ) {
 					log.debug( "#matchTarget# found in whitelist: #thisRule.whitelist#, allowing access." );
 				}
+
+				variables.dbLogger.log(
+					action     : "allow",
+					blockType  : "RULE-WHITELIST",
+					ip         : variables.cbSecurity.getRealIp(),
+					host       : variables.cbSecurity.getRealHost(),
+					incomingUrl: event.getCurrentRoutedURL(),
+					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
+					rule       : thisRule
+				);
 				continue;
 			}
 
@@ -665,6 +676,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		if ( log.canDebug() ) {
 			log.debug( "Processing a #defaultAction# due to an invalid #arguments.type#" );
 		}
+
+		variables.dbLogger.log(
+			action     : defaultAction,
+			blockType  : arguments.type,
+			ip         : variables.cbSecurity.getRealIp(),
+			host       : variables.cbSecurity.getRealHost(),
+			incomingUrl: event.getCurrentRoutedURL(),
+			userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
+			rule       : arguments.rule
+		);
 
 		// Determine actions from rules
 		switch ( defaultAction ) {

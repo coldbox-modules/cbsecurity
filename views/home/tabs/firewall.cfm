@@ -131,6 +131,100 @@
 			</li>
 		</ul>
 
+		<h2>Log Settings</h2>
+
+		<ul class="list-group mt-3 mb-5">
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<span class="w-50 me-2">
+					<div class="text-secondary fw-semibold">Firewall Logs</div>
+					<small class="text-muted">
+						If enabled, we will create a database table to log all firewall blocking events.
+					</small>
+				</span>
+				<span class="flex-grow-1">
+					<div
+						class="form-check form-switch"
+						data-bs-placement="left"
+						data-bs-toggle="tooltip"
+						data-bs-title="#prc.settings.firewall.logs.enabled ? 'Enabled' : 'Disabled'#"
+					>
+						<input
+							class="form-check-input opacity-100"
+							disabled
+							type="checkbox"
+							<cfif prc.settings.firewall.logs.enabled>
+								checked="checked"
+							</cfif>
+							role="switch"
+							id="flexSwitchCheckDefault">
+					</div>
+				</span>
+			</li>
+
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<span class="w-50 me-2">
+					<div class="text-secondary fw-semibold">Datasource (Optional)</div>
+					<small class="text-muted">
+						If set, we will use it, else we look at the default datasource in the application.
+					</small>
+				</span>
+				<span class="flex-grow-1">
+					<code>#prc.settings.firewall.logs.dsn#</code>
+				</span>
+			</li>
+
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<span class="w-50 me-2">
+					<div class="text-secondary fw-semibold">Schema (Optional)</div>
+					<small class="text-muted">
+						If set, we will use this as the database schema
+					</small>
+				</span>
+				<span class="flex-grow-1">
+					<code>#prc.settings.firewall.logs.schema#</code>
+				</span>
+			</li>
+
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<span class="w-50 me-2">
+					<div class="text-secondary fw-semibold">Table</div>
+					<small class="text-muted">
+						The table to store the logs, by default we use <code>cbsecurity_logs</code>
+					</small>
+				</span>
+				<span class="flex-grow-1">
+					<code>#prc.settings.firewall.logs.table#</code>
+				</span>
+			</li>
+
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<span class="w-50 me-2">
+					<div class="text-secondary fw-semibold">Table Auto Create</div>
+					<small class="text-muted">
+						If true, we will create the table in the database for you.
+					</small>
+				</span>
+				<span class="flex-grow-1">
+					<div
+						class="form-check form-switch"
+						data-bs-placement="left"
+						data-bs-toggle="tooltip"
+						data-bs-title="#prc.settings.firewall.logs.autoCreate ? 'True' : 'False'#"
+					>
+						<input
+							class="form-check-input opacity-100"
+							disabled
+							type="checkbox"
+							<cfif prc.settings.firewall.logs.autoCreate>
+								checked="checked"
+							</cfif>
+							role="switch"
+							id="flexSwitchCheckDefault">
+					</div>
+				</span>
+			</li>
+		</ul>
+
 		<h2>Registered Modules</h2>
 		<p>The following are modules that have incorporated their own security rules or settings</p>
 

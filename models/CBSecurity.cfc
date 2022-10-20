@@ -26,6 +26,7 @@ component threadsafe singleton accessors="true" {
 	property name="log"            inject="logbox:logger:{this}";
 	property name="wirebox"        inject="wirebox";
 	property name="moduleSettings" inject="coldbox:setting:modules";
+	property name="DBLogger"       inject="DBLogger@cbsecurity";
 
 	/*********************************************************************************************/
 	/** PROPERTIES **/
@@ -100,6 +101,13 @@ component threadsafe singleton accessors="true" {
 				// The source can be a json file, an xml file, model, db
 				// Each provider can have it's appropriate properties as well. Please see the documentation for each provider.
 				"provider" : { "source" : "", "properties" : {} }
+			},
+			"logs" : {
+				"enabled"    : false,
+				"dsn"        : "",
+				"schema"     : "",
+				"table"      : "cbsecurity_logs",
+				"autoCreate" : true
 			}
 		},
 		visualizer      : { "enabled" : false, "secured" : false, "permissions" : "" },
@@ -125,6 +133,9 @@ component threadsafe singleton accessors="true" {
 		if ( isStruct( variables.settings.firewall.rules ) ) {
 			variables.settings.firewall.rules.append( variables.DEFAULT_SETTINGS.firewall.rules, false );
 		}
+		if ( isStruct( variables.settings.firewall.logs ) ) {
+			variables.settings.firewall.logs.append( variables.DEFAULT_SETTINGS.firewall.logs, false );
+		}
 
 		// Try to discover user service default for cbauth
 		if (
@@ -145,6 +156,10 @@ component threadsafe singleton accessors="true" {
 
 		// cbcsrf settings incorporation
 		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, false );
+		// DBLogger Configuration
+		variables.dbLogger.configure();
+		// Log it
+		log.info( "** CBSecurity Services started and configured." );
 	}
 
 	/**
@@ -580,6 +595,23 @@ component threadsafe singleton accessors="true" {
 		}
 
 		return len( cgi.remote_addr ) ? trim( listFirst( cgi.remote_addr ) ) : "127.0.0.1";
+	}
+
+	/**
+	 * Get the real host by looking at the upstreams if trusted or not
+	 *
+	 * @trustUpstream If true, we check the forwarded headers first, else we don't
+	 */
+	string function getRealHost( boolean trustUpstream = true ){
+		var headers = getHTTPRequestData( false ).headers;
+		// When going through a proxy, the IP can be a delimtied list, thus we take the last one in the list
+		if ( arguments.trustUpstream ) {
+			if ( structKeyExists( headers, "x-forwarded-host" ) ) {
+				return trim( listFirst( headers[ "x-forwarded-host" ] ) );
+			}
+		}
+
+		return headers.keyExists( "host" ) ? headers[ "host" ] : "none";
 	}
 
 	/***************************************************************/
