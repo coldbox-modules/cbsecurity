@@ -21,7 +21,8 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 						{ "version" : "6.0.0" },
 						false
 					);
-
+				mockLogger = createEmptyMock( "coldbox.system.logging.Logger" )
+					.$( "info" );
 				mockController
 					.$( "getSetting" )
 					.$args( "modules" )
@@ -31,7 +32,8 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 				security = interceptor;
 				settings = {
-					firewall : {
+					visualizer : { enabled : false },
+					firewall   : {
 						// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
 						"invalidAuthenticationEvent"  : "",
 						// Default Auhtentication Action: override or redirect when a user has not logged in
@@ -60,6 +62,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 				// Prepare for testing
 				security
+					.$property( "log", "variables", mockLogger )
 					.setCBSecurity( mockSecurityService )
 					.setInvalidEventHandler( "" )
 					.setRulesLoader( createRuleLoader() )
