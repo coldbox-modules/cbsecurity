@@ -460,11 +460,11 @@
 						</td>
 						<td>
 							<cfif prc.logs.action eq "block">
-								<span class="badge d-block bg-dark text-danger">
+								<span class="fs-6 badge d-block bg-dark text-danger">
 							<cfelseif prc.logs.action eq "override">
-								<span class="badge d-block bg-dark text-light">
+								<span class="fs-6 badge d-block bg-dark text-light">
 							<cfelseif prc.logs.action eq "redirect">
-								<span class="badge d-block bg-dark text-info">
+								<span class="fs-6 badge d-block bg-dark text-info">
 							</cfif>
 								#prc.logs.action# : #prc.logs.blockType#
 							</span>
