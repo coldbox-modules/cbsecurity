@@ -162,15 +162,26 @@ component accessors="true" singleton threadsafe {
 		return this;
 	}
 
-	array function getActionsReport(){
+	struct function getActionsReport(){
 		return queryExecute(
-			"select count( id ), action from cbsecurity_logs group by action",
+			"select count( id ) as total, action from cbsecurity_logs group by action",
 			{},
 			{ datasource : variables.settings.firewall.logs.dsn }
 		).reduce( ( results, row ) => {
-			results.append( row );
+			results[ row.action ] = row.total;
 			return results;
-		}, [] );
+		}, {} );
+	}
+
+	struct function getBlockTypesReport(){
+		return queryExecute(
+			"select count( id ) as total, blockType from cbsecurity_logs group by blockType",
+			{},
+			{ datasource : variables.settings.firewall.logs.dsn }
+		).reduce( ( results, row ) => {
+			results[ row.blockType ] = row.total;
+			return results;
+		}, {} );
 	}
 
 	/**

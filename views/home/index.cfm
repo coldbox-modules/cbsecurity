@@ -1,12 +1,30 @@
 <cfoutput>
-<p class="lead">From here you can inspect the way <code>cbSecurity</code> is configured for your application.</p>
+<p class="lead mb-4">
+	Welcome to the <span class="fw-semibold">ColdBox Security Visualizer</span>. From here you can view your firewall activity, settings and much more.
+</p>
 
 <div class="d-flex align-items-start mt-3">
 	<ul class="nav flex-column w-25 nav-pills" role="tablist" aria-orientation="vertical">
-		<!--- Authentication --->
+		<!--- Activity --->
 		<li class="nav-item p-1" role="presentation">
 			<a
 				class="nav-link active"
+				id="activity-tab"
+				data-bs-toggle="tab"
+				data-bs-target="##activity-pane"
+				aria-controls="activity-pane"
+				aria-selected="true"
+				role="tab"
+				href="##activity"
+				title="activity"
+			>
+				<i class="m-2 bi bi-activity"></i> <span class="d-none d-lg-inline">Activity</span>
+			</a>
+		</li>
+		<!--- Authentication --->
+		<li class="nav-item p-1" role="presentation">
+			<a
+				class="nav-link"
 				id="authentication-tab"
 				data-bs-toggle="tab"
 				data-bs-target="##authentication-pane"
@@ -118,7 +136,13 @@
 	</ul>
 
 	<div class="tab-content w-100 ms-5 me-2">
-		<div class="tab-pane fade show active" id="authentication-pane" role="tabpanel" aria-labelledby="authentication-tab" tabindex="0">
+		<div class="tab-pane fade show active" id="activity-pane" role="tabpanel" aria-labelledby="activity-tab" tabindex="0">
+			#renderView(
+				view = "home/tabs/activity",
+				module = "cbsecurity"
+			)#
+		</div>
+		<div class="tab-pane fade show" id="authentication-pane" role="tabpanel" aria-labelledby="authentication-tab" tabindex="0">
 			#renderView(
 				view = "home/tabs/authentication",
 				module = "cbsecurity"

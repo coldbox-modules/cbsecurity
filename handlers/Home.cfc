@@ -19,10 +19,12 @@ component extends="coldbox.system.RestHandler" {
 			return "Page Not Found";
 		}
 		// Settings the visualizer will visualize :)
-		prc.settings      = variables.settings;
-		prc.logCounts     = dbLogger.count();
-		prc.actionsReport = dbLogger.getActionsReport();
-		prc.logs          = dbLogger.getLatest(
+		prc.settings         = variables.settings;
+		prc.logCounts        = dbLogger.count();
+		prc.actionsReport    = dbLogger.getActionsReport();
+		prc.blockTypesReport = dbLogger.getBlockTypesReport();
+		prc.logs             = dbLogger.getLatest(
+			top      : 50,
 			action   : rc.action ?: "",
 			blockType: rc.blockType ?: "",
 			userId   : rc.userId ?: ""
