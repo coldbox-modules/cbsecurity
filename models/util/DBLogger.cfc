@@ -162,6 +162,27 @@ component accessors="true" singleton threadsafe {
 		return this;
 	}
 
+	array function getTopOffending( required column, max = 5 ){
+		return queryExecute(
+			"select
+				#getLimitStart()#
+				count( id ) as total, :column
+				from cbsecurity_logs
+				group by :column
+				order by count( id ) desc
+				#getLimitEnd()#
+			",
+			{
+				top    : { cfsqltype : "integer", value : arguments.max },
+				column : arguments.column
+			},
+			{ datasource : variables.settings.firewall.logs.dsn }
+		).reduce( ( results, row ) => {
+			results.append( row );
+			return results;
+		}, [] );
+	}
+
 	struct function getActionsReport(){
 		return queryExecute(
 			"select count( id ) as total, action from cbsecurity_logs group by action",
@@ -182,6 +203,28 @@ component accessors="true" singleton threadsafe {
 			results[ row.blockType ] = row.total;
 			return results;
 		}, {} );
+	}
+
+	private function getLimitStart(){
+		switch ( getDatabaseVendor() ) {
+			case "Microsoft SQL Server": {
+				return " TOP :top ";
+			}
+		}
+		return "";
+	}
+
+	private function getLimitEnd(){
+		switch ( getDatabaseVendor() ) {
+			case "MySQL":
+			case "PostgreSQL": {
+				return " LIMIT :top";
+			}
+			case "Oracle": {
+				return " FETCH FIRST :top ROWS ONLY";
+			}
+		}
+		return "";
 	}
 
 	/**
@@ -211,23 +254,12 @@ component accessors="true" singleton threadsafe {
 			where &= " AND userId = :userId";
 		}
 
-		switch ( getDatabaseVendor() ) {
-			case "MySQL":
-			case "PostgreSQL": {
-				sql = "SELECT * FROM #getTable()# #where# ORDER BY logDate desc LIMIT :top";
-				break;
-			}
-			case "Microsoft SQL Server": {
-				sql = "SELECT TOP :top * FROM #getTable()# #where# ORDER BY logDate desc";
-				break;
-			}
-			case "Oracle": {
-				sql = "SELECT * FROM #getTable()# #where# ORDER BY logDate desc FETCH FIRST :top ROWS ONLY";
-				break;
-			}
-		}
 		return queryExecute(
-			sql,
+			"SELECT #getLimitStart( arguments.top )# *
+			FROM #getTable()# #where#
+			ORDER BY logDate desc
+			#getLimitEnd( arguments.top )#
+			",
 			{
 				top       : { cfsqltype : "integer", value : arguments.top },
 				action    : arguments.action,

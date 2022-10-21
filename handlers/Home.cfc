@@ -23,6 +23,8 @@ component extends="coldbox.system.RestHandler" {
 		prc.logCounts        = dbLogger.count();
 		prc.actionsReport    = dbLogger.getActionsReport();
 		prc.blockTypesReport = dbLogger.getBlockTypesReport();
+		prc.topOffendingUrls = dbLogger.getTopOffending( "incomingUrl" );
+		prc.topOffendingIps  = dbLogger.getTopOffending( "ip" );
 		prc.logs             = dbLogger.getLatest(
 			top      : 50,
 			action   : rc.action ?: "",
