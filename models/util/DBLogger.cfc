@@ -17,12 +17,14 @@
  * - action : The action the firewall took: redirect, override, block
  * - blockType : The type of event: authentication, authorization
  * - ip : ip address
- * - host : The host used in the event
  * - userAgent : user agent used
  * - userId : If a logged in user was used, their id
  * - rule : The rule in json that triggered the event
- * - incomingUrl : The incoming Url
  * - httpMethod : The incoming HTTP Method
+ * - host : The host used in the event
+ * - path : The routed path in the event
+ * - queryString : The query string used
+ * - referer : The http referer (if any)
  *
  */
 component accessors="true" singleton threadsafe {
@@ -38,11 +40,13 @@ component accessors="true" singleton threadsafe {
 		"blockType",
 		"ip",
 		"host",
+		"httpMethod",
+		"path",
+		"queryString",
+		"referer",
 		"userAgent",
 		"userId",
-		"rule",
-		"incomingUrl",
-		"httpMethod"
+		"rule"
 	];
 
 	/**
@@ -97,24 +101,28 @@ component accessors="true" singleton threadsafe {
 	 * @blockType   The type of event: AUTHENTICATION, AUTHORIZATION, INVALID-HOST, INVALID-IP, NON-SSL
 	 * @ip          ip address
 	 * @host        The host used in the event
+	 * @httpMethod  The incoming HTTP method
+	 * @path        The incoming path info
+	 * @queryString The query string
+	 * @referer     The incoming referer if any
 	 * @userAgent   user agent used
 	 * @userId      If a logged in user was used, their id
 	 * @rule        The rule in json that triggered the event
-	 * @incomingUrl The incoming URL
-	 * @httpMethod  The incoming HTTP method
 	 *
 	 * @return DBLogger
 	 */
 	any function log(
 		required action,
 		blockType   = "AUTHENTICATION",
-		ip          = "127.0.0.1",
-		host        = cgi.HTTP_HOST,
-		userAgent   = cgi.HTTP_USER_AGENT,
+		ip          = CGI.REMOTE_ADDR,
+		host        = CGI.HTTP_HOST,
+		httpMethod  = CGI.REQUEST_METHOD,
+		path        = CGI.PATH_INFO,
+		queryString = CGI.QUERY_STRING,
+		referer     = CGI.HTTP_REFERER,
+		userAgent   = CGI.HTTP_USER_AGENT,
 		userId      = "",
-		rule        = {},
-		incomingUrl = "",
-		httpMethod  = CGI.REQUEST_METHOD
+		rule        = {}
 	){
 		// Don't log if not enabled
 		if ( !canLog() ) {
@@ -130,11 +138,13 @@ component accessors="true" singleton threadsafe {
 					:blockType,
 					:ip,
 					:host,
+					:httpMethod,
+					:path,
+					:queryString,
+					:referer,
 					:userAgent,
 					:userId,
-					:rule,
-					:incomingUrl,
-					:httpMethod
+					:rule
 				)
 			",
 			{
@@ -142,19 +152,21 @@ component accessors="true" singleton threadsafe {
 					cfsqltype : "varchar",
 					value     : "#variables.uuid.randomUUID().toString()#"
 				},
-				logDate   : { cfsqltype : "timestamp", value : now() },
-				action    : { cfsqltype : "varchar", value : arguments.action },
-				blockType : { cfsqltype : "varchar", value : arguments.blockType },
-				ip        : { cfsqltype : "varchar", value : arguments.ip },
-				host      : { cfsqltype : "varchar", value : arguments.host },
-				userAgent : { cfsqltype : "varchar", value : arguments.userAgent },
-				userId    : { cfsqltype : "varchar", value : arguments.userId },
-				rule      : {
+				logDate     : { cfsqltype : "timestamp", value : now() },
+				action      : { cfsqltype : "varchar", value : arguments.action },
+				blockType   : { cfsqltype : "varchar", value : arguments.blockType },
+				ip          : { cfsqltype : "varchar", value : arguments.ip },
+				host        : { cfsqltype : "varchar", value : arguments.host },
+				httpMethod  : { cfsqltype : "varchar", value : arguments.httpMethod },
+				path        : { cfsqltype : "varchar", value : arguments.path },
+				queryString : { cfsqltype : "varchar", value : arguments.queryString },
+				referer     : { cfsqltype : "varchar", value : arguments.referer },
+				userAgent   : { cfsqltype : "varchar", value : arguments.userAgent },
+				userId      : { cfsqltype : "varchar", value : arguments.userId },
+				rule        : {
 					cfsqltype : "longvarchar",
 					value     : serializeJSON( arguments.rule )
-				},
-				incomingUrl : { cfsqltype : "varchar", value : arguments.incomingUrl },
-				httpMethod  : { cfsqltype : "varchar", value : arguments.httpMethod }
+				}
 			},
 			{ datasource : variables.settings.firewall.logs.dsn }
 		);
@@ -162,20 +174,23 @@ component accessors="true" singleton threadsafe {
 		return this;
 	}
 
-	array function getTopOffending( required column, max = 5 ){
+	/**
+	 * Get top offending report by passed column
+	 *
+	 * @column The indexed column to report on
+	 * @top    The max report rows, defaults to 5
+	 */
+	array function getTopOffending( required column, top = 5 ){
 		return queryExecute(
 			"select
 				#getLimitStart()#
-				count( id ) as total, :column
+				count( id ) as total, #arguments.column#
 				from cbsecurity_logs
-				group by :column
+				group by #arguments.column#
 				order by count( id ) desc
 				#getLimitEnd()#
 			",
-			{
-				top    : { cfsqltype : "integer", value : arguments.max },
-				column : arguments.column
-			},
+			{ top : { cfsqltype : "integer", value : arguments.top } },
 			{ datasource : variables.settings.firewall.logs.dsn }
 		).reduce( ( results, row ) => {
 			results.append( row );
@@ -183,6 +198,9 @@ component accessors="true" singleton threadsafe {
 		}, [] );
 	}
 
+	/**
+	 * Get the actions report
+	 */
 	struct function getActionsReport(){
 		return queryExecute(
 			"select count( id ) as total, action from cbsecurity_logs group by action",
@@ -194,6 +212,9 @@ component accessors="true" singleton threadsafe {
 		}, {} );
 	}
 
+	/**
+	 * Get the block types report
+	 */
 	struct function getBlockTypesReport(){
 		return queryExecute(
 			"select count( id ) as total, blockType from cbsecurity_logs group by blockType",
@@ -205,6 +226,9 @@ component accessors="true" singleton threadsafe {
 		}, {} );
 	}
 
+	/**
+	 * Limit Strategy
+	 */
 	private function getLimitStart(){
 		switch ( getDatabaseVendor() ) {
 			case "Microsoft SQL Server": {
@@ -214,6 +238,9 @@ component accessors="true" singleton threadsafe {
 		return "";
 	}
 
+	/**
+	 * Limit Strategy
+	 */
 	private function getLimitEnd(){
 		switch ( getDatabaseVendor() ) {
 			case "MySQL":
@@ -364,11 +391,13 @@ component accessors="true" singleton threadsafe {
 						blockType VARCHAR(20) NOT NULL,
 						ip VARCHAR(100) NOT NULL,
 						host VARCHAR(255) NOT NULL,
+						httpMethod VARCHAR(25) NOT NULL,
+						path VARCHAR(255) NOT NULL,
+						queryString VARCHAR(255) NOT NULL,
+						referer VARCHAR(255),
 						userAgent VARCHAR(255) NOT NULL,
 						userId VARCHAR(36),
 						rule #getTextColumnType()#,
-						incomingUrl VARCHAR(255) NOT NULL,
-						httpMethod VARCHAR(25) NOT NULL,
 						PRIMARY KEY (id)
 					)",
 					{},
@@ -376,16 +405,28 @@ component accessors="true" singleton threadsafe {
 				);
 
 				queryExecute(
-					"CREATE INDEX idx_cbsecurity ON #getTable()# (logDate,action,blockType,incomingUrl)",
+					"CREATE INDEX idx_cbsecurity ON #getTable()# (logDate,action,blockType)",
 					{},
 					{ datasource : variables.settings.firewall.logs.dsn }
 				);
 
-				queryExecute(
-					"CREATE INDEX idx_cbsecurity_userId ON #getTable()# (userId)",
-					{},
-					{ datasource : variables.settings.firewall.logs.dsn }
-				);
+				var indexColumns = [
+					"userId",
+					"userAgent",
+					"ip",
+					"host",
+					"httpMethod",
+					"path",
+					"referer"
+				];
+
+				indexColumns.each( ( key ) => {
+					queryExecute(
+						"CREATE INDEX idx_cbsecurity_#key# ON #getTable()# (#key#)",
+						{},
+						{ datasource : variables.settings.firewall.logs.dsn }
+					);
+				} );
 			}
 		}
 	}

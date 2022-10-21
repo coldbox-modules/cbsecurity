@@ -12,6 +12,7 @@
 
 		<title>ColdBox Security Visualizer</title>
 		<style>
+			[x-cloak] { display: none !important; }
 			.nav-pills .nav-link.active {
 				background-color: ##002f75;
 			}

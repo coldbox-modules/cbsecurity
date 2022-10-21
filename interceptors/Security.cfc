@@ -425,13 +425,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				}
 
 				variables.dbLogger.log(
-					action     : "allow",
-					blockType  : "RULE-WHITELIST",
-					ip         : variables.cbSecurity.getRealIp(),
-					host       : variables.cbSecurity.getRealHost(),
-					incomingUrl: event.getFullUrl(),
-					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
-					rule       : thisRule
+					action   : "allow",
+					blockType: "RULE-WHITELIST",
+					ip       : variables.cbSecurity.getRealIp(),
+					host     : variables.cbSecurity.getRealHost(),
+					userId   : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
+					rule     : thisRule
 				);
 				continue;
 			}
@@ -690,13 +689,12 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		variables.dbLogger.log(
-			action     : defaultAction,
-			blockType  : arguments.type,
-			ip         : variables.cbSecurity.getRealIp(),
-			host       : variables.cbSecurity.getRealHost(),
-			incomingUrl: event.getFullUrl(),
-			userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
-			rule       : arguments.rule
+			action   : defaultAction,
+			blockType: arguments.type,
+			ip       : variables.cbSecurity.getRealIp(),
+			host     : variables.cbSecurity.getRealHost(),
+			userId   : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
+			rule     : arguments.rule
 		);
 
 		// Determine actions from rules

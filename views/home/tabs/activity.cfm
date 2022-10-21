@@ -36,15 +36,15 @@
 					<!--- Card 1 --->
 					<div class="col-md-3">
 
-						<div class="card border-1">
-							<div class="card-body bg-dark">
+						<div class="card">
+							<div class="card-body bg-dark rounded-3">
 								<div class="row">
 									<div class="col d-flex justify-content-between">
 
 										<div class="text-light">
 											<!-- Title -->
 											<h5 class="d-flex align-items-center mb-2">
-												<span class="text-uppercase fw-semibold">
+												<span class="text-uppercase text-primary fw-semibold">
 													Events
 												</span>
 												<span
@@ -80,7 +80,7 @@
 					<div class="col-md-3">
 						<!-- Card -->
 						<div class="card border-1">
-							<div class="card-body">
+							<div class="card-body rounded-3">
 								<div class="row">
 									<div class="col d-flex justify-content-between">
 
@@ -123,7 +123,7 @@
 					<div class="col-md-3">
 						<!-- Card -->
 						<div class="card border-1">
-							<div class="card-body">
+							<div class="card-body rounded-3">
 								<div class="row">
 									<div class="col d-flex justify-content-between">
 
@@ -166,7 +166,7 @@
 					<div class="col-md-3">
 						<!-- Card -->
 						<div class="card border-1">
-							<div class="card-body">
+							<div class="card-body rounded-3">
 								<div class="row">
 									<div class="col d-flex justify-content-between">
 
@@ -215,85 +215,325 @@
 
 		<div class="row">
 			<div class="col-12">
-				<div class="row">
-
-					<!--- Card 1 --->
-					<div class="col-md-6">
-
-						<div class="card border-1">
-							<div class="card-body">
-								<div class="row">
-									<div class="col d-flex justify-content-between">
-
-										<div>
-											<!-- Title -->
-											<h5 class="d-flex align-items-center mb-2">
-												<span class="text-uppercase text-muted fw-semibold">
-													Authentication Blocks
-												</span>
-											</h5>
-
-											<!-- Subtitle -->
-											<h2 class="mb-0">
-												#numberFormat( prc.blockTypesReport[ "authentication" ] )#
-											</h2>
-
-											<p class="fs-6 text-muted mb-0 mt-1">
-												#numberFormat( ( prc.blockTypesReport[ "authentication" ] / prc.logCounts ) * 100, "00" )#%
-											</p>
+				<table class="table">
+					<thead>
+						<th>Type</th>
+						<th>Counts</th>
+					</thead>
+					<tbody>
+						<cfloop collection="#prc.blockTypesReport#" item="thisItem">
+							<tr>
+								<td class="text-uppercase">#thisItem#</td>
+								<td>
+									<div class="progress">
+										<div
+											class="progress-bar"
+											role="progressbar"
+											data-bs-toggle="tooltip"
+											data-bs-title="#numberFormat( prc.blockTypesReport[ thisItem ] )#"
+											style="width: #numberFormat( ( prc.blockTypesReport[ thisItem ] / prc.logCounts ) * 100 )#%;"
+											aria-valuenow="#numberFormat( prc.blockTypesReport[ thisItem ] )#"
+											aria-valuemin="0"
+											aria-valuemax="#prc.logCounts#"
+											>
+											#numberFormat( prc.blockTypesReport[ thisItem ] )#
 										</div>
-
-										<span class="text-danger fs-2">
-											<i class="bi bi-person-circle"></i>
-										</span>
 									</div>
-								</div> <!-- / .row -->
-							</div>
-						</div>
-
-					</div>
-
-					<!--- Card 2 --->
-					<div class="col-md-6">
-						<!-- Card -->
-						<div class="card border-1">
-							<div class="card-body">
-								<div class="row">
-									<div class="col d-flex justify-content-between">
-
-										<div>
-											<!-- Title -->
-											<h5 class="d-flex align-items-center mb-2">
-												<span class="text-uppercase text-muted fw-semibold">
-													Authorization Blocks
-												</span>
-											</h5>
-
-											<!-- Subtitle -->
-											<h2 class="mb-0">
-												#numberFormat( prc.blockTypesReport[ "authorization" ] )#
-											</h2>
-
-											<!-- Comment -->
-											<p class="fs-6 text-muted mb-0 mt-1">
-												#numberFormat( ( prc.blockTypesReport[ "authorization" ] / prc.logCounts ) * 100, "00" )#%
-											</p>
-
-										</div>
-
-										<span class="text-info fs-2">
-											<i class="bi bi-shield-lock"></i>
-										</span>
-									</div>
-								</div> <!-- / .row -->
-							</div>
-						</div>
-					</div>
-				</div> <!-- / .row -->
+								</td>
+							</tr>
+						</cfloop>
+					</tbody>
+				</table>
 			</div>
 		</div>
 
-	</cfif>
+		<h3 class="my-4">Top Events By Source</h3>
 
+		<div class="row">
+			<div class="col-md-6">
+				<div class="card border-1">
+					<div class="card-header fw-semibold">
+						Incoming Paths
+					</div>
+					<div class="card-body rounded-3">
+						<div class="row">
+							<table class="table table-sm table-hover">
+								<thead>
+									<th width="50" class="text-center">Total</th>
+									<th>Path</th>
+								</thead>
+								<tbody>
+									<cfloop array="#prc.topOffendingPaths#" item="thisItem">
+										<tr>
+											<td class="text-center">#thisItem.total#</td>
+											<td class="text-truncated">
+												#thisItem.path#
+											</td>
+										</tr>
+									</cfloop>
+								</tbody>
+							</table>
+						</div> <!-- / .row -->
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-6">
+				<div class="card border-1">
+					<div class="card-header fw-semibold">
+						IP Addresses
+					</div>
+					<div class="card-body rounded-3">
+						<div class="row">
+							<table class="table table-sm table-hover">
+								<thead>
+									<th class="text-center" width="50">Total</th>
+									<th>IP Address</th>
+								</thead>
+								<tbody>
+									<cfloop array="#prc.topOffendingIps#" item="thisItem">
+										<tr>
+											<td class="text-center">#thisItem.total#</td>
+											<td class="text-truncated">
+												<a href="https://www.whois.com/whois/#thisItem.ip#" target="_blank">
+													<i class="bi bi-box-arrow-up-right"></i> #thisItem.ip#
+												</a>
+											</td>
+										</tr>
+									</cfloop>
+								</tbody>
+							</table>
+						</div> <!-- / .row -->
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mt-4">
+			<div class="col-md-6">
+				<div class="card border-1">
+					<div class="card-header fw-semibold">
+						Hosts
+					</div>
+					<div class="card-body rounded-3">
+						<div class="row">
+							<table class="table table-sm table-hover">
+								<thead>
+									<th width="50" class="text-center">Total</th>
+									<th>Host</th>
+								</thead>
+								<tbody>
+									<cfloop array="#prc.topOffendingHosts#" item="thisItem">
+										<tr>
+											<td class="text-center">#thisItem.total#</td>
+											<td class="text-truncated">
+												#thisItem.host#
+											</td>
+										</tr>
+									</cfloop>
+								</tbody>
+							</table>
+						</div> <!-- / .row -->
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-6">
+				<div class="card border-1">
+					<div class="card-header fw-semibold">
+						Users
+					</div>
+					<div class="card-body rounded-3">
+						<div class="row">
+							<table class="table table-sm table-hover">
+								<thead>
+									<th class="text-center" width="50">Total</th>
+									<th>User Id</th>
+								</thead>
+								<tbody>
+									<cfloop array="#prc.topOffendingUsers#" item="thisItem">
+										<tr>
+											<td class="text-center">#thisItem.total#</td>
+											<td class="text-truncated">
+												<cfif !len( thisItem.userId )>
+													<span class="text-secondary"><em>none</em></span>
+												<cfelse>
+													#thisItem.userId#
+												</cfif>
+											</td>
+										</tr>
+									</cfloop>
+								</tbody>
+							</table>
+						</div> <!-- / .row -->
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mt-4">
+			<div class="col-md-6">
+				<div class="card border-1">
+					<div class="card-header fw-semibold">
+						User Agents
+					</div>
+					<div class="card-body rounded-3">
+						<div class="row">
+							<table class="table table-sm table-hover">
+								<thead>
+									<th width="50" class="text-center">Total</th>
+									<th>User Agent</th>
+								</thead>
+								<tbody>
+									<cfloop array="#prc.topOffendingUserAgents#" item="thisItem">
+										<tr>
+											<td class="text-center">#thisItem.total#</td>
+											<td class="text-truncated">
+												#thisItem.userAgent#
+											</td>
+										</tr>
+									</cfloop>
+								</tbody>
+							</table>
+						</div> <!-- / .row -->
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-6">
+				<div class="card border-1">
+					<div class="card-header fw-semibold">
+						HTTP Methods
+					</div>
+					<div class="card-body rounded-3">
+						<div class="row">
+							<table class="table table-sm table-hover">
+								<thead>
+									<th class="text-center" width="50">Total</th>
+									<th>Method</th>
+								</thead>
+								<tbody>
+									<cfloop array="#prc.topOffendingMethods#" item="thisItem">
+										<tr>
+											<td class="text-center">#thisItem.total#</td>
+											<td class="text-truncated">
+												#thisItem.httpMethod#
+											</td>
+										</tr>
+									</cfloop>
+								</tbody>
+							</table>
+						</div> <!-- / .row -->
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<h3 class="my-4">Activity Log</h3>
+
+		<table class="table table-sm table-hover">
+			<thead>
+				<th width="100">Date</th>
+				<th width="85" class="text-center">Action : Type</th>
+				<th>Resource</th>
+				<th>IP</th>
+				<th>User</th>
+			</thead>
+			<tbody
+				x-data="{
+					rowId : '',
+					show( id ){
+						this.rowId = id;
+					},
+					close( id ){
+						this.rowId = '';
+					}
+				}"
+				x-cloak
+			>
+				<cfloop query="#prc.logs#">
+					<tr>
+						<td>
+							<small class="text-muted">
+								#dateTimeFormat( prc.logs.logDate, "dd MMM, YYYY HH:mm:ss z" )#
+							</small>
+						</td>
+						<td>
+							<cfif prc.logs.action eq "block">
+								<span class="badge d-block bg-dark text-danger">
+							<cfelseif prc.logs.action eq "override">
+								<span class="badge d-block bg-dark text-light">
+							<cfelseif prc.logs.action eq "redirect">
+								<span class="badge d-block bg-dark text-info">
+							</cfif>
+								#prc.logs.action# : #prc.logs.blockType#
+							</span>
+						</td>
+						<td class="text-truncated">
+
+							<cfif len( prc.logs.referer )>
+								<span
+									data-bs-toggle="tooltip"
+									data-bs-title="Referer: #prc.logs.referer#"
+								>
+									<i class="bi bi-link-45deg"></i>
+								</span>
+
+								<i class="bi bi-caret-right-fill"></i>
+							<cfelse>
+								<span style="margin-left: 31px">&nbsp;</span>
+							</cfif>
+
+							<span class="badge bg-primary">
+								#prc.logs.httpMethod#
+							</span>
+
+							<i class="bi bi-caret-right-fill"></i>
+							#prc.logs.host##prc.logs.path#?#prc.logs.queryString#
+						</td>
+						<td>
+							<a href="https://www.whois.com/whois/#prc.logs.ip#" target="_blank">
+								<i class="bi bi-box-arrow-up-right"></i> #prc.logs.ip#
+							</a>
+						</td>
+						<td>
+							<cfif !len( prc.logs.userId )>
+								<span class="text-muted"><em>None</em></span>
+							<cfelse>
+								#prc.logs.userId#
+							</cfif>
+						</td>
+						<td>
+							<button
+								class="btn btn-light btn-sm"
+								@click="show( '#encodeForJavaScript( prc.logs.id )#' )"
+								x-show="rowId != '#encodeForJavaScript( prc.logs.id )#'"
+							>
+								Show Rule
+							</button>
+
+							<button
+								class="btn btn-light btn-sm"
+								@click="close( '#encodeForJavaScript( prc.logs.id )#' )"
+								x-show="rowId == '#encodeForJavaScript( prc.logs.id )#'"
+							>
+								Close Rule
+							</button>
+						</td>
+					</tr>
+
+					<tr
+						x-show="rowId == '#encodeForJavaScript( prc.logs.id )#'"
+						x-transition.delay.500
+					>
+						<td colspan="6">
+							<cfdump var="#deserializeJSON( prc.logs.rule )#">
+						</td>
+					</tr>
+				</cfloop>
+			</tbody>
+		</table>
+
+	</cfif>
 </div>
 </cfoutput>
