@@ -203,11 +203,17 @@ component accessors="true" singleton threadsafe {
 	 */
 	struct function getActionsReport(){
 		return queryExecute(
-			"select count( id ) as total, action from cbsecurity_logs group by action",
+			"select
+			count( id ) as total, action, ( count(id) / ( select count(id) from cbsecurity_logs ) ) * 100 as percentage
+			from cbsecurity_logs
+			group by action",
 			{},
 			{ datasource : variables.settings.firewall.logs.dsn }
 		).reduce( ( results, row ) => {
-			results[ row.action ] = row.total;
+			results[ row.action ] = {
+				"total" : row.total,
+				"percentage" : row.percentage
+			};
 			return results;
 		}, {} );
 	}

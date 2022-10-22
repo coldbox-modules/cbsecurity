@@ -101,13 +101,8 @@
 
 											<!-- Subtitle -->
 											<h2 class="mb-0">
-												#numberFormat( prc.actionsReport[ "block" ] )#
+												#numberFormat( prc.actionsReport[ "block" ].total )#
 											</h2>
-
-											<!-- Comment -->
-											<p class="fs-6 text-muted mb-0 mt-1">
-												#numberFormat( ( prc.actionsReport[ "block" ] / prc.logCounts ) * 100, "00" )#%
-											</p>
 										</div>
 
 										<span class="text-danger fs-2">
@@ -115,6 +110,26 @@
 										</span>
 									</div>
 								</div> <!-- / .row -->
+
+								<div class="row mx-1 mt-2">
+									<div
+										class="progress"
+										style="height: 25px; padding: 0px;"
+										data-bs-toggle="tooltip"
+										data-bs-title="#numberFormat( prc.actionsReport[ "block" ].percentage, "00" )#%"
+									>
+										<div
+											class="progress-bar bg-info text-dark"
+											role="progressbar"
+											style="width: #numberFormat( prc.actionsReport[ 'block' ].percentage, '00' )#%;"
+											aria-valuenow="#numberFormat( prc.actionsReport[ 'block' ].percentage, '00' )#"
+											aria-valuemin="0"
+											aria-valuemax="#prc.logCounts#"
+											>
+											#numberFormat( prc.actionsReport[ "block" ].percentage, "00" )#%
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -144,13 +159,8 @@
 
 											<!-- Subtitle -->
 											<h2 class="mb-0">
-												#numberFormat( prc.actionsReport[ "override" ] )#
+												#numberFormat( prc.actionsReport[ "override" ].total )#
 											</h2>
-
-											<!-- Comment -->
-											<p class="fs-6 text-muted mb-0 mt-1">
-												#numberFormat( ( prc.actionsReport[ "override" ] / prc.logCounts ) * 100, "00" )#%
-											</p>
 										</div>
 
 										<span class="text-warning fs-2">
@@ -158,6 +168,26 @@
 										</span>
 									</div>
 								</div> <!-- / .row -->
+
+								<div class="row mx-1 mt-2">
+									<div
+										class="progress"
+										style="height: 25px; padding: 0px;"
+										data-bs-toggle="tooltip"
+										data-bs-title="#numberFormat( prc.actionsReport[ "override" ].percentage, "00" )#%"
+									>
+										<div
+											class="progress-bar bg-info text-dark"
+											role="progressbar"
+											style="width: #numberFormat( prc.actionsReport[ 'override' ].percentage, '00' )#%;"
+											aria-valuenow="#numberFormat( prc.actionsReport[ 'override' ].percentage, '00' )#"
+											aria-valuemin="0"
+											aria-valuemax="#prc.logCounts#"
+											>
+											#numberFormat( prc.actionsReport[ "override" ].percentage, "00" )#%
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -187,13 +217,8 @@
 
 											<!-- Subtitle -->
 											<h2 class="mb-0">
-												#numberFormat( prc.actionsReport[ "redirect" ] )#
+												#numberFormat( prc.actionsReport[ "redirect" ].total )#
 											</h2>
-
-											<!-- Comment -->
-											<p class="fs-6 text-muted mb-0 mt-1">
-												#numberFormat( ( prc.actionsReport[ "redirect" ] / prc.logCounts ) * 100, "00" )#%
-											</p>
 										</div>
 
 										<span class="text-warning fs-2">
@@ -201,6 +226,26 @@
 										</span>
 									</div>
 								</div> <!-- / .row -->
+
+								<div class="row mx-1 mt-2">
+									<div
+										class="progress"
+										style="height: 25px; padding: 0px;"
+										data-bs-toggle="tooltip"
+										data-bs-title="#numberFormat( prc.actionsReport[ "redirect" ].percentage, "00" )#%"
+									>
+										<div
+											class="progress-bar bg-info text-dark"
+											role="progressbar"
+											style="width: #numberFormat( prc.actionsReport[ 'redirect' ].percentage, '00' )#%;"
+											aria-valuenow="#numberFormat( prc.actionsReport[ 'redirect' ].percentage, '00' )#"
+											aria-valuemin="0"
+											aria-valuemax="#prc.logCounts#"
+											>
+											#numberFormat( prc.actionsReport[ "redirect" ].percentage, "00" )#%
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -225,12 +270,15 @@
 							<tr>
 								<td class="text-uppercase">#thisItem#</td>
 								<td>
-									<div class="progress">
+									<div
+										class="progress"
+										style="height: 25px"
+										data-bs-toggle="tooltip"
+										data-bs-title="#numberFormat( prc.blockTypesReport[ thisItem ] )#"
+									>
 										<div
 											class="progress-bar"
 											role="progressbar"
-											data-bs-toggle="tooltip"
-											data-bs-title="#numberFormat( prc.blockTypesReport[ thisItem ] )#"
 											style="width: #numberFormat( ( prc.blockTypesReport[ thisItem ] / prc.logCounts ) * 100 )#%;"
 											aria-valuenow="#numberFormat( prc.blockTypesReport[ thisItem ] )#"
 											aria-valuemin="0"
@@ -455,16 +503,16 @@
 					<tr>
 						<td>
 							<small class="text-muted">
-								#dateTimeFormat( prc.logs.logDate, "dd MMM, YYYY HH:mm:ss z" )#
+								#dateTimeFormat( prc.logs.logDate.toString(), "dd MMM, YYYY HH:mm:ss z" )#
 							</small>
 						</td>
 						<td>
 							<cfif prc.logs.action eq "block">
-								<span class="fs-6 badge d-block bg-dark text-danger">
+								<span class="badge d-block text-bg-danger">
 							<cfelseif prc.logs.action eq "override">
-								<span class="fs-6 badge d-block bg-dark text-light">
+								<span class="badge d-block text-bg-primary ">
 							<cfelseif prc.logs.action eq "redirect">
-								<span class="fs-6 badge d-block bg-dark text-info">
+								<span class="badge d-block text-bg-info">
 							</cfif>
 								#prc.logs.action# : #prc.logs.blockType#
 							</span>
@@ -508,16 +556,20 @@
 								class="btn btn-light btn-sm"
 								@click="show( '#encodeForJavaScript( prc.logs.id )#' )"
 								x-show="rowId != '#encodeForJavaScript( prc.logs.id )#'"
+								data-bs-toggle="tooltip"
+								data-bs-title="Show Rule"
 							>
-								Show Rule
+								<i class="bi bi-chevron-double-down"></i>
 							</button>
 
 							<button
 								class="btn btn-light btn-sm"
 								@click="close( '#encodeForJavaScript( prc.logs.id )#' )"
 								x-show="rowId == '#encodeForJavaScript( prc.logs.id )#'"
+								data-bs-toggle="tooltip"
+								data-bs-title="Close Rule"
 							>
-								Close Rule
+								<i class="bi bi-chevron-double-up"></i>
 							</button>
 						</td>
 					</tr>
