@@ -4,7 +4,7 @@
 
 This module will enhance your ColdBox applications by providing out-of-the-box security in the form of:
 
-- A security rule engine for incoming requests allowing both authentication and authorization checks
+- A security rule engine for incoming requests allowing blocking, authentication, and authorization checks
 - Annotation-driven security for handlers and actions
 - JWT (JSON Web Tokens) generator, decoder, rotation, invalidation and authentication services
 - JWT Token Storage in a cache or database
@@ -13,6 +13,7 @@ This module will enhance your ColdBox applications by providing out-of-the-box s
 - CSRF protection
 - Security Headers for protection against ip spoofing, host spoofing, click jacking, ssl attacks, hsts, and much more
 - Pluggable with any Authentication service or can leverage [cbauth](https://github.com/coldbox-modules/cbauth) by default
+- Basic auth capabilities with an internal user storage
 - Capability to distinguish between invalid authentication and authorization and determine the process's outcome
 - Ability to load/unload security rules from contributing modules. So you can create a nice HMVC hierarchy of security
 - Ability for each module to define its own `validator`
@@ -55,15 +56,52 @@ moduleSettings = {
 	},
 
 	cbsecurity = {
+		/**
+		 * --------------------------------------------------------------------------
+		 * Authentication Services
+		 * --------------------------------------------------------------------------
+		 * Here you will configure which service is in charge of providing authentication for your application.
+		 * By default we leverage the cbauth module which expects you to connect it to a database via your own User Service.
+		 *
+		 * Available authentication providers:
+		 * - cbauth : Leverages your own UserService that determines authentication and user retrieval
+		 * - basicAuth : Leverages basic authentication and basic in-memory user registration in our configuration
+		 * - custom : Any other service that adheres to our IAuthService interface
+		 */
 		authentication : {
 			// The WireBox ID of the authentication service to use which must adhere to the cbsecurity.interfaces.IAuthService interface.
 			"provider"        : "authenticationService@cbauth",
-			// WireBox ID of the user service to use when leveraging user authentication
+			// WireBox ID of the user service to use when leveraging user authentication, we default this to whatever is set
+			// by cbauth or basic authentication. (Optional)
 			"userService"     : "",
 			// The name of the variable to use to store an authenticated user in prc scope on all incoming authenticated requests
 			"prcUserVariable" : "oCurrentUser"
 		},
 
+		/**
+		 * --------------------------------------------------------------------------
+		 * Basic Auth
+		 * --------------------------------------------------------------------------
+		 * These settings are used so you can configure the hashing patterns of the user storage
+		 * included with cbsecurity.  These are only used if you are using the `BasicAuthUserService` as
+		 * your service of choice alongside the `BasicAuthValidator`
+		 */
+		basicAuth : {
+			// Hashing algorithm to use
+			hashAlgorithm  : "SHA-512",
+			// Iterates the number of times the hash is computed to create a more computationally intensive hash.
+			hashIterations : 5,
+			// User storage: The `key` is the username. The value is the user credentials that can include
+			// { roles: "", permissions : "", firstName : "", lastName : "", password : "" }
+			users          : {}
+		},
+
+		/**
+		 * --------------------------------------------------------------------------
+		 * CSRF - Cross Site Request Forgery Settings
+		 * --------------------------------------------------------------------------
+		 * These settings configures the cbcsrf module. Look at the module configuration for more information
+		 */
 		csrf : {
 			// By default we load up an interceptor that verifies all non-GET incoming requests against the token validations
 			enableAutoVerifier     : false,
@@ -79,11 +117,18 @@ moduleSettings = {
 			// Enable/Disable the cbAuth login/logout listener in order to rotate keys
 			enableAuthTokenRotator : true
 		},
-
+		/**
+		 * --------------------------------------------------------------------------
+		 * Firewall Settings
+		 * --------------------------------------------------------------------------
+		 * The firewall is used to block/check access on incoming requests via security rules or via annotation on handler actions.
+		 * Here you can configure the operation of the firewall and especially what Validator will be in charge of verifying authentication/authorization
+		 * during a matched request.
+		 */
 		firewall : {
 			// Auto load the global security firewall automatically, else you can load it a-la-carte via the `Security` interceptor
 			"autoLoadFirewall"            : true,
-			// The validator is an object that will validate the firewall rules and annotations and provide feedback on either authentication or authorization issues.
+			// The Global validator is an object that will validate the firewall rules and annotations and provide feedback on either authentication or authorization issues.
 			"validator"                   : "CBAuthValidator@cbsecurity",
 			// Activate handler/action based annotation security
 			"handlerAnnotationSecurity"   : true,
@@ -95,6 +140,14 @@ moduleSettings = {
 			"invalidAuthorizationEvent"   : "",
 			// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
 			"defaultAuthorizationAction"  : "redirect",
+			// Firewall database event logs.
+			"logs" : {
+				"enabled"    : false,
+				"dsn"        : "",
+				"schema"     : "",
+				"table"      : "cbsecurity_logs",
+				"autoCreate" : true
+			}
 			// Firewall Rules, this can be a struct of detailed configuration
 			// or a simple array of inline rules
 			"rules"                       : {
@@ -114,41 +167,32 @@ moduleSettings = {
 			}
 		},
 
-		visualizer      : { "enabled" : false, "secured" : false, "permission" : "" },
+		/**
+		 * --------------------------------------------------------------------------
+		 * Security Visualizer
+		 * --------------------------------------------------------------------------
+		 * This is a debugging panel that when active, a developer can visualize security settings and more.
+		 * You can use the `securityRule` to define what rule you want to use to secure the visualizer but make sure the `secured` flag is turned to true.
+		 * You don't have to specify the `secureList` key, we will do that for you.
+		 */
+		visualizer : {
+			"enabled"      : false,
+			"secured"      : false,
+			"securityRule" : {}
+		},
 
-		// Security Headers
+		/**
+		 * --------------------------------------------------------------------------
+		 * Security Headers
+		 * --------------------------------------------------------------------------
+		 * This section is the way to configure cbsecurity for header detection, inspection and setting for common
+		 * security exploits like XSS, ClickJacking, Host Spoofing, IP Spoofing, Non SSL usage, HSTS and much more.
+		 */
 		securityHeaders                     : {
 			// Master switch for security headers
 			"enabled" : true,
-			// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
-			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-			"frameOptions"       : { "enabled" : true, "value" : "SAMEORIGIN" },
-			// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
-			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
-			// X-XSS-Protection: 1; mode=block
-			"xssProtection"      : { "enabled" : true, "mode" : "block" },
-			// The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised in
-			// the Content-Type headers should be followed and not be changed => X-Content-Type-Options: nosniff
-			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
-			"contentTypeOptions" : { "enabled" : true },
-			// The Referrer-Policy HTTP header controls how much referrer information (sent with the Referer header) should be included with requests.
-			// Aside from the HTTP header, you can set this policy in HTML.
-			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
-			"referrerPolicy"     : { "enabled" : true, "policy" : "same-origin" },
-			// HTTP Strict Transport Security (HSTS)
-			// The HTTP Strict-Transport-Security response header (often abbreviated as HSTS)
-			// informs browsers that the site should only be accessed using HTTPS, and that any future attempts to access it
-			// using HTTP should automatically be converted to HTTPS.
-			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security,
-			"hsts" : {
-				"enabled" : true,
-				// The time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS, 1 year is the default
-				"max-age" : "31536000",
-				// See Preloading Strict Transport Security for details. Not part of the specification.
-				"preload" : true,
-				// If this optional parameter is specified, this rule applies to all of the site's subdomains as well.
-				"includeSubDomains" : false
-			},
+			// If you trust the upstream then we will check the upstream first for specific headers
+			"trustUpstream"         : false,
 			// Content Security Policy
 			// Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks,
 			// including Cross-Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft, to
@@ -158,11 +202,32 @@ moduleSettings = {
 				// Disabled by defautl as it is totally customizable
 				"enabled" : false,
 				// The custom policy to use, by default we don't include any
-				"policy" : ""
+				"policy"  : ""
 			},
-			"customHeaders" : {
+			// The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised in
+			// the Content-Type headers should be followed and not be changed => X-Content-Type-Options: nosniff
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+			"contentTypeOptions" : { "enabled" : true },
+			"customHeaders"      : {
 				// Name : value pairs as you see fit.
-			}
+			},
+			// Disable Click jacking: X-Frame-Options: DENY OR SAMEORIGIN
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+			"frameOptions" : { "enabled" : true, "value" : "SAMEORIGIN" },
+			// HTTP Strict Transport Security (HSTS)
+			// The HTTP Strict-Transport-Security response header (often abbreviated as HSTS)
+			// informs browsers that the site should only be accessed using HTTPS, and that any future attempts to access it
+			// using HTTP should automatically be converted to HTTPS.
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security,
+			"hsts"         : {
+				"enabled"           : true,
+				// The time, in seconds, that the browser should remember that a site is only to be accessed using HTTPS, 1 year is the default
+				"max-age"           : "31536000",
+				// See Preloading Strict Transport Security for details. Not part of the specification.
+				"preload"           : false,
+				// If this optional parameter is specified, this rule applies to all of the site's subdomains as well.
+				"includeSubDomains" : false
+			},
 			// Validates the host or x-forwarded-host to an allowed list of valid hosts
 			"hostHeaderValidation" : {
 				"enabled"      : false,
@@ -175,11 +240,26 @@ moduleSettings = {
 				// Allowed IP list
 				"allowedIPs" : ""
 			},
+			// The Referrer-Policy HTTP header controls how much referrer information (sent with the Referer header) should be included with requests.
+			// Aside from the HTTP header, you can set this policy in HTML.
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+			"referrerPolicy"     : { "enabled" : true, "policy" : "same-origin" },
 			// Detect if the incoming requests are NON-SSL and if enabled, redirect with SSL
-			"secureSSLRedirects" : { "enabled" : false }
+			"secureSSLRedirects" : { "enabled" : false },
+			// Some browsers have built in support for filtering out reflected XSS attacks. Not foolproof, but it assists in XSS protection.
+			// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection,
+			// X-XSS-Protection: 1; mode=block
+			"xssProtection"      : { "enabled" : true, "mode" : "block" }
 		},
 
-		// JWT Settings
+		/**
+		 * --------------------------------------------------------------------------
+		 * Json Web Tokens Settings
+		 * --------------------------------------------------------------------------
+		 * Here you can configure the JWT services for operation and storage.  In order for your firewall
+		 * to leverage JWT authentication/authorization you must make sure you use the `JwtAuthValidator` as your
+		 * validator of choice; either globally or at the module level.
+		 */
 		jwt                          : {
 			// The issuer authority for the tokens, placed in the `iss` claim
 			"issuer"                  : "",
@@ -226,7 +306,7 @@ moduleSettings = {
 
 ## Usage
 
-This module will automatically register the `Security` interceptor for you according to the settings shown above and using the interceptor => (`cbsecurity.interceptor.Security`).
+This module will automatically register the `Security` firewall interceptor for you according to the settings shown above and using the interceptor => (`cbsecurity.interceptor.Security`).
 
 > **Info** You can deactivate this and load it as a manual interceptor via the `autoLoadFirewall` setting.
 
@@ -236,11 +316,11 @@ The interceptor will intercept all calls to your application via the `preProcess
 
 ### How does validation happen?
 
-How does the interceptor know a user doesn't have access? Well, here is where you register a Validator CFC (`validator` setting) with the interceptor that implements two validation functions: `ruleValidator() and annotationValidator()`.
+How does the interceptor know a user doesn't have access? Well, here is where you register a Validator CFC (`validator` setting) with `cbsecurity` that implements two validation functions: `ruleValidator() and annotationValidator()`.
 
 > **Info** You can find an interface for these methods in `cbsecurity.interfaces.ISecurityValidator`
 
-The validator's job is to tell back to the firewall if they are allowed access and if they don't, what type of validation they broke: **authentication** or **authorization**.
+The validator's job is to tell back to the firewall if they are allowed access and if they don't, what type of validation they broke: **authentication** or **authorization** or just plainly **block** the request.
 
 > `Authentication` is when a user is NOT logged in
 
@@ -248,9 +328,10 @@ The validator's job is to tell back to the firewall if they are allowed access a
 
 ## Validation Process
 
-Once the firewall has the results, and the user is NOT allowed access. Then the following will occur:
+Once the firewall has the results, and the user is **NOT** allowed access. Then the following will occur:
 
 - The request will be logged via LogBox
+- If the firewall database logs are enabled, then we will log it in our database logs
 - The current URL will be flashed as `_securedURL` so it can be used in relocations
 - If using a rule, the rule will be stored in `prc` as `cbsecurity_matchedRule`
 - The validator results will be stored in `prc` as `cbsecurity_validatorResults`
@@ -258,6 +339,7 @@ Once the firewall has the results, and the user is NOT allowed access. Then the 
 - If the type of invalidation is `authorization` the `cbSecurity_onInvalidAuthorization` interception will be announced
 - If the type is `authentication` the default action for that type will be executed (An override or a relocation) `invalidAuthenticationEvent`
 - If the type is `authorization` the default action for that type will be executed (An override or a relocation) `invalidAuthorizationEvent`
+- If the action is `block` then the firewall will block the request.
 
 ### Caveats
 
@@ -287,7 +369,7 @@ rules = [
         "redirect"      : "", // If rule breaks, and you have a redirect it will redirect here
         "overrideEvent" : "", // If rule breaks, and you have an event, it will override it
         "useSSL"        : false, // Force SSL,
-        "action"        : "", // The action to use (redirect|override) when no redirect or overrideEvent is defined in the rule.
+        "action"        : "", // The action to use (redirect|override|block) when no redirect or overrideEvent is defined in the rule.
         "module"        : "", // metadata we can add so mark rules that come from modules
 		"httpMethods"   : "*", // Match all HTTP methods or particular ones as a list
 		"allowedIPs"    : "*" // The rule only matches if the IP list matches. It can be a list of IPs to match.
@@ -309,7 +391,9 @@ moduleSettings = {
 			"invalidAuthenticationEvent"    : "main.index",
 			// Global override event when invalid access is detected, instead of each rule declaring one.
 			"invalidAuthorizationEvent"     : "main.index",
-			// Default invalid action: override or redirect when invalid access is detected, default is to redirect
+			// Default invalid action: override or redirect or block when invalid access is detected, default is to redirect
+			"defaultAuthenticationAction"    : "block",
+			// Default invalid action: override or redirect or block when invalid access is detected, default is to redirect
 			"defaultAuthorizationAction"    : "redirect",
 			// The global security rules as inline
         	"rules"                         : [
@@ -370,11 +454,11 @@ settings = {
         firewall : {
 			// Module Relocation when an invalid access is detected, instead of each rule declaring one.
 			"invalidAuthenticationEvent"    : "mod1:secure.index",
-			// Default Authentication Action: override or redirect when a user has not logged in
+			// Default Authentication Action: override or redirect or block when a user has not logged in
 			"defaultAuthenticationAction"   : "override",
 			// Module override event when an invalid access is detected, instead of each rule declaring one.
 			"invalidAuthorizationEvent"     : "mod1:secure.auth",
-			// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
+			// Default Authorization Action: override or redirect or block when a user does not have enough permissions to access something
 			"defaultAuthorizationAction"    : "override",
 			// Custom validator for the module.
 			"validator"                     : "JwtAuthValidator@cbsecurity"
@@ -522,6 +606,7 @@ private function permissionValidator( permissions, controller, rule ){
 ## Interceptions
 
 ### Authentication / Authorization
+
 When invalid access or authorizations occur, the interceptor will announce the following events:
 
 - `cbSecurity_onInvalidAuthentication` - When an invalid authentication is detected
@@ -551,7 +636,7 @@ You will receive the following data in the `interceptData` struct:
 
 This module also ships with a security visualizer that will document all your security rules and settings in a nice panel. In order to activate it you must add the `visualizer` setting to your config and mark it as `enabled`. Once enabled you can navigate to: `/cbsecurity,` and you will be presented with the visualizer.
 
-> **Important** The visualizer is disabled by default, and if it detects an environment of production, it will disable itself.
+> **Important** The visualizer is disabled by default
 
 <img src="https://raw.githubusercontent.com/coldbox-modules/cbsecurity/development/test-harness/visualizer.png" class="img-responsive">
 

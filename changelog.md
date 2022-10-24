@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* New ability for the firewall to log all action events to a database table.
+* New visualizer that can visualize all settings and all firewall events via the log table if enabled.
 * New Basic Auth validator and basic auth user credentials storage system. This will allow you to secure your apps where no database interaction is needed or required.
 * New global and rule action: `block` and the fireall will block the request with a 401 Unathorized page.
 * New event `cbSecurity_onFirewallBlock` announced whenever the firewall blocks a request into the system with a 403.
