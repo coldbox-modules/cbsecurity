@@ -477,7 +477,7 @@
 			</div>
 		</div>
 
-		<h3 class="my-4">Activity Log</h3>
+		<h3 class="my-4">Latest Activity Log (#prc.logs.recordCount#)</h3>
 
 		<table class="table table-sm table-hover">
 			<thead>

@@ -15,6 +15,10 @@
 	</cfif>
 
 	<li>
+		<a href="/cbsecurity">Visualizer</a>
+	</li>
+
+	<li>
 		<a href="/admin">Admin Access Test</a>
 	</li>
 	<li>
