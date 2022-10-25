@@ -5,9 +5,9 @@ component {
 	 */
 	function configure(){
 		// refresh token endpoint
-		post( "/refreshtoken" ).to( "Home.refreshToken" );
+		post( "/refreshtoken" ).to( "Jwt.refreshToken" );
 		// visualizer
-		route( "/" ).to( "Home.index" );
+		route( "/" ).to( "Visualizer.index" );
 	}
 
 }
