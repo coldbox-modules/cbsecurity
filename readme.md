@@ -2,6 +2,10 @@
 
 # WELCOME TO THE COLDBOX SECURITY MODULE
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/coldbox-modules/cbsecurity/development/visualizer.png">
+</p>
+
 This module will enhance your ColdBox applications by providing out-of-the-box security in the form of:
 
 - A security rule engine for incoming requests allowing blocking, authentication, and authorization checks
