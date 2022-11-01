@@ -24,7 +24,7 @@
     ],
     "dependencies":{
         "jwt-cfml":"^1.0.0",
-        "cbauth":"^5.0.0",
+        "cbauth":"^6.0.0",
         "cbcsrf":"^2.0.0"
     },
     "devDependencies":{
