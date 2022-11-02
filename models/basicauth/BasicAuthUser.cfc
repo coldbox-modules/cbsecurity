@@ -1,5 +1,6 @@
 /**
- * This is a basic user object that can be used with cbsecurity's BasicAuth.
+ * This is a basic user object that can be used with CBSecurity.
+ *
  * It implements the following interfaces
  * - cbsecurity.interfaces.jwt.IJwtSubject
  * - cbsecurity.interfaces.IAuthUser
@@ -14,6 +15,37 @@ component accessors="true" {
 	property name="permissions";
 	property name="roles";
 
+	/**
+	 * Validation constraints
+	 */
+	this.constraints = {
+		firstName : { required : true, size : "1..255" },
+		lastName : { required : true, size : "1..255" },
+		username : { required : true, size : "1..255" }
+	};
+
+	/**
+	 * Mementifier serialization
+	 */
+	this.memento = {
+		// Default properties to serialize
+		defaultIncludes : [
+			"firstName",
+			"lastName",
+			"username",
+			"permissions",
+			"roles"
+		],
+		// Default Exclusions
+		defaultExcludes : [
+		],
+		// Never Include
+		neverInclude : [ "password" ]
+	};
+
+	/**
+	 * Constructor
+	 */
 	function init(){
 		variables.id        = "";
 		variables.firstName = "";
@@ -27,7 +59,12 @@ component accessors="true" {
 		return this;
 	}
 
-	function setRoles( roles ){
+	/**
+	 * Set roles into the object
+	 *
+	 * @roles array or list of roles
+	 */
+	BasicAuthUser function setRoles( roles ){
 		if ( isSimpleValue( arguments.roles ) ) {
 			arguments.roles = listToArray( arguments.roles );
 		}
@@ -35,7 +72,12 @@ component accessors="true" {
 		return this;
 	}
 
-	function setPermissions( permissions ){
+	/**
+	 * Set permissions into this object
+	 *
+	 * @permissions array or list of permissions
+	 */
+	BasicAuthUser function setPermissions( permissions ){
 		if ( isSimpleValue( arguments.permissions ) ) {
 			arguments.permissions = listToArray( arguments.permissions );
 		}
