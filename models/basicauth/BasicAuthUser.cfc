@@ -17,15 +17,26 @@ component accessors="true" {
 
 	/**
 	 * Validation constraints
+	 * https://coldbox-validation.ortusbooks.com/overview/valid-constraints
 	 */
 	this.constraints = {
 		firstName : { required : true, size : "1..255" },
 		lastName : { required : true, size : "1..255" },
-		username : { required : true, size : "1..255" }
+		username : { required : true, size : "1..255" },
+		password : { required : true, size : "1..255" }
+	};
+
+	/**
+	 * Validation profiles
+	 * https://coldbox-validation.ortusbooks.com/overview/validating-constraints/validating-with-profiles
+	 */
+	this.constraintProfiles = {
+		"update" : "firstName,lastName,username"
 	};
 
 	/**
 	 * Mementifier serialization
+	 * https://forgebox.io/view/mementifier
 	 */
 	this.memento = {
 		// Default properties to serialize
