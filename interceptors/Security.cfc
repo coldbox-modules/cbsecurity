@@ -26,7 +26,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 */
 	function configure(){
 		// Shorthand for rules
-		if ( isArray( variables.properties.firewall.rules ) && arrayLen( variables.properties.firewall.rules ) ) {
+		if ( isArray( variables.properties.firewall.rules ) ) {
 			variables.properties.firewall.rules = variables.cbSecurity
 				.getDefaultRuleSettings()
 				.append( { "inline" : variables.properties.firewall.rules }, true );
