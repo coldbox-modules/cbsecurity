@@ -77,7 +77,7 @@ component accessors="true" singleton {
 	/**
 	 * New User dispenser
 	 */
-	BasicAuthUser function new() provider="BasicAuthUser@cbsecurity"{
+	User function new() provider="User@cbsecurity"{
 	}
 
 	/**
@@ -87,7 +87,7 @@ component accessors="true" singleton {
 	 *
 	 * @return The located user or a new un-loaded user object
 	 */
-	BasicAuthUser function retrieveUserById( required id ){
+	User function retrieveUserById( required id ){
 		var userRecord = variables.settings.basicAuth.users
 			.filter( ( key, value ) => value.id == id )
 			.reduce( ( results, key, value ) => value, {} );
@@ -101,7 +101,7 @@ component accessors="true" singleton {
 	 *
 	 * @return The valid user object representing the username or an empty user object
 	 */
-	BasicAuthUser function retrieveUserByUsername( required username ){
+	User function retrieveUserByUsername( required username ){
 		return populator.populateFromStruct(
 			new (),
 			variables.settings.basicAuth.users.keyExists( arguments.username ) ? variables.settings.basicAuth.users[

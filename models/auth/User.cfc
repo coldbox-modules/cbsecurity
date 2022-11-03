@@ -63,7 +63,6 @@ component accessors="true" {
 		variables.lastName  = "";
 		variables.username  = "";
 		variables.password  = "";
-
 		variables.permissions = [];
 		variables.roles       = [];
 
@@ -75,7 +74,7 @@ component accessors="true" {
 	 *
 	 * @roles array or list of roles
 	 */
-	BasicAuthUser function setRoles( roles ){
+	User function setRoles( roles ){
 		if ( isSimpleValue( arguments.roles ) ) {
 			arguments.roles = listToArray( arguments.roles );
 		}
@@ -88,7 +87,7 @@ component accessors="true" {
 	 *
 	 * @permissions array or list of permissions
 	 */
-	BasicAuthUser function setPermissions( permissions ){
+	User function setPermissions( permissions ){
 		if ( isSimpleValue( arguments.permissions ) ) {
 			arguments.permissions = listToArray( arguments.permissions );
 		}
