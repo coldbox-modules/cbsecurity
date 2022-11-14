@@ -14,15 +14,15 @@ component singleton accessors="true" {
 	/**
 	 * Retrieve the Jwt Auth Service
 	 */
-	function jwtAuth() {
-        return variables.jwtService;
+	function jwtAuth(){
+		return variables.jwtService;
 	}
 
 	/**
 	 * Retrieve the CBSecurity Service Object
 	 */
-	function cbSecure() {
-        return variables.cbsecurity;
+	function cbSecure(){
+		return variables.cbsecurity;
 	}
 
 	/**

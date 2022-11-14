@@ -38,6 +38,7 @@ Apache License, Version 2.0.
 
 - Lucee 5+
 - ColdFusion 2018+
+- ColdBox 7+ for delegates and basic auth
 
 ## Installation
 
