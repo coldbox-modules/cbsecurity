@@ -579,7 +579,7 @@
 						x-transition.delay.500
 					>
 						<td colspan="6">
-							<cfdump var="#deserializeJSON( prc.logs.rule )#">
+							<cfdump var="#deserializeJSON( prc.logs.securityRule )#">
 						</td>
 					</tr>
 				</cfloop>
