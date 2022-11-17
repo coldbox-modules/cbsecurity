@@ -163,7 +163,7 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Logout a user and invalidate their access token
 	 *
-	 * @user        
+	 * @user
 	 * @customClaims
 	 */
 	function logout(){
@@ -245,7 +245,7 @@ component accessors="true" singleton threadsafe {
 		// Verify it
 		if ( isNull( oUser ) || !len( oUser.getId() ) ) {
 			// Announce the invalid user
-			variables.interceptorService.processState(
+			variables.interceptorService.announce(
 				"cbSecurity_onJWTInvalidUser",
 				{ payload : arguments.payload }
 			);
@@ -261,7 +261,7 @@ component accessors="true" singleton threadsafe {
 			.setPrivateValue( variables.settings.authentication.prcUserVariable, oUser );
 
 		// Announce the valid authentication
-		variables.interceptorService.processState(
+		variables.interceptorService.announce(
 			"cbSecurity_onJWTValidAuthentication",
 			{ payload : arguments.payload, user : oUser }
 		);
@@ -289,7 +289,7 @@ component accessors="true" singleton threadsafe {
 		var results = getTokenStorage().clear( this.decode( arguments.token ).jti );
 
 		// Announce the token invalidation
-		variables.interceptorService.processState( "cbSecurity_onJWTInvalidation", { token : arguments.token } );
+		variables.interceptorService.announce( "cbSecurity_onJWTInvalidation", { token : arguments.token } );
 
 		return results;
 	}
@@ -313,7 +313,7 @@ component accessors="true" singleton threadsafe {
 		getTokenStorage().clearAll( arguments.async );
 
 		// Announce the token invalidation
-		variables.interceptorService.processState( "cbSecurity_onJWTInvalidateAllTokens" );
+		variables.interceptorService.announce( "cbSecurity_onJWTInvalidateAllTokens" );
 
 		if ( variables.log.canInfo() ) {
 			variables.log.info( "All tokens cleared via token storage clear all" );
@@ -442,7 +442,7 @@ component accessors="true" singleton threadsafe {
 				}
 
 				// Announce the invalid claims
-				variables.interceptorService.processState(
+				variables.interceptorService.announce(
 					"cbSecurity_onJWTInvalidClaims",
 					{ token : arguments.token, payload : decodedToken }
 				);
@@ -463,7 +463,7 @@ component accessors="true" singleton threadsafe {
 			}
 
 			// Announce the token expiration
-			variables.interceptorService.processState(
+			variables.interceptorService.announce(
 				"cbSecurity_onJWTExpiration",
 				{ token : arguments.token, payload : decodedToken }
 			);
@@ -478,7 +478,7 @@ component accessors="true" singleton threadsafe {
 			}
 
 			// Announce the rejection, token not found in storage
-			variables.interceptorService.processState(
+			variables.interceptorService.announce(
 				"cbSecurity_onJWTStorageRejection",
 				{ token : arguments.token, payload : decodedToken }
 			);
@@ -507,7 +507,7 @@ component accessors="true" singleton threadsafe {
 				.setPrivateValue( "jwt_payload", decodedToken );
 
 			// Announce the valid parsing
-			variables.interceptorService.processState(
+			variables.interceptorService.announce(
 				"cbSecurity_onJWTValidParsing",
 				{ token : arguments.token, payload : decodedToken }
 			);
@@ -635,7 +635,7 @@ component accessors="true" singleton threadsafe {
 			}
 
 			// Announce the token expiration
-			variables.interceptorService.processState( "cbSecurity_onJWTExpiration", { token : arguments.token } );
+			variables.interceptorService.announce( "cbSecurity_onJWTExpiration", { token : arguments.token } );
 
 			throw( type = "TokenExpiredException", message = "Token has expired" );
 		} catch ( any e ) {
@@ -789,7 +789,7 @@ component accessors="true" singleton threadsafe {
 		}
 
 		// Announce the creation
-		variables.interceptorService.processState(
+		variables.interceptorService.announce(
 			"cbSecurity_onJWTCreation",
 			{
 				token   : jwtToken,
