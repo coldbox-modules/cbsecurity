@@ -46,7 +46,7 @@ component accessors="true" singleton threadsafe {
 		"referer",
 		"userAgent",
 		"userId",
-		"rule"
+		"securityRule"
 	];
 
 	/**
@@ -163,7 +163,7 @@ component accessors="true" singleton threadsafe {
 				referer     : { cfsqltype : "varchar", value : arguments.referer },
 				userAgent   : { cfsqltype : "varchar", value : arguments.userAgent },
 				userId      : { cfsqltype : "varchar", value : arguments.userId },
-				rule        : {
+				securityRule        : {
 					cfsqltype : "longvarchar",
 					value     : serializeJSON( arguments.rule )
 				}
@@ -403,7 +403,7 @@ component accessors="true" singleton threadsafe {
 						referer VARCHAR(255),
 						userAgent VARCHAR(255) NOT NULL,
 						userId VARCHAR(36),
-						rule #getTextColumnType()#,
+						securityRule #getTextColumnType()#,
 						PRIMARY KEY (id)
 					)",
 					{},
