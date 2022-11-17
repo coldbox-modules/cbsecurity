@@ -130,7 +130,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		param arguments.settings.firewall.rules                       = {};
 
 		// Shorthand for rules
-		if ( isArray( arguments.settings.firewall.rules ) && arrayLen( arguments.settings.firewall.rules ) ) {
+		if ( isArray( arguments.settings.firewall.rules ) ) {
 			arguments.settings.firewall.rules = {
 				inline   : arguments.settings.firewall.rules,
 				defaults : {},
