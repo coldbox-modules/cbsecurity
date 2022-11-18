@@ -565,7 +565,7 @@ component accessors="true" singleton threadsafe {
 	}
 
 	/**
-	 * Get the authenticated user stored on `prc` via the variables.settings.prcUserVariable setting.
+	 * Get the authenticated user stored on `prc` via the variables.settings.authentication.prcUserVariable setting.
 	 * if it doesn't exist, then call parseToken() and try to load it and authenticate it.
 	 *
 	 * @return The user that implements IAuth and IJwtSubject
@@ -573,11 +573,11 @@ component accessors="true" singleton threadsafe {
 	function getUser(){
 		var event = variables.requestService.getContext();
 
-		if ( !event.privateValueExists( variables.settings.prcUserVariable ) ) {
+		if ( !event.privateValueExists( variables.settings.authentication.prcUserVariable ) ) {
 			parseToken();
 		}
 
-		return event.getPrivateValue( variables.settings.prcUserVariable );
+		return event.getPrivateValue( variables.settings.authentication.prcUserVariable );
 	}
 
 	/************************************************************************************/
