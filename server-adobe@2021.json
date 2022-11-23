@@ -22,5 +22,8 @@
     "openBrowser":"false",
     "cfconfig":{
         "file":".cfconfig.json"
+    },
+	"scripts":{
+        "onServerInstall":"cfpm install zip,debugger,mysql"
     }
 }
