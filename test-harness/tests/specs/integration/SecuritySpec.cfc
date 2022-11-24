@@ -173,7 +173,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 				given( "A secured annotated handler and an annotated action and a valid access", function(){
 					then( "it should allow access", function(){
-						prepareMock( getInstance( "CBAuthValidator@cbSecurity" ) ).$(
+						prepareMock( getInstance( "AuthValidator@cbSecurity" ) ).$(
 							"annotationValidator",
 							{ allow : true, type : "authentication" }
 						);
@@ -184,7 +184,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 				given( "A secured annotated handler and an annotated action with invalid auth", function(){
 					then( "it should allow access to handler but not to action", function(){
-						prepareMock( getInstance( "CBAuthValidator@cbSecurity" ) )
+						prepareMock( getInstance( "AuthValidator@cbSecurity" ) )
 							.$( "annotationValidator" )
 							.$results(
 								{ allow : true, type : "authentication" },

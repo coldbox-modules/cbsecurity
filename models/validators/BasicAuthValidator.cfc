@@ -7,8 +7,9 @@
  */
 component singleton threadsafe {
 
-	// Injection
+	// DI
 	property name="cbSecurity" inject="CBSecurity@cbSecurity";
+	property name="log"        inject="logbox:logger:{this}";
 
 	/**
 	 * This function is called once an incoming event matches a security rule.
@@ -79,32 +80,40 @@ component singleton threadsafe {
 				results.allow = true;
 			} catch ( "InvalidCredentials" e ) {
 				// Not secure! Basic Auth Prompt
-				event.setHTTPHeader(
-					name  = "WWW-Authenticate",
-					value = "basic realm='Please enter your credentials'"
-				).setHTTPHeader( name = "Cache-Control", value = "no-cache, must-revalidate, max-age=0" );
+				event
+					.setHTTPHeader(
+						name  = "WWW-Authenticate",
+						value = "basic realm='Please enter your credentials'"
+					)
+					.setHTTPHeader( name = "Cache-Control", value = "no-cache, must-revalidate, max-age=0" );
 				results.processactions = false;
 				return results;
 			}
 		}
 
 		// If we are here, we are logged in, verify authorizations
-		var user      = authService.getUser();
+		var oUser     = authService.getUser();
 		// Authentication passed, we are on to authorization now
 		results.type  = "authorization";
 		// Default to block, unless we validate either roles or permissions
 		results.allow = arrayLen( arguments.roles ) || arrayLen( arguments.permissions ) ? false : true;
 
-		// Check if the access requires roles
+		// Validate new interface if not, just warn
+		// TODO: Change to just use the hasRole() by vNext : Compat for now.
+		if ( !structKeyExists( oUser, "hasRole" ) ) {
+			variables.log.warn( "CBSecurity User object does not implement the `hasRole()` method. Please add it." );
+		}
+
+		// Check roles
 		if ( arrayLen( arguments.roles ) && structKeyExists( user, "hasRole" ) ) {
-			if ( user.hasRole( arguments.roles ) ) {
+			if ( oUser.hasRole( arguments.roles ) ) {
 				results.allow = true;
 			}
 		}
 
-		// Check if the access requires permissions
+		// Check perms
 		if ( arrayLen( arguments.permissions ) ) {
-			if ( user.hasPermission( arguments.permissions ) ) {
+			if ( oUser.hasPermission( arguments.permissions ) ) {
 				results.allow = true;
 			}
 		}

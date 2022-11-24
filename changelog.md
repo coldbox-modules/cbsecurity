@@ -16,9 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * **COMPAT** New `JwtAuthValidator` instead of mixing concerns with the `JwtService`.  You will have to update your configuration to use this `validator` instead of the `JwtService`
 * `useSSL` is now defaulted to `true` for all security relocations as the default
 * Encapsulation of `jwt` settings from the `ModuleConfig` to the `JwtService`
+* `CBAuthValidator` has been renamed to just `AuthValidator` this way it can be used with ANY authentication service instead of binding it to just `cbauth`.  This validator just relies on the `IAuthUser` interface now.
 
 ### Added
 
+* New `AuthValidator` now can validate permissions and roles according to our `IAuthUser` interface but can be used on ANY authentication service that implements `IAuthService`
 * New authorization and authentication delegates for usage in cb7
 * New ability for the firewall to log all action events to a database table.
 * New visualizer that can visualize all settings and all firewall events via the log table if enabled.
