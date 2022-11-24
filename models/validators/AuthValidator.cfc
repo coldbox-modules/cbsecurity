@@ -88,7 +88,7 @@ component singleton threadsafe {
 			}
 
 			// Check Perms
-			if ( listLen( arguments.permissions ) ) {
+			if ( arrayLen( arguments.permissions ) ) {
 				for ( var thisPermission in arguments.permissions ) {
 					if ( oUser.hasPermission( thisPermission ) ) {
 						results.allow = true;
