@@ -351,7 +351,7 @@ component accessors="true" singleton threadsafe {
 		}
 
 		// else default to app datasource
-		if ( !isNull( settings.datasource ) ) {
+		if ( !isNull( settings.datasource ) && len( settings.datasource ) ) {
 			return settings.datasource;
 		}
 
