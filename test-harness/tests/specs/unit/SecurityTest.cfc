@@ -21,8 +21,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 						{ "version" : "6.0.0" },
 						false
 					);
-				mockLogger = createEmptyMock( "coldbox.system.logging.Logger" )
-					.$( "info" );
+				mockLogger = createEmptyMock( "coldbox.system.logging.Logger" ).$( "info" );
 				mockController
 					.$( "getSetting" )
 					.$args( "modules" )
@@ -99,8 +98,10 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 			it( "can load a valid validator", function(){
 				settings.firewall.rules.provider.source          = "json";
-				settings.firewall.rules.provider.properties.file = expandPath( "/tests/resources/security.json.cfm" );
-				settings.firewall.validator                      = "tests.resources.security";
+				settings.firewall.rules.provider.properties.file = expandPath(
+					"/tests/resources/security.json.cfm"
+				);
+				settings.firewall.validator = "tests.resources.security";
 				security.getRulesLoader().$( "loadRules", [] );
 
 				security
@@ -119,8 +120,10 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 			it( "can detect an invalid validator", function(){
 				settings.firewall.rules.provider.source          = "json";
-				settings.firewall.rules.provider.properties.file = expandPath( "/tests/resources/security.json.cfm" );
-				settings.firewall.validator                      = "tests.invalidty";
+				settings.firewall.rules.provider.properties.file = expandPath(
+					"/tests/resources/security.json.cfm"
+				);
+				settings.firewall.validator = "tests.invalidty";
 				security.getRulesLoader().$( "loadRules", [] );
 
 				security
@@ -168,7 +171,9 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 				it( "can load JSON Rules", function(){
 					settings.firewall.rules.provider.source          = "json";
-					settings.firewall.rules.provider.properties.file = expandPath( "/tests/resources/security.json.cfm" );
+					settings.firewall.rules.provider.properties.file = expandPath(
+						"/tests/resources/security.json.cfm"
+					);
 					mockController.$( "locateFilePath", settings.firewall.rules.provider.properties.file );
 
 					security.configure();
@@ -178,7 +183,9 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 
 				it( "can load XML Rules", function(){
 					settings.firewall.rules.provider.source          = "xml";
-					settings.firewall.rules.provider.properties.file = expandPath( "/tests/resources/security.xml.cfm" );
+					settings.firewall.rules.provider.properties.file = expandPath(
+						"/tests/resources/security.xml.cfm"
+					);
 					mockController.$( "locateFilePath", settings.firewall.rules.provider.properties.file );
 
 					security.configure();

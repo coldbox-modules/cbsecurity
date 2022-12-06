@@ -17,11 +17,11 @@ component accessors="true" singleton {
 
 	variables.DEFAULT_SETTINGS = {
 		// Hashing algorithm to use
-		"hashAlgorithm" : "SHA-512",
+		"hashAlgorithm"  : "SHA-512",
 		// Iterates the number of times the hash is computed to create a more computationally intensive hash.
 		"hashIterations" : 5,
 		// User storage
-		"users" : {}
+		"users"          : {}
 	};
 
 	/**
@@ -33,7 +33,10 @@ component accessors="true" singleton {
 
 	function onDIComplete(){
 		// Normalize settings
-		variables.settings.basicAuth = duplicate( variables.DEFAULT_SETTINGS ).append( variables.settings.basicAuth, true );
+		variables.settings.basicAuth = duplicate( variables.DEFAULT_SETTINGS ).append(
+			variables.settings.basicAuth,
+			true
+		);
 		// Normalize User Storage + password encryption
 		settings.basicAuth.users = settings.basicAuth.users.map( ( key, value ) => {
 			var user      = getNewUserTemplate().append( arguments.value, true );
@@ -45,10 +48,16 @@ component accessors="true" singleton {
 
 	/**
 	 * Hash the incoming target according to our hashing algorithm and settings
+	 *
 	 * @target The string target to hash
 	 */
 	string function hashSecurely( required string target ){
-		return hash( arguments.target, variables.settings.basicAuth.hashAlgorithm, "UTF-8", variables.settings.basicAuth.hashIterations );
+		return hash(
+			arguments.target,
+			variables.settings.basicAuth.hashAlgorithm,
+			"UTF-8",
+			variables.settings.basicAuth.hashIterations
+		);
 	}
 
 	/**

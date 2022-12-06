@@ -149,7 +149,9 @@ component threadsafe singleton accessors="true" {
 			)
 		) {
 			variables.settings.authentication.userService = variables.moduleSettings.cbauth.settings.userServiceClass;
-			log.info( "+ cbAuth detected and no UserService detected -> User Service set to cbAuth's UserServiceClass" );
+			log.info(
+				"+ cbAuth detected and no UserService detected -> User Service set to cbAuth's UserServiceClass"
+			);
 		}
 
 		// User service default if basic auth is selected

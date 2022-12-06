@@ -163,7 +163,7 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Logout a user and invalidate their access token
 	 *
-	 * @user
+	 * @user        
 	 * @customClaims
 	 */
 	function logout(){
@@ -245,10 +245,7 @@ component accessors="true" singleton threadsafe {
 		// Verify it
 		if ( isNull( oUser ) || !len( oUser.getId() ) ) {
 			// Announce the invalid user
-			variables.interceptorService.announce(
-				"cbSecurity_onJWTInvalidUser",
-				{ payload : arguments.payload }
-			);
+			variables.interceptorService.announce( "cbSecurity_onJWTInvalidUser", { payload : arguments.payload } );
 			throw( message = "The user was not found by the user service", type = "InvalidTokenUser" );
 		}
 
