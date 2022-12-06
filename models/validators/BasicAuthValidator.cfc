@@ -101,7 +101,9 @@ component singleton threadsafe {
 		// Validate new interface if not, just warn
 		// TODO: Change to just use the hasRole() by vNext : Compat for now.
 		if ( !structKeyExists( oUser, "hasRole" ) ) {
-			variables.log.warn( "CBSecurity User object does not implement the `hasRole()` method. Please add it." );
+			variables.log.warn(
+				"CBSecurity User object does not implement the `hasRole()` method. Please add it."
+			);
 		}
 
 		// Check roles

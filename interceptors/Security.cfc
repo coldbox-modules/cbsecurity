@@ -64,7 +64,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				variables.rulesLoader
 					.getRuleTemplate()
 					.append( variables.properties.visualizer.securityRule )
-					.append( { secureList : "^cbsecurity:Visualizer.*", action : "block" } )
+					.append( {
+						secureList : "^cbsecurity:Visualizer.*",
+						action     : "block"
+					} )
 			);
 		}
 
@@ -187,7 +190,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		// Log it
-		log.info( "+ Registered module (#arguments.module#) with cbSecurity using #arrayLen( arguments.settings.firewall.rules.inline )# rules." );
+		log.info(
+			"+ Registered module (#arguments.module#) with cbSecurity using #arrayLen( arguments.settings.firewall.rules.inline )# rules."
+		);
 
 		return this;
 	}
@@ -195,11 +200,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen to module loadings, so we can do module rule registrations
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function postModuleLoad( event, interceptData, rc, prc, buffer ){
 		// Is this a cbSecurity Module & not registered
@@ -218,11 +223,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen to module unloadings, so we can do module rule cleanups
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function postModuleUnload( event, interceptData, rc, prc, buffer ){
 		// Is the module registered?
@@ -241,11 +246,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Our firewall kicks in at preProcess
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function preProcess( event, interceptData, rc, prc, buffer ){
 		// Add SecureView() into the requestcontext
@@ -285,9 +290,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Process handler annotation based security rules.
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @currentEvent
+	 * @currentEvent 
 	 */
 	function processAnnotationRules(
 		required event,
