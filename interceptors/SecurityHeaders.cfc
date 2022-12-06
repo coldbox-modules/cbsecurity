@@ -104,11 +104,11 @@ component extends="coldbox.system.Interceptor" {
 				log.debug( "Non-SSL URI detected (#event.getFullUrl()#), redirecting in ssl" );
 			}
 			variables.dbLogger.log(
-				action     : "redirect",
-				blockType  : "NON-SSL",
-				ip         : variables.cbSecurity.getRealIp(),
-				host       : variables.cbSecurity.getRealHost(),
-				userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
+				action   : "redirect",
+				blockType: "NON-SSL",
+				ip       : variables.cbSecurity.getRealIp(),
+				host     : variables.cbSecurity.getRealHost(),
+				userId   : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
 			);
 			relocate( url: arguments.event.getFullUrl(), ssl: true );
 			return;
@@ -139,11 +139,11 @@ component extends="coldbox.system.Interceptor" {
 				}
 
 				variables.dbLogger.log(
-					action     : "block",
-					blockType  : "INVALID-HOST",
-					ip         : variables.cbSecurity.getRealIp(),
-					host       : variables.cbSecurity.getRealHost(),
-					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
+					action   : "block",
+					blockType: "INVALID-HOST",
+					ip       : variables.cbSecurity.getRealIp(),
+					host     : variables.cbSecurity.getRealHost(),
+					userId   : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
 				);
 
 				// Announce
@@ -187,11 +187,11 @@ component extends="coldbox.system.Interceptor" {
 				}
 
 				variables.dbLogger.log(
-					action     : "block",
-					blockType  : "INVALID-IP",
-					ip         : variables.cbSecurity.getRealIp(),
-					host       : variables.cbSecurity.getRealHost(),
-					userId     : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
+					action   : "block",
+					blockType: "INVALID-IP",
+					ip       : variables.cbSecurity.getRealIp(),
+					host     : variables.cbSecurity.getRealHost(),
+					userId   : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
 				);
 
 				// Announce

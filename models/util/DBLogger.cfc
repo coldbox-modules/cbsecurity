@@ -63,6 +63,9 @@ component accessors="true" singleton threadsafe {
 	 */
 	function configure(){
 		// Log settings check
+		if ( !variables.settings.firewall.logs.enabled ) {
+			return;
+		}
 		if ( !len( variables.settings.firewall.logs.table ) ) {
 			throw(
 				message = "No 'table' property defined for the firewall logs: firewall.logs.table",
@@ -210,10 +213,7 @@ component accessors="true" singleton threadsafe {
 			{},
 			{ datasource : variables.settings.firewall.logs.dsn }
 		).reduce( ( results, row ) => {
-			results[ row.action ] = {
-				"total" : row.total,
-				"percentage" : row.percentage
-			};
+			results[ row.action ] = { "total" : row.total, "percentage" : row.percentage };
 			return results;
 		}, {} );
 	}
@@ -348,7 +348,7 @@ component accessors="true" singleton threadsafe {
 		}
 
 		// else default to app datasource
-		if ( !isNull( settings.datasource ) ) {
+		if ( !isNull( settings.datasource ) && len( settings.datasource ) ) {
 			return settings.datasource;
 		}
 
