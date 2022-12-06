@@ -63,6 +63,9 @@ component accessors="true" singleton threadsafe {
 	 */
 	function configure(){
 		// Log settings check
+		if ( !variables.settings.firewall.logs.enabled ){
+			return;
+		}
 		if ( !len( variables.settings.firewall.logs.table ) ) {
 			throw(
 				message = "No 'table' property defined for the firewall logs: firewall.logs.table",
