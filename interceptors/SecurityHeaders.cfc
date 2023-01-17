@@ -1,4 +1,7 @@
 /**
+ * Copyright since 2016 by Ortus Solutions, Corp
+ * www.ortussolutions.com
+ * ---
  * Security Headers interceptor
  * This interceptor provides security headers according to the configuration used by the config
  * This applies globally to all responses in an application.

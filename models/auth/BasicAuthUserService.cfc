@@ -1,5 +1,9 @@
 /**
- * This is the basic auth user service that relies on the config's basicAuth.users configuration.
+ * Copyright since 2016 by Ortus Solutions, Corp
+ * www.ortussolutions.com
+ * ---
+ * This user service is based off a basic auth configuration of users in the application's security configuration.
+ * A single ColdBox application can have a main dictionary of users and modules can collaborate users as well.
  */
 component accessors="true" singleton {
 

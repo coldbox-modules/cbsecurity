@@ -1,4 +1,7 @@
 /**
+ * Copyright since 2016 by Ortus Solutions, Corp
+ * www.ortussolutions.com
+ * ---
  * This is a basic user object that can be used with CBSecurity.
  *
  * It implements the following interfaces via it's delegates
