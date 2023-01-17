@@ -9,39 +9,66 @@
 component accessors="true" extends="coldbox.system.Interceptor" {
 
 	// DI
-	property name="rulesLoader" inject="rulesLoader@cbSecurity";
-	property name="handlerService" inject="coldbox:handlerService";
-	property name="cbSecurity" inject="@cbSecurity";
+	property name="rulesLoader"         inject="rulesLoader@cbSecurity";
+	property name="handlerService"      inject="coldbox:handlerService";
+	property name="requestService"      inject="coldbox:requestService";
+	property name="cbSecurity"          inject="@cbSecurity";
 	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
+	property name="DBLogger"            inject="DBLogger@cbsecurity";
 
 	/**
-	 * The reference to the security validator for this interceptor
+	 * The reference to the security validator for this firewall. One-to-One relationship.
 	 */
 	property name="validator";
-
-	/**
-	 * A map of registered modules that leverage cbSecurity rules
-	 */
-	property name="securityModules" type="struct";
 
 	/**
 	 * Configure the security firewall
 	 */
 	function configure(){
-		// init the security modules dictionary
-		variables.securityModules = {};
-
-		// Verify setting configurations
-		variables.rulesLoader.rulesSourceChecks( getProperties() );
-
-		// If we added our own rules, then normalize them.
-		if ( arrayLen( getProperty( "rules" ) ) ) {
-			setProperty( "rules", variables.rulesLoader.normalizeRules( getProperty( "rules" ) ) );
+		// Shorthand for rules
+		if ( isArray( variables.properties.firewall.rules ) ) {
+			variables.properties.firewall.rules = variables.cbSecurity
+				.getDefaultRuleSettings()
+				.append( { "inline" : variables.properties.firewall.rules }, true );
 		}
 
-		// Load Rules if we have a ruleSource
-		if ( getProperty( "rulesSource" ).len() ) {
-			setProperty( "rules", variables.rulesLoader.loadRules( getProperties() ) );
+		// Verify rule providers
+		variables.rulesLoader.rulesSourceChecks( variables.properties.firewall.rules.provider );
+
+		// If we added our own inline rules, then normalize them.
+		if (
+			arrayLen( variables.properties.firewall.rules.inline ) && arrayLen(
+				variables.properties.firewall.rules.inline
+			)
+		) {
+			variables.properties.firewall.rules.inline = variables.rulesLoader.normalizeRules(
+				rules   : variables.properties.firewall.rules.inline,
+				defaults: variables.properties.firewall.rules.defaults
+			);
+		}
+
+		// Load the rules if a source is defined
+		if ( variables.properties.firewall.rules.provider.source.len() ) {
+			variables.properties.firewall.rules.inline.append(
+				variables.rulesLoader.loadRules(
+					variables.properties.firewall.rules.provider,
+					variables.properties.firewall.rules.defaults
+				),
+				true
+			);
+		}
+
+		// Is visualizer secured or not? Add our own rule
+		if ( variables.properties.visualizer.enabled && variables.properties.visualizer.secured ) {
+			variables.properties.firewall.rules.inline.prepend(
+				variables.rulesLoader
+					.getRuleTemplate()
+					.append( variables.properties.visualizer.securityRule )
+					.append( {
+						secureList : "^cbsecurity:Visualizer.*",
+						action     : "block"
+					} )
+			);
 		}
 
 		// Coldbox version 5 (and lower) needs a little extra invalid event handler checking.
@@ -52,6 +79,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				"."
 			) <= 5
 		);
+
+		log.info( "√ CBSecurity Firewall started and configured." );
 	}
 
 	/**
@@ -59,7 +88,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 */
 	function afterAspectsLoad( event, interceptData, rc, prc, buffer ){
 		// Register the validator
-		registerValidator( getInstance( getProperty( "validator" ) ) );
+		registerValidator( getInstance( variables.properties.firewall.validator ) );
 
 		// Register cbSecurity modules so we can incorporate them.
 		controller
@@ -69,7 +98,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				return (
 					arguments.config.settings.keyExists( "cbSecurity" )
 					&&
-					!structKeyExists( variables.securityModules, arguments.module )
+					!structKeyExists( variables.properties.securityModules, arguments.module )
 				);
 			} )
 			// Register module settings
@@ -81,7 +110,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// Once ColdBox has loaded, load up the invalid event bean
 		variables.onInvalidEventHandlerBean = javacast( "null", "" );
 		if ( len( variables.invalidEventHandler ) ) {
-			variables.onInvalidEventHandlerBean = handlerService.getHandlerBean(
+			variables.onInvalidEventHandlerBean = variables.handlerService.getHandlerBean(
 				variables.invalidEventHandler
 			);
 		}
@@ -90,43 +119,80 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Register a module with cbSecurity by passing it's name and the cbSecurity settings struct
 	 *
-	 * @module The module to register
+	 * @module   The module to register
 	 * @settings The module cbSecurity settings
 	 */
 	Security function registerModule( required string module, required struct settings ){
-		// Param settings
-		param arguments.settings.rules                       = [];
-		param arguments.settings.invalidAuthenticationEvent  = "";
-		param arguments.settings.defaultAuthenticationAction = "";
-		param arguments.settings.invalidAuthorizationEvent   = "";
-		param arguments.settings.defaultAuthorizationAction  = "";
-		param arguments.settings.validator                   = "";
+		// Param module settings
+		param arguments.settings.firewall                             = {};
+		param arguments.settings.firewall.invalidAuthenticationEvent  = "";
+		param arguments.settings.firewall.defaultAuthenticationAction = "";
+		param arguments.settings.firewall.invalidAuthorizationEvent   = "";
+		param arguments.settings.firewall.defaultAuthorizationAction  = "";
+		param arguments.settings.firewall.validator                   = "";
+		param arguments.settings.firewall.rules                       = {};
+
+		// Shorthand for rules
+		if ( isArray( arguments.settings.firewall.rules ) ) {
+			arguments.settings.firewall.rules = {
+				inline   : arguments.settings.firewall.rules,
+				defaults : {},
+				provider : {}
+			};
+		}
+
+		// Rule Defaults
+		param arguments.settings.firewall.rules.defaults = {};
+		param arguments.settings.firewall.rules.inline   = [];
+		param arguments.settings.firewall.rules.provider = {};
 
 		// Verify setting configurations
-		variables.rulesLoader.rulesSourceChecks( arguments.settings );
+		variables.rulesLoader.rulesSourceChecks( arguments.settings.firewall.rules.provider );
 
 		// Store configuration in this firewall
-		variables.securityModules[ arguments.module ] = arguments.settings;
+		variables.properties.securityModules[ arguments.module ] = arguments.settings;
 
 		// Process Module Rules
-		arguments.settings.rules = variables.rulesLoader.normalizeRules(
-			arguments.settings.rules,
-			module
-		);
+		// Incorporate global defaults as well.
+		if (
+			isArray( arguments.settings.firewall.rules.inline ) && arrayLen(
+				arguments.settings.firewall.rules.inline
+			)
+		) {
+			arguments.settings.firewall.rules.inline = variables.rulesLoader.normalizeRules(
+				rules   : arguments.settings.firewall.rules.inline,
+				module  : module,
+				defaults: arguments.settings.firewall.rules.defaults.append(
+					variables.properties.firewall.rules.defaults,
+					false
+				)
+			);
+		}
 
 		// Load Rules if we have a ruleSource
-		if ( arguments.settings.rulesSource.len() ) {
-			arguments.settings.rules = variables.rulesLoader.loadRules( arguments.settings );
+		if ( arguments.settings.firewall.rules.provider.source.len() ) {
+			arguments.settings.firewall.rules.inline = variables.rulesLoader.loadRules(
+				arguments.settings.firewall.rules.provider,
+				arguments.settings.firewall.rules.defaults.append(
+					variables.properties.firewall.rules.defaults,
+					false
+				)
+			);
 		}
 
 		// prepend them so the don't interfere with MAIN rules
 		// one by one as I don't see a way to prepend the whole array at once
-		for ( var i = arguments.settings.rules.len(); i >= 1; i-- ) {
-			arrayPrepend( getProperty( "rules" ), arguments.settings.rules[ i ] );
+		for ( var i = arguments.settings.firewall.rules.inline.len(); i >= 1; i-- ) {
+			arrayPrepend(
+				variables.properties.firewall.rules.inline,
+				arguments.settings.firewall.rules.inline[ i ]
+			);
 		}
 
 		// Log it
-		log.info( "+ Registered module (#arguments.module#) with cbSecurity" );
+		log.info(
+			"+ Registered module (#arguments.module#) with cbSecurity using #arrayLen( arguments.settings.firewall.rules.inline )# rules."
+		);
 
 		return this;
 	}
@@ -134,18 +200,18 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen to module loadings, so we can do module rule registrations
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function postModuleLoad( event, interceptData, rc, prc, buffer ){
 		// Is this a cbSecurity Module & not registered
 		if (
 			structKeyExists( arguments.interceptData.moduleConfig.settings, "cbSecurity" )
 			&&
-			!structKeyExists( variables.securityModules, arguments.interceptData.moduleName )
+			!structKeyExists( variables.properties.securityModules, arguments.interceptData.moduleName )
 		) {
 			registerModule(
 				arguments.interceptData.moduleName,
@@ -157,46 +223,41 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen to module unloadings, so we can do module rule cleanups
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function postModuleUnload( event, interceptData, rc, prc, buffer ){
 		// Is the module registered?
-		if ( structKeyExists( variables.securityModules, arguments.interceptData.moduleName ) ) {
+		if ( structKeyExists( variables.properties.securityModules, arguments.interceptData.moduleName ) ) {
 			// Delete registration
-			structDelete( variables.securityModules, arguments.interceptData.moduleName );
+			structDelete( variables.properties.securityModules, arguments.interceptData.moduleName );
 			// Delete rules
-			setProperty(
-				"rules",
-				getProperty( "rules" ).filter( function( item ){
-					return item.module != interceptData.moduleName;
-				} )
-			);
+			variables.properties.firewall.rules.inline = variables.properties.firewall.rules.inline.filter( function( item ){
+				return item.module != interceptData.moduleName;
+			} );
 			// Log it
-			log.info(
-				"- Unregistered module (#arguments.interceptData.moduleName#) with cbSecurity"
-			);
+			log.info( "- Unregistered module (#arguments.interceptData.moduleName#) with cbSecurity" );
 		}
 	}
 
 	/**
 	 * Our firewall kicks in at preProcess
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function preProcess( event, interceptData, rc, prc, buffer ){
 		// Add SecureView() into the requestcontext
 		arguments.event.secureView = variables.cbSecurity.secureViewProxy;
 
-		// Execute Rule processing
-		if ( getProperty( "rules" ).len() ) {
+		// Execute Rule Security
+		if ( variables.properties.firewall.rules.inline.len() ) {
 			processRules(
 				arguments.event,
 				arguments.interceptData,
@@ -204,22 +265,34 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			);
 		}
 
-		// Are we doing annotation based security?
-		if ( getProperty( "handlerAnnotationSecurity" ) ) {
+		// Execute Annotation Security
+		if ( variables.properties.firewall.handlerAnnotationSecurity ) {
 			processAnnotationRules(
 				arguments.event,
 				arguments.interceptData,
 				arguments.event.getCurrentEvent()
 			);
 		}
+
+		// Store User in ColdBox data bus
+		try {
+			variables.requestService
+				.getContext()
+				.setPrivateValue(
+					variables.properties.authentication.prcUserVariable,
+					variables.cbSecurity.getUser()
+				);
+		} catch ( "NoUserLoggedIn" e ) {
+			// Skip it if we get this excecption, we just need the user in the prc bus!
+		}
 	}
 
 	/**
 	 * Process handler annotation based security rules.
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @currentEvent
+	 * @currentEvent 
 	 */
 	function processAnnotationRules(
 		required event,
@@ -227,9 +300,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required currentEvent
 	){
 		// Get handler bean for the current event
-		var handlerBean = variables.handlerService.getHandlerBean(
-			arguments.event.getCurrentEvent()
-		);
+		var handlerBean = variables.handlerService.getHandlerBean( arguments.event.getCurrentEvent() );
 
 		// Are we running Coldbox 5 or older?
 		// is an onInvalidHandlerBean configured?
@@ -256,7 +327,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 		// If metadata is not loaded, load it
 		if ( !handlerBean.isMetadataLoaded() ) {
-			handlerService.getHandler( handlerBean, arguments.event );
+			variables.handlerService.getHandler( handlerBean, arguments.event );
 		}
 
 		// Verify we can access Handler
@@ -292,9 +363,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Process handler or action metadata invalid access
 	 *
-	 * @event The request context
+	 * @event            The request context
 	 * @validatorResults The validation results
-	 * @type The annotation type: handler|action
+	 * @type             The annotation type: handler|action
 	 */
 	private function processInvalidAnnotationAccess(
 		required event,
@@ -320,10 +391,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			"annotationType"   : arguments.type,
 			"processActions"   : true // Boolean indicator if the invalid actions should process or not
 		};
-		announceInterception(
-			state         = "cbSecurity_onInvalid#arguments.validatorResults.type#",
-			interceptData = iData
-		);
+		announce( "cbSecurity_onInvalid#arguments.validatorResults.type#", iData );
 
 		// Are we processing the invalid actions?
 		if ( iData.processActions ) {
@@ -339,9 +407,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Process global and module security rules
 	 *
-	 * @event Event object
+	 * @event         Event object
 	 * @interceptData Interception info
-	 * @currentEvent The possible event syntax to check
+	 * @currentEvent  The possible event syntax to check
 	 */
 	function processRules(
 		required event,
@@ -349,7 +417,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required currentEvent
 	){
 		// Verify all rules
-		for ( var thisRule in getProperty( "rules" ) ) {
+		for ( var thisRule in variables.properties.firewall.rules.inline ) {
 			// Determine Match Target by event or url
 			var matchTarget = (
 				thisRule.match == "url" ? arguments.event.getCurrentRoutedURL() : arguments.currentEvent
@@ -358,29 +426,49 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			// Are we in a whitelist?
 			if ( isInPattern( matchTarget, thisRule.whitelist ) ) {
 				if ( log.canDebug() ) {
-					log.debug(
-						"#matchTarget# found in whitelist: #thisRule.whitelist#, allowing access."
-					);
+					log.debug( "#matchTarget# found in whitelist: #thisRule.whitelist#, allowing access." );
 				}
+
+				variables.dbLogger.log(
+					action   : "allow",
+					blockType: "RULE-WHITELIST",
+					ip       : variables.cbSecurity.getRealIp(),
+					host     : variables.cbSecurity.getRealHost(),
+					userId   : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
+					rule     : thisRule
+				);
 				continue;
 			}
 
-			// Are we in the secured list?
+			// Are we in the secured list and in the rule's valid http methods and in the allowed Ips
 			if ( isInPattern( matchTarget, thisRule.securelist ) ) {
 				if ( log.canDebug() ) {
-					log.debug(
-						"---> Incoming '#matchTarget#' MATCHED this rule: #thisRule.toString()#"
-					);
+					log.debug( "---> Incoming '#matchTarget#' MATCHED this rule: #thisRule.toString()#" );
 				}
 
-				// Verify if user is logged in and in a secure state
+				// Check authentication and authorizations
 				var validatorResults = getValidator( arguments.event ).ruleValidator(
 					thisRule,
 					variables.controller
 				);
+
 				// Verify type, else default to "authentication"
-				if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
+				if ( !reFindNoCase( "(authentication|authorization|block)", validatorResults.type ) ) {
 					validatorResults.type = "authentication";
+				}
+
+				// Verify IP or block
+				if ( !isValidIP( thisRule.allowedIPs ) ) {
+					validatorResults.type     = "authorization";
+					validatorResults.allow    = false;
+					validatorResults.messages = "Detected IP is not allowed";
+				}
+
+				// Verify HTTP Verbs or block
+				if ( !isValidHTTPmethod( event, thisRule.httpMethods ) ) {
+					validatorResults.type     = "authorization";
+					validatorResults.allow    = false;
+					validatorResults.messages = "Detected HTTP Method is not allowed";
 				}
 
 				// Do we allow or not?
@@ -388,7 +476,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 					// Log Block
 					if ( log.canWarn() ) {
 						log.warn(
-							"Invalid #validatorResults.type# by User (#variables.cbSecurity.getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#",
+							"Invalid #validatorResults.type# by (#variables.cbSecurity.getRealIp()#), blocked access to target=#matchTarget# using rule security: #thisRule.toString()#",
 							validatorResults
 						);
 					}
@@ -408,14 +496,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						"validatorResults" : validatorResults,
 						"settings"         : getProperties(), // All the config settings, just in case
 						"annotationType"   : "",
-						"processActions"   : true // Boolean indicator if the invalid actions should process or not
+						"processActions"   : true // Boolean indicator if the invalid actions should process or hard block
 					};
-					announceInterception(
-						state         = "cbSecurity_onInvalid#validatorResults.type#",
-						interceptData = iData
-					);
+					announce( "cbSecurity_onInvalid#validatorResults.type#", iData );
 
-					// Are we processing the invalid actions?
+					// Are we processing the invalid actions or a hard block
 					if ( iData.processActions ) {
 						processInvalidActions(
 							rule  = thisRule,
@@ -423,26 +508,17 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 							type  = validatorResults.type
 						);
 					}
-					// end invalid actions processing
-
 					break;
 				}
 				// end if valid state
 				else {
+					// Log it
 					if ( log.canDebug() ) {
 						log.debug(
 							"Secure target=#matchTarget# matched and user authorized for rule: #thisRule.toString()#."
 						);
 					}
 					break;
-				}
-			}
-			// No match, continue to next rule
-			else {
-				if ( log.canDebug() ) {
-					log.debug(
-						"Incoming '#matchTarget#' did not match this rule: #thisRule.toString()#"
-					);
 				}
 			}
 		}
@@ -482,20 +558,20 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			currentModule.len()
 			&&
 			// Does the module have cbSecurity overrides?
-			structKeyExists( variables.securityModules, currentModule )
+			structKeyExists( variables.properties.securityModules, currentModule )
 			&&
 			// Does the setting have value?
-			variables.securityModules[ currentModule ][ "validator" ].len()
+			variables.properties.securityModules[ currentModule ].firewall[ "validator" ].len()
 		) {
 			// Debug
 			if ( log.canDebug() ) {
 				log.debug(
 					"validator setting overriden by #currentModule# module",
-					variables.securityModules[ currentModule ][ "validator" ]
+					variables.properties.securityModules[ currentModule ].firewall[ "validator" ]
 				);
 			}
 			return variables.wirebox.getInstance(
-				variables.securityModules[ currentModule ][ "validator" ]
+				variables.properties.securityModules[ currentModule ].firewall[ "validator" ]
 			);
 		}
 
@@ -508,7 +584,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Discover the invalid access property from either module -> global order.
 	 *
 	 * @property The property to discover
-	 * @event The request context
+	 * @event    The request context
 	 */
 	private function discoverInvalidProperty( required property, required event ){
 		// Check for module overrides
@@ -518,31 +594,31 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			currentModule.len()
 			&&
 			// Does the module have cbSecurity overrides?
-			structKeyExists( variables.securityModules, currentModule )
+			structKeyExists( variables.properties.securityModules, currentModule )
 			&&
 			// Does the setting have value?
-			variables.securityModules[ currentModule ][ arguments.property ].len()
+			variables.properties.securityModules[ currentModule ].firewall[ arguments.property ].len()
 		) {
 			// Debug
 			if ( log.canDebug() ) {
 				log.debug(
 					"#arguments.property# setting overriden by #currentModule# module",
-					variables.securityModules[ currentModule ][ arguments.property ]
+					variables.properties.securityModules[ currentModule ].firewall[ arguments.property ]
 				);
 			}
-			return variables.securityModules[ currentModule ][ arguments.property ];
+			return variables.properties.securityModules[ currentModule ].firewall[ arguments.property ];
 		}
 
 		// Debug
 		if ( log.canDebug() ) {
 			log.debug(
 				"Using global #arguments.property# setting",
-				getProperty( arguments.property )
+				variables.properties.firewall[ arguments.property ]
 			);
 		}
 
 		// Return global property
-		return getProperty( arguments.property );
+		return variables.properties.firewall[ arguments.property ];
 	}
 
 	/**
@@ -550,15 +626,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * If we return true, it means that the user has validated, false means they are not authorized
 	 *
 	 * @securedValue The secured value annotation
-	 * @event The request context
+	 * @event        The request context
 	 *
 	 * @return { allow:boolean, type:string(authentication|authorization)}
 	 */
 	private struct function verifySecuredAnnotation( required securedValue, required event ){
 		// Are we securing?
-		if (
-			len( arguments.securedValue ) && isBoolean( arguments.securedValue ) && !arguments.securedValue
-		) {
+		if ( len( arguments.securedValue ) && isBoolean( arguments.securedValue ) && !arguments.securedValue ) {
 			return { "allow" : true, "type" : "authentication" }; // we can access
 		}
 
@@ -572,15 +646,16 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		if ( !reFindNoCase( "(authentication|authorization)", validatorResults.type ) ) {
 			validatorResults.type = "authentication";
 		}
+
 		return validatorResults;
 	}
 
 	/**
 	 * Process invalid actions on a rule
 	 *
-	 * @rule The offending rule
+	 * @rule  The offending rule
 	 * @event The request context
-	 * @type The invalid type: authentication or authorization
+	 * @type  The invalid type: authentication or authorization
 	 */
 	private function processInvalidActions( required rule, required event, required type ){
 		// Discover action, from specific (rule) to global setting
@@ -618,6 +693,15 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			log.debug( "Processing a #defaultAction# due to an invalid #arguments.type#" );
 		}
 
+		variables.dbLogger.log(
+			action   : defaultAction,
+			blockType: arguments.type,
+			ip       : variables.cbSecurity.getRealIp(),
+			host     : variables.cbSecurity.getRealHost(),
+			userId   : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : "",
+			rule     : arguments.rule
+		);
+
 		// Determine actions from rules
 		switch ( defaultAction ) {
 			case "redirect": {
@@ -636,7 +720,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						persist = "_securedURL",
 						// Chain SSL: Global, rule, request
 						ssl     = (
-							getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL()
+							variables.properties.firewall.rules.useSSL || arguments.rule.useSSL || arguments.event.isSSL()
 						)
 					);
 				} else {
@@ -646,7 +730,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 						persist = "_securedURL",
 						// Chain SSL: Global, rule, request
 						ssl     = (
-							getProperty( "useSSL" ) || arguments.rule.useSSL || arguments.event.isSSL()
+							variables.properties.firewall.rules.useSSL || arguments.rule.useSSL || arguments.event.isSSL()
 						)
 					);
 				}
@@ -667,9 +751,20 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 				break;
 			}
 
+			case "block": {
+				arguments.event
+					.renderData(
+						data       = "<h1>Unathorized</h1>",
+						statusCode = "401",
+						statusText = "Unathorized"
+					)
+					.noExecution();
+				break;
+			}
+
 			default: {
 				throw(
-					message = "The type [#defaultAction#] is not a valid rule action.  Valid types are [ 'redirect', 'override' ].",
+					message = "The type [#defaultAction#] is not a valid rule action.  Valid types are [ 'redirect', 'override', 'block' ].",
 					type    = "InvalidRuleActionType"
 				);
 			}
@@ -701,13 +796,13 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Verifies that the current event is in a given pattern list
 	 *
 	 * @currentEvent The current event
-	 * @patternList The list pattern to test
+	 * @patternList  The list pattern to test
 	 */
 	private boolean function isInPattern( required currentEvent, required patternList ){
 		//  Loop Over Patterns
 		for ( var pattern in arguments.patternList ) {
 			//  Using Regex
-			if ( getProperty( "useRegex" ) ) {
+			if ( variables.properties.firewall.rules.useRegex ) {
 				if ( reFindNoCase( trim( pattern ), arguments.currentEvent ) ) {
 					return true;
 				}
@@ -717,6 +812,35 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Verifies that the current request's http method is valid for execution
+	 *
+	 * @event       The request context
+	 * @httpMethods The httpMethods from the rule to verify
+	 */
+	private boolean function isValidHTTPmethod( required event, required httpMethods ){
+		// Nothing or ALL
+		if ( !len( arguments.httpMethods ) || arguments.httpMethods == "*" ) {
+			return true;
+		}
+		// Else we need to test the verb list
+		return listFindNoCase( arguments.httpMethods, arguments.event.getHTTPMethod() );
+	}
+
+	/**
+	 * Verifies that the current request's IP is valid for execution
+	 *
+	 * @allowedIPs The allowedIPs in the rule
+	 */
+	private boolean function isValidIP( required allowedIPs ){
+		// Nothing or ALL
+		if ( !len( arguments.allowedIPs ) || arguments.allowedIPs == "*" ) {
+			return true;
+		}
+		// Else we need to test the ip list against the actual IP
+		return listFindNoCase( arguments.allowedIPs, variables.cbSecurity.getRealIP() );
 	}
 
 	/**

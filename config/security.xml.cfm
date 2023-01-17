@@ -16,14 +16,27 @@ that can be found in an event.
 -->
 <rules>
     <rule>
-        <whitelist>user\.login,user\.logout,^main.*</whitelist>
-        <securelist>^user\..*, ^admin</securelist>
+		<!-- What needs to match to evaluate the rule -->
+        <secureList>^user\..*, ^admin</secureList>
+        <!-- What needs to match to skip the rule, securelist must match first -->
+		<whiteList>user\.login,user\.logout,^main.*</whiteList>
+		<!-- Match the event or the URL -->
 		<match>event</match>
+		<!-- Roles needed else an action is issued -->
         <roles>admin</roles>
+		<!-- Permissions needed else an action is issued -->
 		<permissions></permissions>
-		<redirect>user.login</redirect>
-		<overrideEvent>user.login</overrideEvent>
-		<useSSL>false</useSSL>
+		<!-- redirect or override or block -->
 		<action>redirect</action>
+		<!-- Match all HTTP methods or particular ones -->
+		<httpMethods>*</httpMethods>
+		<!-- Match all IPs or particular ones -->
+		<allowedIPs>*</allowedIPs>
+		<!-- Optional: If used we redirect to this event else we look at the global redirect event -->
+		<redirect>user.login</redirect>
+		<!-- Optional: If used we override to this event else we look at the global override event -->
+		<overrideEvent>user.login</overrideEvent>
+		<!-- Redirect in SSL -->
+		<useSSL>false</useSSL>
     </rule>
 </rules>

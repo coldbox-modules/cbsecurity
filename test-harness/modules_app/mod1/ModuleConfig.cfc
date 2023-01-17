@@ -28,22 +28,32 @@ component {
 		settings = {
 			// CB Security Rules to append to global rules
 			cbsecurity : {
-				// Module Relocation when an invalid access is detected, instead of each rule declaring one.
-				"invalidAuthenticationEvent" : "mod1:secure.index",
-				// Module override event when an invalid access is detected, instead of each rule declaring one.
-				"invalidAuthorizationEvent"  : "mod1:secure.auth",
-				// You can define your security rules here or externally via a source
-				"rules"                      : [
-					{ "secureList" : "mod1/modOverride", "match" : "url", "action" : "override" },
-					{ "secureList" : "mod1:home" }
-				]
+				firewall : {
+					// Module Relocation when an invalid access is detected, instead of each rule declaring one.
+					"invalidAuthenticationEvent" : "mod1:secure.index",
+					// Module override event when an invalid access is detected, instead of each rule declaring one.
+					"invalidAuthorizationEvent"  : "mod1:secure.auth",
+					// You can define your security rules here or externally via a source
+					"rules"                      : [
+						{
+							"secureList" : "mod1/modOverride",
+							"match"      : "url",
+							"action"     : "override"
+						},
+						{ "secureList" : "mod1:home" }
+					]
+				}
 			}
 		};
 
 		// SES Routes
 		routes = [
 			// Module Entry Point
-			{ pattern : "/modOverride", handler : "home", action : "index" },
+			{
+				pattern : "/modOverride",
+				handler : "home",
+				action  : "index"
+			},
 			{ pattern : "/", handler : "home", action : "index" },
 			// Convention Route
 			{ pattern : "/:handler/:action?" }

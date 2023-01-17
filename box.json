@@ -1,6 +1,6 @@
 {
     "name":"ColdBox Security",
-    "version":"2.15.0",
+    "version":"3.0.0",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbsecurity/@build.version@/cbsecurity-@build.version@.zip",
     "author":"Ortus Solutions.com <info@ortussolutions.com>",
     "slug":"cbsecurity",
@@ -22,21 +22,37 @@
         "Brad Wood <bdw429s@gmail.com>",
         "Curt Gratz <gratz@computerknowhow.com>"
     ],
-    "ignore":[
-        "**/.*",
-        "test-harness/**",
-        "modules/**",
-        "*/.md"
-    ],
     "dependencies":{
         "jwt-cfml":"^1.0.0",
-        "cbauth":"^5.0.0",
+        "cbauth":"^6.0.0",
         "cbcsrf":"^2.0.0"
     },
+    "devDependencies":{
+        "commandbox-cfformat":"*",
+        "commandbox-docbox":"*",
+        "commandbox-dotenv":"*",
+        "commandbox-cfconfig":"*"
+    },
+    "ignore":[
+        "**/.*",
+        "test-harness",
+        "/server*.json"
+    ],
+    "testbox":{
+        "runner":"http://localhost:60299/tests/runner.cfm"
+    },
     "scripts":{
+        "build:module":"task run taskFile=build/Build.cfc :projectName=`package show slug` :version=`package show version`",
+        "build:docs":"task run taskFile=build/Build.cfc target=docs :projectName=`package show slug` :version=`package show version`",
         "release":"recipe build/release.boxr",
         "format":"cfformat run handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc --overwrite",
         "format:watch":"cfformat watch handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc ./.cfformat.json",
-        "format:check":"cfformat check handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc"
+        "format:check":"cfformat check handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc",
+        "install:dependencies":"install && cd test-harness && install"
+    },
+    "installPaths":{
+        "jwt-cfml":"modules/jwtcfml/",
+        "cbauth":"modules/cbauth/",
+        "cbcsrf":"modules/cbcsrf/"
     }
 }

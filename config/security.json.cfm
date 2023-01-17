@@ -1,21 +1,21 @@
 [
     {
-        "whitelist": "",
-        "securelist": "",
+        "whiteList": "",
+        "secureList": "",
         "match": "event",
         "roles": "admin",
         "permissions": "",
+		"action" : "redirect",
 		"useSSL": false,
 		"redirect": "user.login",
-		"action" : "redirect"
+		"httpMethods" : "*",
+		"allowedIPs" : "*"
 	},
 	{
-        "whitelist": "",
-        "securelist": "",
+        "whiteList": "",
+        "secureList": "^admin",
         "match": "event",
         "roles": "admin",
-        "permissions": "",
-		"overrideEvent" : "user.login",
-        "useSSL": false
+		"overrideEvent" : "user.login"
     }
 ]

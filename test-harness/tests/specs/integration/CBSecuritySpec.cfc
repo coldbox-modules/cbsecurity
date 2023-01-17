@@ -16,10 +16,11 @@
  *******************************************************************************/
 component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
+	this.unloadColdBox = false;
+
 	/*********************************** LIFE CYCLE Methods ***********************************/
 
 	function beforeAll(){
-		structDelete( application, "cbController" );
 		super.beforeAll();
 		// do your own stuff here
 	}
@@ -40,9 +41,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				cbauth.logout();
 			} );
 
-
 			it( "can retrieve user,auth and mixin services", function(){
-				var e = this.request( route: "/main/cbsecuremixin" );
+				var e = get( "/main/cbsecuremixin" );
 				expect( e.getRenderedContent() ).toBeJSON();
 			} );
 		} );

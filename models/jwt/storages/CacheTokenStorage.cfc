@@ -7,9 +7,9 @@
 component accessors="true" singleton threadsafe {
 
 	// DI
-	property name="wirebox" inject="wirebox";
-	property name="cachebox" inject="cachebox";
-	property name="settings" inject="coldbox:moduleSettings:cbSecurity";
+	property name="wirebox"    inject="wirebox";
+	property name="cachebox"   inject="cachebox";
+	property name="settings"   inject="coldbox:moduleSettings:cbSecurity";
 	property name="jwtService" inject="JwtService@cbSecurity";
 
 	/**
@@ -53,10 +53,10 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Set a token in the storage
 	 *
-	 * @key The cache key
-	 * @token The token to store
+	 * @key        The cache key
+	 * @token      The token to store
 	 * @expiration The token expiration
-	 * @payload The payload
+	 * @payload    The payload
 	 *
 	 * @return JWTStorage
 	 */
@@ -67,14 +67,15 @@ component accessors="true" singleton threadsafe {
 		required payload
 	){
 		variables.cache.set(
-			buildKey( arguments.key ),
-			{
+			objectKey = buildKey( arguments.key ),
+			object    = {
 				token      : arguments.token,
 				expiration : jwtService.fromEpoch( arguments.payload.exp ),
 				issued     : jwtService.fromEpoch( arguments.payload.iat ),
 				payload    : arguments.payload
 			},
-			arguments.expiration
+			timeout           = arguments.expiration,
+			lastAccessTimeout = 0
 		);
 		return this;
 	}
@@ -91,7 +92,7 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Retrieve the token via the cache key, if the key doesn't exist a TokenNotFoundException will be thrown
 	 *
-	 * @key The cache key
+	 * @key          The cache key
 	 * @defaultValue If not found, return a default value
 	 *
 	 * @throws TokenNotFoundException

@@ -1,6 +1,6 @@
 <cfscript>
 	/**
-	 * Retrieve the JwtService
+	 * Retrieve the Jwt Auth Service
 	 */
 	function jwtAuth() {
         return wirebox.getInstance( "JwtService@cbSecurity" );
@@ -12,5 +12,4 @@
 	function cbSecure() {
         return wirebox.getInstance( "CBSecurity@cbSecurity" );
 	}
-
 </cfscript>

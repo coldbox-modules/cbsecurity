@@ -1,26 +1,10 @@
 /**
- * CbSecurity Handler Actions
+ * This handler controls open endpoints for our JWT services
  */
 component extends="coldbox.system.RestHandler" {
 
 	// DI
-	property name="cbSecurity" inject="coldbox:interceptor:cbsecurity@global";
 	property name="jwtService" inject="jwtService@cbSecurity";
-
-	/**
-	 * Visualizer Action
-	 */
-	function index( event, rc, prc ){
-		prc.properties = variables.cbSecurity.getProperties();
-
-		// If not enabled or in production, just 404 it
-		if ( !prc.properties.enableSecurityVisualizer || getSetting( "environment" ) == "production" ) {
-			event.setHTTPHeader( statusCode = 404, statusText = "page not found" );
-			return "Page Not Found";
-		}
-		// Show the visualizer
-		event.setView( "home/index" );
-	}
 
 	/**
 	 * Endpoint to refresh access tokens
@@ -28,10 +12,8 @@ component extends="coldbox.system.RestHandler" {
 	 * - x-refresh-token header or rc variable
 	 */
 	function refreshToken( event, rc, prc ){
-		prc.properties = variables.cbSecurity.getProperties();
-
 		// If endpoint not enabled, just 404 it
-		if ( !prc.properties.jwt.enableRefreshEndpoint ) {
+		if ( !variables.jwtService.getSettings().jwt.enableRefreshEndpoint ) {
 			return event
 				.getResponse()
 				.setErrorMessage(
@@ -50,9 +32,7 @@ component extends="coldbox.system.RestHandler" {
 				.setData( prc.newTokens )
 				.addMessage( "Tokens refreshed! The passed in refresh token has been invalidated" );
 		} catch ( RefreshTokensNotActive e ) {
-			return event
-				.getResponse()
-				.setErrorMessage( "Refresh Tokens Not Active", 404, "Disabled" );
+			return event.getResponse().setErrorMessage( "Refresh Tokens Not Active", 404, "Disabled" );
 		} catch ( TokenNotFoundException e ) {
 			return event
 				.getResponse()
@@ -61,6 +41,18 @@ component extends="coldbox.system.RestHandler" {
 					400,
 					"Missing refresh token"
 				);
+		} catch ( TokenInvalidException e ) {
+			prc.response.setErrorMessage(
+				"Invalid Token - #e.message#",
+				401,
+				"Invalid Token"
+			);
+		} catch ( TokenExpiredException e ) {
+			prc.response.setErrorMessage(
+				"Token Expired - #e.message#",
+				400,
+				"Token Expired"
+			);
 		}
 	}
 

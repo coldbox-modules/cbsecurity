@@ -70,18 +70,20 @@ component {
 		settings = {
 			// CB Security Rules to append to global rules
 			cbsecurity : {
-				// Module Relocation when an invalid access is detected, instead of each rule declaring one.
-				"invalidAuthenticationEvent"  : "api:Home.onInvalidAuth",
-				// Default Auhtentication Action: override or redirect when a user has not logged in
-				"defaultAuthenticationAction" : "override",
-				// Module override event when an invalid access is detected, instead of each rule declaring one.
-				"invalidAuthorizationEvent"   : "api:Home.onInvalidAuthorization",
-				// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
-				"defaultAuthorizationAction"  : "override",
-				// The validator to use for this module
-				"validator"                   : "JWTService@cbsecurity",
-				// You can define your security rules here or externally via a source
-				"rules"                       : [ { "secureList" : "api:Secure\.*" } ]
+				firewall : {
+					// Module Relocation when an invalid access is detected, instead of each rule declaring one.
+					"invalidAuthenticationEvent"  : "api:Home.onInvalidAuth",
+					// Default Auhtentication Action: override or redirect when a user has not logged in
+					"defaultAuthenticationAction" : "override",
+					// Module override event when an invalid access is detected, instead of each rule declaring one.
+					"invalidAuthorizationEvent"   : "api:Home.onInvalidAuthorization",
+					// Default invalid action: override or redirect when an invalid access is detected, default is to redirect
+					"defaultAuthorizationAction"  : "override",
+					// The validator to use for this module
+					"validator"                   : "JwtAuthValidator@cbsecurity",
+					// You can define your security rules here or externally via a source
+					"rules"                       : [ { "secureList" : "api:Secure\.*" } ]
+				}
 			}
 		};
 

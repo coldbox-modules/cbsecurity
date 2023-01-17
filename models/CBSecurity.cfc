@@ -22,10 +22,11 @@ component threadsafe singleton accessors="true" {
 	/** DI **/
 	/*********************************************************************************************/
 
-	property name="settings" inject="coldbox:moduleSettings:cbsecurity";
-	property name="log" inject="logbox:logger:{this}";
-	property name="wirebox" inject="wirebox";
-
+	property name="settings"       inject="coldbox:moduleSettings:cbsecurity";
+	property name="log"            inject="logbox:logger:{this}";
+	property name="wirebox"        inject="wirebox";
+	property name="moduleSettings" inject="coldbox:setting:modules";
+	property name="DBLogger"       inject="DBLogger@cbsecurity";
 
 	/*********************************************************************************************/
 	/** PROPERTIES **/
@@ -46,6 +47,77 @@ component threadsafe singleton accessors="true" {
 	/*********************************************************************************************/
 
 	variables.DEFAULT_ERROR_MESSAGE = "Not authorized!";
+	variables.DEFAULT_SETTINGS      = {
+		authentication : {
+			// The WireBox ID of the authentication service to use which must adhere to the cbsecurity.interfaces.IAuthService interface.
+			"provider"        : "authenticationService@cbauth",
+			// WireBox ID of the user service to use when leveraging user authentication
+			"userService"     : "",
+			// The name of the variable to use to store an authenticated user in prc scope on all incoming authenticated requests
+			"prcUserVariable" : "oCurrentUser"
+		},
+		csrf : {
+			// By default we load up an interceptor that verifies all non-GET incoming requests against the token validations
+			enableAutoVerifier     : false,
+			// A list of events to exclude from csrf verification, regex allowed: e.g. stripe\..*
+			verifyExcludes         : [],
+			// By default, all csrf tokens have a life-span of 30 minutes. After 30 minutes, they expire and we aut-generate new ones.
+			// If you do not want expiring tokens, then set this value to 0
+			rotationTimeout        : 30,
+			// Enable the /cbcsrf/generate endpoint to generate cbcsrf tokens for secured users.
+			enableEndpoint         : false,
+			// The WireBox mapping to use for the CacheStorage
+			cacheStorage           : "CacheStorage@cbstorages",
+			// Enable/Disable the cbAuth login/logout listener in order to rotate keys
+			enableAuthTokenRotator : true
+		},
+		firewall : {
+			// Auto load the global security firewall automatically, else you can load it a-la-carte via the `Security` interceptor
+			"autoLoadFirewall"            : true,
+			// The validator is an object that will validate the firewall rules and annotations and provide feedback on either authentication or authorization issues.
+			"validator"                   : "AuthValidator@cbsecurity",
+			// Activate handler/action based annotation security
+			"handlerAnnotationSecurity"   : true,
+			// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
+			"invalidAuthenticationEvent"  : "",
+			// Default Auhtentication Action: override or block or redirect when a user has not logged in
+			"defaultAuthenticationAction" : "redirect",
+			// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
+			"invalidAuthorizationEvent"   : "",
+			// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
+			"defaultAuthorizationAction"  : "redirect",
+			// Firewall Rules
+			"rules"                       : {
+				// Use regular expression matching on the rule match types
+				"useRegex" : true,
+				// Force SSL for all relocations
+				"useSSL"   : false,
+				// A collection of default name-value pairs to add to ALL rules
+				// This way you can add global roles, permissions, redirects, etc
+				"defaults" : {},
+				// You can store all your rules in this inline array
+				"inline"   : [],
+				// If you don't store the rules inline, then you can use a provider to load the rules
+				// The source can be a json file, an xml file, model, db
+				// Each provider can have it's appropriate properties as well. Please see the documentation for each provider.
+				"provider" : { "source" : "", "properties" : {} }
+			},
+			"logs" : {
+				"enabled"    : false,
+				"dsn"        : "",
+				"schema"     : "",
+				"table"      : "cbsecurity_logs",
+				"autoCreate" : true
+			}
+		},
+		visualizer : {
+			"enabled"      : false,
+			"secured"      : false,
+			"securityRule" : {}
+		},
+		securityHeaders : { "enabled" : true },
+		securityModules : {}
+	};
 
 	/**
 	 * Constructor
@@ -54,12 +126,63 @@ component threadsafe singleton accessors="true" {
 		return this;
 	}
 
+	function onDIComplete(){
+		// Default level-1 settings
+		variables.settings.append( variables.DEFAULT_SETTINGS, false );
+		// Default level-2 settings
+		variables.DEFAULT_SETTINGS.each( function( key, value ){
+			variables.settings[ key ].append( value, false );
+		} );
+		// Default level-3 settings
+		if ( isStruct( variables.settings.firewall.rules ) ) {
+			variables.settings.firewall.rules.append( variables.DEFAULT_SETTINGS.firewall.rules, false );
+		}
+		if ( isStruct( variables.settings.firewall.logs ) ) {
+			variables.settings.firewall.logs.append( variables.DEFAULT_SETTINGS.firewall.logs, false );
+		}
+
+		// Try to discover user service default for cbauth
+		if (
+			variables.settings.authentication.provider.findNoCase( "@cbauth" ) &&
+			!len( variables.settings.authentication.userService ) && len(
+				variables.moduleSettings.cbauth.settings.userServiceClass
+			)
+		) {
+			variables.settings.authentication.userService = variables.moduleSettings.cbauth.settings.userServiceClass;
+			log.info(
+				"+ cbAuth detected and no UserService detected -> User Service set to cbAuth's UserServiceClass"
+			);
+		}
+
+		// User service default if basic auth is selected
+		if (
+			!len( variables.settings.authentication.userService ) && variables.settings.firewall.validator == "BasicAuthValidator@cbsecurity"
+		) {
+			variables.settings.authentication.userService = "BasicAuthUserService@cbsecurity";
+			log.info( "+ Basic Auth Validator Detected -> User Service set to BasicAuthUserService" );
+		}
+
+		// cbcsrf settings incorporation
+		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, false );
+		// DBLogger Configuration
+		variables.dbLogger.configure();
+		// Log it
+		log.info( "√ CBSecurity Services started and configured." );
+	}
+
+	/**
+	 * Get the default rule settings structure
+	 */
+	struct function getDefaultRuleSettings(){
+		return variables.DEFAULT_SETTINGS.firewall.rules;
+	}
+
 	/**
 	 * Get the user service object defined accordingly in the settings
 	 *
-	 * @throws IncompleteConfiguration
-	 *
 	 * @return cbsecurity.interfaces.IUserService
+	 *
+	 * @throws IncompleteConfiguration
 	 */
 	any function getUserService(){
 		// If loaded, use it!
@@ -68,14 +191,14 @@ component threadsafe singleton accessors="true" {
 		}
 
 		// Check and Load Baby!
-		if ( !len( variables.settings.userService ) ) {
+		if ( !len( variables.settings.authentication.userService ) ) {
 			throw(
 				message = "No [userService] provided in the settings.  Please set it in the `config/ColdBox.cfc` under `moduleSettings.cbsecurity.userService`.",
 				type    = "IncompleteConfiguration"
 			);
 		}
 
-		variables.userService = variables.wirebox.getInstance( variables.settings.userService );
+		variables.userService = variables.wirebox.getInstance( variables.settings.authentication.userService );
 
 		return variables.userService;
 	}
@@ -83,9 +206,9 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Get the authentication service defined accordingly in the settings
 	 *
-	 * @throws IncompleteConfiguration
-	 *
 	 * @return cbsecurity.interfaces.IAuthService
+	 *
+	 * @throws IncompleteConfiguration
 	 */
 	any function getAuthService(){
 		// If loaded, use it!
@@ -94,18 +217,57 @@ component threadsafe singleton accessors="true" {
 		}
 
 		// Check and Load Baby!
-		if ( !len( variables.settings.authenticationService ) ) {
+		if ( !len( variables.settings.authentication.provider ) ) {
 			throw(
-				message = "No [authService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.authenticationService`.",
+				message = "No [authService] provided in the settings.  Please set in `config/ColdBox.cfc` under `moduleSettings.cbsecurity.authentication.provider`.",
 				type    = "IncompleteConfiguration"
 			);
 		}
 
-		variables.authService = variables.wirebox.getInstance(
-			variables.settings.authenticationService
-		);
+		variables.authService = variables.wirebox.getInstance( variables.settings.authentication.provider );
 
 		return variables.authService;
+	}
+
+	/**
+	 * Get the authenticated user
+	 *
+	 * Change to delegates on CB7
+	 *
+	 * @return User that implements IAuthUser
+	 *
+	 * @throws NoUserLoggedIn : If the user is not logged in
+	 */
+	any function getUser(){
+		return getAuthService().getUser();
+	}
+
+	/**
+	 * Verifies if a user is logged in
+	 */
+	boolean function isLoggedIn(){
+		return getAuthService().isLoggedIn();
+	}
+
+	/**
+	 * Login Facade
+	 *
+	 * @username The username to log in with
+	 * @password The password to log in with
+	 *
+	 * @return User : The logged in user object
+	 *
+	 * @throws InvalidCredentials
+	 */
+	any function authenticate( required username, required password ){
+		return getAuthService().authenticate( argumentCollection = arguments );
+	}
+
+	/**
+	 * Logout Facade
+	 */
+	void function logout(){
+		getAuthService().logout();
 	}
 
 	/***************************************************************/
@@ -116,9 +278,9 @@ component threadsafe singleton accessors="true" {
 	 * Verify if the incoming permissions exist in the currently authenticated user.
 	 * All permissions are Or'ed together
 	 *
-	 * @throws NoUserLoggedIn
-	 *
 	 * @permissions One, a list or an array of permissions
+	 *
+	 * @throws NoUserLoggedIn
 	 */
 	boolean function has( required permissions ){
 		var oUser = getAuthService().getUser();
@@ -133,9 +295,9 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verify that ALL the permissions passed must exist within the authenticated user
 	 *
-	 * @throws NoUserLoggedIn
-	 *
 	 * @permissions One, a list or an array of permissions
+	 *
+	 * @throws NoUserLoggedIn
 	 */
 	boolean function all( required permissions ){
 		var oUser  = getAuthService().getUser();
@@ -151,9 +313,9 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verify that NONE of the permissions passed must exist within the authenticated user
 	 *
-	 * @throws NoUserLoggedIn
-	 *
 	 * @permissions One, a list or an array of permissions
+	 *
+	 * @throws NoUserLoggedIn
 	 */
 	boolean function none( required permissions ){
 		var oUser = getAuthService().getUser();
@@ -169,9 +331,9 @@ component threadsafe singleton accessors="true" {
 	 * Verify that the passed in user object must be the same as the authenticated user
 	 * Equality is done by evaluating the `getid()` method on both objects.
 	 *
-	 * @throws NoUserLoggedIn
-	 *
 	 * @user The user to test for equality
+	 *
+	 * @throws NoUserLoggedIn
 	 */
 	boolean function sameUser( required user ){
 		return ( arguments.user.getId() == getAuthService().getUser().getId() );
@@ -184,12 +346,12 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verifies if the currently logged in user has any of the passed permissions.
 	 *
-	 * @throws NotAuthorized
-	 *
 	 * @permissions One, a list or an array of permissions
-	 * @message The error message to throw in the exception
+	 * @message     The error message to throw in the exception
 	 *
-	 * @returns CBSecurity
+	 * @return CBSecurity
+	 *
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secure( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !has( arguments.permissions ) ) {
@@ -201,12 +363,12 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verifies if the currently logged in user has ALL of the passed permissions.
 	 *
-	 * @throws NotAuthorized
-	 *
 	 * @permissions One, a list or an array of permissions
-	 * @message The error message to throw in the exception
+	 * @message     The error message to throw in the exception
 	 *
-	 * @returns CBSecurity
+	 * @return CBSecurity
+	 *
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secureAll( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !all( arguments.permissions ) ) {
@@ -218,17 +380,14 @@ component threadsafe singleton accessors="true" {
 	/**
 	 * Verifies if the currently logged in user has NONE of the passed permissions.
 	 *
-	 * @throws NotAuthorized
-	 *
 	 * @permissions One, a list or an array of permissions
-	 * @message The error message to throw in the exception
+	 * @message     The error message to throw in the exception
 	 *
-	 * @returns CBSecurity
+	 * @return CBSecurity
+	 *
+	 * @throws NotAuthorized
 	 */
-	CBSecurity function secureNone(
-		required permissions,
-		message = variables.DEFAULT_ERROR_MESSAGE
-	){
+	CBSecurity function secureNone( required permissions, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !none( arguments.permissions ) ) {
 			throw( type = "NotAuthorized", message = arguments.message );
 		}
@@ -248,12 +407,12 @@ component threadsafe singleton accessors="true" {
 	 *
 	 * It receives the currently logged in user
 	 *
-	 * @throws NotAuthorized
-	 *
 	 * @context A closure/lambda/udf that returns boolean, or a boolean expression
 	 * @message The error message to throw in the exception
 	 *
-	 * @returns CBSecurity
+	 * @return CBSecurity
+	 *
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secureWhen( required context, message = variables.DEFAULT_ERROR_MESSAGE ){
 		var results = arguments.context;
@@ -272,11 +431,11 @@ component threadsafe singleton accessors="true" {
 	 * Equality is done by evaluating the `getid()` method on both objects.
 	 * If the equality check fails, a `NotAuthorized` exception is thrown.
 	 *
-	 * @throws NoUserLoggedIn
-	 * @throws NotAuthorized
-	 *
-	 * @user The user to test for equality
+	 * @user    The user to test for equality
 	 * @message The error message to throw in the exception
+	 *
+	 * @throws NoUserLoggedIn
+	 * @throws NotAuthorized 
 	 */
 	CBSecurity function secureSameUser( required user, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !sameUser( arguments.user ) ) {
@@ -312,8 +471,8 @@ component threadsafe singleton accessors="true" {
 	 * They receive the currently logged in user and the permissions that where evaluated
 	 *
 	 * @permissions One, a list or an array of permissions
-	 * @success The closure/lambda/udf that executes if the context passes
-	 * @fail The closure/lambda/udf that executes if the context fails
+	 * @success     The closure/lambda/udf that executes if the context passes
+	 * @fail        The closure/lambda/udf that executes if the context fails
 	 */
 	function when( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
@@ -341,8 +500,8 @@ component threadsafe singleton accessors="true" {
 	 * They receive the currently logged in user and the permissions that where evaluated
 	 *
 	 * @permissions One, a list or an array of permissions
-	 * @success The closure/lambda/udf that executes if the context passes
-	 * @fail The closure/lambda/udf that executes if the context fails
+	 * @success     The closure/lambda/udf that executes if the context passes
+	 * @fail        The closure/lambda/udf that executes if the context fails
 	 */
 	function whenAll( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
@@ -370,8 +529,8 @@ component threadsafe singleton accessors="true" {
 	 * They receive the currently logged in user and the permissions that where evaluated
 	 *
 	 * @permissions One, a list or an array of permissions
-	 * @success The closure/lambda/udf that executes if the context passes
-	 * @fail The closure/lambda/udf that executes if the context fails
+	 * @success     The closure/lambda/udf that executes if the context passes
+	 * @fail        The closure/lambda/udf that executes if the context fails
 	 */
 	function whenNone( required permissions, required success, fail ){
 		arguments.permissions = arrayWrap( arguments.permissions );
@@ -389,7 +548,7 @@ component threadsafe singleton accessors="true" {
 	 *
 	 * @permissions One, a list or an array of permissions
 	 * @successView The view to set in the request context if the permissions pass
-	 * @failView The view to set in the request context if the permissions fails, optional
+	 * @failView    The view to set in the request context if the permissions fails, optional
 	 */
 	function secureViewProxy(
 		required permissions,
@@ -408,10 +567,10 @@ component threadsafe singleton accessors="true" {
 	 * This method is injected into all request contex's in order to allow you to easily
 	 * switch between views if the permissions are not found in the user.
 	 *
-	 * @event The proxied request context
+	 * @event       The proxied request context
 	 * @permissions One, a list or an array of permissions
 	 * @successView The view to set in the request context if the permissions pass
-	 * @failView The view to set in the request context if the permissions fails, optional
+	 * @failView    The view to set in the request context if the permissions fails, optional
 	 */
 	function secureView(
 		required event,
@@ -428,20 +587,39 @@ component threadsafe singleton accessors="true" {
 
 	/**
 	 * Get Real IP, by looking at clustered, proxy headers and locally.
+	 *
+	 * @trustUpstream If true, we check the forwarded headers first, else we don't
 	 */
-	string function getRealIP(){
-		var headers = getHTTPRequestData( false ).headers;
-
+	string function getRealIP( boolean trustUpstream = true ){
 		// When going through a proxy, the IP can be a delimtied list, thus we take the last one in the list
-
-		if ( structKeyExists( headers, "x-cluster-client-ip" ) ) {
-			return trim( listLast( headers[ "x-cluster-client-ip" ] ) );
-		}
-		if ( structKeyExists( headers, "X-Forwarded-For" ) ) {
-			return trim( listFirst( headers[ "X-Forwarded-For" ] ) );
+		if ( arguments.trustUpstream ) {
+			var headers = getHTTPRequestData( false ).headers;
+			if ( structKeyExists( headers, "x-cluster-client-ip" ) ) {
+				return trim( listLast( headers[ "x-cluster-client-ip" ] ) );
+			}
+			if ( structKeyExists( headers, "X-Forwarded-For" ) ) {
+				return trim( listFirst( headers[ "X-Forwarded-For" ] ) );
+			}
 		}
 
 		return len( cgi.remote_addr ) ? trim( listFirst( cgi.remote_addr ) ) : "127.0.0.1";
+	}
+
+	/**
+	 * Get the real host by looking at the upstreams if trusted or not
+	 *
+	 * @trustUpstream If true, we check the forwarded headers first, else we don't
+	 */
+	string function getRealHost( boolean trustUpstream = true ){
+		var headers = getHTTPRequestData( false ).headers;
+		// When going through a proxy, the IP can be a delimtied list, thus we take the last one in the list
+		if ( arguments.trustUpstream ) {
+			if ( structKeyExists( headers, "x-forwarded-host" ) ) {
+				return trim( listFirst( headers[ "x-forwarded-host" ] ) );
+			}
+		}
+
+		return headers.keyExists( "host" ) ? headers[ "host" ] : "none";
 	}
 
 	/***************************************************************/

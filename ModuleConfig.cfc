@@ -19,97 +19,99 @@ component {
 	// Helpers
 	this.applicationHelper = [ "helpers/mixins.cfm" ];
 	// Dependencies
-	this.dependencies      = [ "cbauth", "jwtcfml" ];
+	this.dependencies      = [ "cbauth", "jwtcfml", "cbcsrf" ];
 
 	/**
 	 * Module Config
 	 */
 	function configure(){
 		settings = {
-			// The global invalid authentication event or URI or URL to go if an invalid authentication occurs
-			"invalidAuthenticationEvent"  : "",
-			// Default Auhtentication Action: override or redirect when a user has not logged in
-			"defaultAuthenticationAction" : "redirect",
-			// The global invalid authorization event or URI or URL to go if an invalid authorization occurs
-			"invalidAuthorizationEvent"   : "",
-			// Default Authorization Action: override or redirect when a user does not have enough permissions to access something
-			"defaultAuthorizationAction"  : "redirect",
-			// You can define your security rules here or externally via a source
-			"rules"                       : [],
-			// The validator is an object that will validate rules and annotations and provide feedback on either authentication or authorization issues.
-			"validator"                   : "CBAuthValidator@cbsecurity",
-			// The WireBox ID of the authentication service to use in cbSecurity which must adhere to the cbsecurity.interfaces.IAuthService interface.
-			"authenticationService"       : "authenticationService@cbauth",
-			// WireBox ID of the user service to use
-			"userService"                 : "",
-			// The name of the variable to use to store an authenticated user in prc scope if using a validator that supports it.
-			"prcUserVariable"             : "oCurrentUser",
-			// If source is model, the wirebox Id to use for retrieving the rules
-			"rulesModel"                  : "",
-			// If source is model, then the name of the method to get the rules, we default to `getSecurityRules`
-			"rulesModelMethod"            : "getSecurityRules",
-			// If source is db then the datasource name to use
-			"rulesDSN"                    : "",
-			// If source is db then the table to get the rules from
-			"rulesTable"                  : "",
-			// If source is db then the ordering of the select
-			"rulesOrderBy"                : "",
-			// If source is db then you can have your custom select SQL
-			"rulesSql"                    : "",
-			// Use regular expression matching on the rule match types
-			"useRegex"                    : true,
-			// Force SSL for all relocations
-			"useSSL"                      : false,
-			// Auto load the global security firewall
-			"autoLoadFirewall"            : true,
-			// Activate handler/action based annotation security
-			"handlerAnnotationSecurity"   : true,
-			// Activate security rule visualizer, defaults to false by default
-			"enableSecurityVisualizer"    : false,
-			// JWT Settings
-			"jwt"                         : {
-				// The issuer authority for the tokens, placed in the `iss` claim
-				"issuer"                     : "",
+			/**
+			 * --------------------------------------------------------------------------
+			 * Authentication Services
+			 * --------------------------------------------------------------------------
+			 * Here you will configure which service is in charge of providing authentication for your application.
+			 * By default we leverage the cbauth module which expects you to connect it to a database via your own User Service.
+			 *
+			 * Available authentication providers:
+			 * - cbauth : Leverages your own UserService that determines authentication and user retrieval
+			 * - basicAuth : Leverages basic authentication and basic in-memory user registration in our configuration
+			 * - custom : Any other service that adheres to our IAuthService interface
+			 */
+			authentication : {
+				// The WireBox ID of the authentication service to use which must adhere to the cbsecurity.interfaces.IAuthService interface.
+				"provider" : "authenticationService@cbauth"
+			},
+			/**
+			 * --------------------------------------------------------------------------
+			 * Basic Auth
+			 * --------------------------------------------------------------------------
+			 * These settings are used so you can configure the hashing patterns of the user storage
+			 * included with cbsecurity.  These are only used if you are using the `BasicAuthUserService` as
+			 * your service of choice alongside the `BasicAuthValidator`
+			 */
+			basicAuth : {
+				// Hashing algorithm to use
+				hashAlgorithm  : "SHA-512",
+				// Iterates the number of times the hash is computed to create a more computationally intensive hash.
+				hashIterations : 5,
+				// User storage: The `key` is the username. The value is the user credentials that can include
+				// { roles: "", permissions : "", firstName : "", lastName : "", password : "" }
+				users          : {}
+			},
+			/**
+			 * --------------------------------------------------------------------------
+			 * CSRF - Cross Site Request Forgery Settings
+			 * --------------------------------------------------------------------------
+			 * These settings configures the cbcsrf module. Look at the module configuration for more information
+			 */
+			csrf : {},
+			/**
+			 * --------------------------------------------------------------------------
+			 * Firewall Settings
+			 * --------------------------------------------------------------------------
+			 * The firewall is used to block/check access on incoming requests via security rules or via annotation on handler actions.
+			 * Here you can configure the operation of the firewall and especially what Validator will be in charge of verifying authentication/authorization
+			 * during a matched request.
+			 */
+			firewall : {
+				// Auto load the global security firewall automatically, else you can load it a-la-carte via the `Security` interceptor
+				"autoLoadFirewall" : true
+			},
+			/**
+			 * --------------------------------------------------------------------------
+			 * Security Visualizer
+			 * --------------------------------------------------------------------------
+			 * This is a debugging panel that when active, a developer can visualize security settings and more.
+			 * You can use the `securityRule` to define what rule you want to use to secure the visualizer but make sure the `secured` flag is turned to true.
+			 * You don't have to specify the `secureList` key, we will do that for you.
+			 */
+			visualizer : {
+				"enabled"      : false,
+				"secured"      : false,
+				"securityRule" : {}
+			},
+			/**
+			 * --------------------------------------------------------------------------
+			 * Security Headers
+			 * --------------------------------------------------------------------------
+			 * This section is the way to configure cbsecurity for header detection, inspection and setting for common
+			 * security exploits like XSS, ClickJacking, Host Spoofing, IP Spoofing, Non SSL usage, HSTS and much more.
+			 */
+			securityHeaders : { "enabled" : true },
+			/**
+			 * --------------------------------------------------------------------------
+			 * Json Web Tokens Settings
+			 * --------------------------------------------------------------------------
+			 * Here you can configure the JWT services for operation and storage.  In order for your firewall
+			 * to leverage JWT authentication/authorization you must make sure you use the `JwtAuthValidator` as your
+			 * validator of choice; either globally or at the module level.
+			 */
+			jwt : {
 				// The jwt secret encoding key to use
-				"secretKey"                  : getSystemSetting( "JWT_SECRET", "" ),
-				// by default it uses the authorization bearer header, but you can also pass a custom one as well or as an rc variable.
-				"customAuthHeader"           : "x-auth-token",
-				// The expiration in minutes for the jwt tokens
-				"expiration"                 : 60,
-				// If true, enables refresh tokens, token creation methods will return a struct instead
-				// of just the access token. e.g. { access_token: "", refresh_token : "" }
-				"enableRefreshTokens"        : false,
-				// The default expiration for refresh tokens, defaults to 30 days
-				"refreshExpiration"          : 10080,
-				// The Custom header to inspect for refresh tokens
-				"customRefreshHeader"        : "x-refresh-token",
-				// If enabled, the JWT validator will inspect the request for refresh tokens and expired access tokens
-				// It will then automatically refresh them for you and return them back as
-				// response headers in the same request according to the customRefreshHeader and customAuthHeader
-				"enableAutoRefreshValidator" : false,
-				// Enable the POST > /cbsecurity/refreshtoken API endpoint
-				"enableRefreshEndpoint"      : true,
-				// encryption algorithm to use, valid algorithms are: HS256, HS384, and HS512
-				"algorithm"                  : "HS512",
-				// Which claims neds to be present on the jwt token or `TokenInvalidException` upon verification and decoding
-				"requiredClaims"             : [],
-				// The token storage settings
-				"tokenStorage"               : {
-					// enable or not, default is true
-					"enabled"    : true,
-					// A cache key prefix to use when storing the tokens
-					"keyPrefix"  : "cbjwt_",
-					// The driver to use: db, cachebox or a WireBox ID
-					"driver"     : "cachebox",
-					// Driver specific properties
-					"properties" : { "cacheName" : "default" }
-				}
+				"secretKey" : getSystemSetting( "JWT_SECRET", "" )
 			}
 		};
-
-		// CBSecurity Routes
-		router.post( "/refreshtoken" ).to( "Home.refreshToken" );
-		router.route( "/" ).to( "Home.index" );
 
 		// Security Interceptions
 		interceptorSettings = {
@@ -117,6 +119,7 @@ component {
 				// Validator Events
 				"cbSecurity_onInvalidAuthentication",
 				"cbSecurity_onInvalidAuthorization",
+				"cbSecurity_onFirewallBlock",
 				// JWT Events
 				"cbSecurity_onJWTCreation",
 				"cbSecurity_onJWTInvalidation",
@@ -135,14 +138,29 @@ component {
 	 * Fired when the module is registered and activated.
 	 */
 	function onLoad(){
-		// Check the global settings for rules or a rules source
-		if ( settings.autoLoadFirewall ) {
+		// Startup the security services, we can't lazy load as we need them immediately so it can protect the application
+		wirebox.getInstance( "cbSecurity@cbSecurity" );
+		wirebox.getInstance( "BasicAuthUserService@cbSecurity" );
+
+		// Are we auto loading the firewall?
+		if ( settings.firewall.autoLoadFirewall ) {
 			controller
 				.getInterceptorService()
 				.registerInterceptor(
 					interceptorClass      = "cbsecurity.interceptors.Security",
 					interceptorProperties = settings,
 					interceptorName       = "cbsecurity@global"
+				);
+		}
+
+		// Do we load the security headers response interceptor: Default is true even if not defined.
+		if ( settings.securityHeaders.enabled ) {
+			controller
+				.getInterceptorService()
+				.registerInterceptor(
+					interceptorClass      = "cbsecurity.interceptors.SecurityHeaders",
+					interceptorProperties = settings,
+					interceptorName       = "securityHeaders@cbsecurity"
 				);
 		}
 	}

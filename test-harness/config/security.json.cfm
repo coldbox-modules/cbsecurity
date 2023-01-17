@@ -5,7 +5,8 @@
         "match": "event",
         "roles": "admin",
         "permissions": "",
-        "redirect": "main.index"
+        "redirect": "main.index",
+		"httpMethods" : "*"
 	},
 	{
         "whitelist": "",
@@ -13,6 +14,16 @@
         "match": "url",
         "roles": "",
         "permissions": "",
-        "overrideEvent": "main.index"
+        "overrideEvent": "main.index",
+		"httpMethods" : ""
+    },
+	{
+        "whitelist": "",
+        "securelist": "public",
+        "match": "url",
+        "roles": "",
+        "permissions": "",
+        "overrideEvent": "main.index",
+		"httpMethods" : "post,put"
     }
 ]
