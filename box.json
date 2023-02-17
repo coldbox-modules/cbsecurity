@@ -1,6 +1,6 @@
 {
     "name":"ColdBox Security",
-    "version":"3.0.0",
+    "version":"3.1.0",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbsecurity/@build.version@/cbsecurity-@build.version@.zip",
     "author":"Ortus Solutions.com <info@ortussolutions.com>",
     "slug":"cbsecurity",
@@ -25,7 +25,7 @@
     "dependencies":{
         "jwt-cfml":"^1.0.0",
         "cbauth":"^6.0.0",
-        "cbcsrf":"^2.0.0"
+        "cbcsrf":"^3.0.0"
     },
     "devDependencies":{
         "commandbox-cfformat":"*",

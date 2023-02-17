@@ -25,6 +25,7 @@ component threadsafe singleton accessors="true" {
 	property name="settings"       inject="coldbox:moduleSettings:cbsecurity";
 	property name="log"            inject="logbox:logger:{this}";
 	property name="wirebox"        inject="wirebox";
+	property name="async"          inject="coldbox:asyncManager";
 	property name="moduleSettings" inject="coldbox:setting:modules";
 	property name="DBLogger"       inject="DBLogger@cbsecurity";
 
@@ -435,7 +436,7 @@ component threadsafe singleton accessors="true" {
 	 * @message The error message to throw in the exception
 	 *
 	 * @throws NoUserLoggedIn
-	 * @throws NotAuthorized 
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secureSameUser( required user, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !sameUser( arguments.user ) ) {
@@ -470,7 +471,7 @@ component threadsafe singleton accessors="true" {
 	 *
 	 * They receive the currently logged in user and the permissions that where evaluated
 	 *
-	 * @permissions One, a list or an array of permissions
+	 * @permissions One, a list, an array of permissions or boolean evaluation
 	 * @success     The closure/lambda/udf that executes if the context passes
 	 * @fail        The closure/lambda/udf that executes if the context fails
 	 */
@@ -622,6 +623,50 @@ component threadsafe singleton accessors="true" {
 		return headers.keyExists( "host" ) ? headers[ "host" ] : "none";
 	}
 
+
+	/**
+	 * Generate a random, secure password using several options
+	 *
+	 * @length  The length of the password. Defaults to 32 characters
+	 * @letters Use letters
+	 * @numbers Use numbers
+	 * @symbols Use symbols
+	 *
+	 * @return A secure random password
+	 */
+	function createPassword(
+		numeric length  = 32,
+		boolean letters = true,
+		boolean numbers = true,
+		boolean symbols = true
+	){
+		var characters = [];
+
+		// cfformat-ignore-start
+		_when( arguments.letters, () => characters.append( [
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
+            'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+            'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+            'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+        ], true ) )
+		._when( arguments.numbers, () => characters.append( [
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+        ], true ) )
+		._when( arguments.symbols, () => characters.append( [
+            '~', '!', '##', '$', '%', '^', '&', '*', '(', ')', '-',
+            '_', '.', ',', '<', '>', '?', '/', '\', '{', '}', '[',
+            ']', '|', ':', ';'
+        ], true ) );
+		// cfformat-ignore-end
+
+		return repeatString( "1", arguments.length )
+			.listToArray( "" )
+			.map( () => characters[ randRange( 1, characters.len() ) ] )
+			.toList( "" );
+	}
+
+
 	/***************************************************************/
 	/* Private Methods
 	/***************************************************************/
@@ -633,6 +678,30 @@ component threadsafe singleton accessors="true" {
 	 */
 	private function arrayWrap( required items ){
 		return isArray( arguments.items ) ? items : listToArray( items );
+	}
+
+	/**
+	 * TODO: Migrate from FlowHelpers once ColdBox 7 goes gold.
+	 * This function evaluates the target boolean expression and if `true` it will execute the `success` closure
+	 * else, if the `failure` closure is passed, it will execute it.
+	 *
+	 * @target  The boolean evaluator, this can be a boolean value
+	 * @success The closure/lambda to execute if the boolean value is true
+	 * @failure The closure/lambda to execute if the boolean value is false
+	 *
+	 * @return Returns itself
+	 */
+	private function _when(
+		required boolean target,
+		required success,
+		failure
+	){
+		if ( arguments.target ) {
+			arguments.success();
+		} else if ( !isNull( arguments.failure ) ) {
+			arguments.failure();
+		}
+		return variables;
 	}
 
 }

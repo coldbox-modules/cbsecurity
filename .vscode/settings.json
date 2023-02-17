@@ -1,3 +1,19 @@
 {
-    "cflint.enabled": false
+    "cflint.enabled": false,
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "xprotocol"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 33060,
+            "driver": "MySQL",
+            "name": "local-mysql8",
+            "group": "local",
+            "database": "cbsecurity",
+            "username": "root",
+            "connectionTimeout": 1000
+        }
+    ]
 }
