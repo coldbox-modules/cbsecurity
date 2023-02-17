@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ----
 
-## [3.1.0] => 2023-
+## [3.1.0] => 2023-FEB-17
 
 ### Added
 
 * Added a new helper: `createPassword()` on the `CBSecurity` model to generate secure, random passwords with letters, symbols and numbers.
+* `cbcsrf` upgraded to version 3, we missed in the previous release.
 
 ----
 
