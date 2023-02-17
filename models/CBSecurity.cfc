@@ -436,7 +436,7 @@ component threadsafe singleton accessors="true" {
 	 * @message The error message to throw in the exception
 	 *
 	 * @throws NoUserLoggedIn
-	 * @throws NotAuthorized 
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secureSameUser( required user, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !sameUser( arguments.user ) ) {
@@ -648,20 +648,20 @@ component threadsafe singleton accessors="true" {
             'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
             'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
             'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
         ], true ) )
 		._when( arguments.numbers, () => characters.append( [
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
         ], true ) )
 		._when( arguments.symbols, () => characters.append( [
             '~', '!', '##', '$', '%', '^', '&', '*', '(', ')', '-',
             '_', '.', ',', '<', '>', '?', '/', '\', '{', '}', '[',
-            ']', '|', ':', ';',
+            ']', '|', ':', ';'
         ], true ) );
 		// cfformat-ignore-end
 
-		return async
-			.arrayRange( to: arguments.length )
+		return repeatString( "1", arguments.length )
+			.listToArray( "" )
 			.map( () => characters[ randRange( 1, characters.len() ) ] )
 			.toList( "" );
 	}
