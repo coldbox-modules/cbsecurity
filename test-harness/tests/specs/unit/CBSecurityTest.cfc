@@ -18,6 +18,7 @@ component extends="coldbox.system.testing.BaseModelTest" model="cbsecurity.model
 		describe( "CBSecurity Model", function(){
 			beforeEach( function( currentSpec ){
 				cbsecurity = model.init();
+				model.setAsync( new coldbox.system.async.AsyncManager() );
 
 				mockAuthService = createStub();
 				mockUser        = createMock( "root.models.User" ).init();
@@ -29,6 +30,14 @@ component extends="coldbox.system.testing.BaseModelTest" model="cbsecurity.model
 
 			it( "can be created", function(){
 				expect( cbsecurity ).toBeComponent();
+			} );
+
+			it( "can create random passwords", function(){
+				expect( cbsecurity.createPassword() ).toHaveLength( 32 );
+				expect( cbsecurity.createPassword( 2 ) ).toHaveLength( 2 );
+				expect( cbsecurity.createPassword( numbers: false ) ).notToMatch( "([0-9])+" );
+				expect( cbsecurity.createPassword( letters: false ) ).notToMatch( "([a-zA-Z])+" );
+				expect( cbsecurity.createPassword( symbols: false, numbers: false ) ).toMatch( "([a-zA-Z])+" );
 			} );
 
 			describe( "verification via has()", function(){
