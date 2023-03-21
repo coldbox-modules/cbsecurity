@@ -152,7 +152,7 @@ moduleSettings = {
 				"schema"     : "",
 				"table"      : "cbsecurity_logs",
 				"autoCreate" : true
-			}
+			},
 			// Firewall Rules, this can be a struct of detailed configuration
 			// or a simple array of inline rules
 			"rules"                       : {
@@ -304,9 +304,9 @@ moduleSettings = {
 				}
 			}
 		}
-	};
+	}
 
-}
+};
 ```
 
 ## Usage
