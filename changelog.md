@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Migrations table for security logs
+- New bootsrap icons + css + js
+- New github support files
 
 ### Fixed
 
