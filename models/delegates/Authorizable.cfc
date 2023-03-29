@@ -4,6 +4,8 @@
  * ---
  * This delegate allows for objects to verify permissions and roles on the $parent
  * This delegate expects the following functions to be exposed in the $parent
+ * and they must return an array of values
+ *
  * - getPermissions()
  * - getRoles()
  * - getId()
