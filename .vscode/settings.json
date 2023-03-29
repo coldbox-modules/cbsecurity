@@ -1,5 +1,17 @@
 {
     "cflint.enabled": false,
+	"cfml.mappings": [
+		{
+			"logicalPath": "/coldbox",
+			"directoryPath": "./coldbox",
+			"isPhysicalDirectoryPath" :false
+		},
+		{
+			"logicalPath": "/testbox",
+			"directoryPath": "./testbox",
+			"isPhysicalDirectoryPath" :false
+		}
+	],
     "sqltools.connections": [
         {
             "mysqlOptions": {

@@ -38,7 +38,8 @@ Apache License, Version 2.0.
 
 - Lucee 5+
 - ColdFusion 2018+
-- ColdBox 7+ for delegates and basic auth
+- ColdBox 6+
+- ColdBox 7+ for delegates and basic auth support only
 
 ## Installation
 
@@ -152,7 +153,7 @@ moduleSettings = {
 				"schema"     : "",
 				"table"      : "cbsecurity_logs",
 				"autoCreate" : true
-			}
+			},
 			// Firewall Rules, this can be a struct of detailed configuration
 			// or a simple array of inline rules
 			"rules"                       : {
@@ -304,9 +305,9 @@ moduleSettings = {
 				}
 			}
 		}
-	};
+	}
 
-}
+};
 ```
 
 ## Usage
@@ -646,6 +647,8 @@ This module also ships with a security visualizer that will document all your se
 <img src="https://raw.githubusercontent.com/coldbox-modules/cbsecurity/development/test-harness/visualizer.png" class="img-responsive">
 
 ## Running Tests and Contributing
+
+Please read our [Contributing](CONTRIBUTING.md) guide first.
 
 To run the tests, start one of the servers from the `/test-harness` directory.
 

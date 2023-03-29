@@ -212,10 +212,17 @@ component accessors="true" singleton threadsafe {
 			group by action",
 			{},
 			{ datasource : variables.settings.firewall.logs.dsn }
-		).reduce( ( results, row ) => {
-			results[ row.action ] = { "total" : row.total, "percentage" : row.percentage };
-			return results;
-		}, {} );
+		).reduce(
+			( results, row ) => {
+				results[ row.action ] = { "total" : row.total, "percentage" : row.percentage };
+				return results;
+			},
+			{
+				"block"    : { "total" : 0, "percentage" : 0 },
+				"override" : { "total" : 0, "percentage" : 0 },
+				"redirect" : { "total" : 0, "percentage" : 0 }
+			}
+		);
 	}
 
 	/**
