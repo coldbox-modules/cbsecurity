@@ -648,6 +648,8 @@ This module also ships with a security visualizer that will document all your se
 
 ## Running Tests and Contributing
 
+Please read our [Contributing](CONTRIBUTING.md) guide first.
+
 To run the tests, start one of the servers from the `/test-harness` directory.
 
 You will also need a MySQL database seeded with the `/test-harness/tests/resources/cbsecurity.sql` file.
