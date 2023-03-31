@@ -251,6 +251,13 @@ component threadsafe singleton accessors="true" {
 	}
 
 	/**
+	 * Verifies if a user is NOT logged in
+	 */
+	boolean function guest(){
+		return !getAuthService().isLoggedIn();
+	}
+
+	/**
 	 * Login Facade
 	 *
 	 * @username The username to log in with
