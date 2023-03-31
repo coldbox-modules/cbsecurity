@@ -52,6 +52,13 @@ component {
 		return variables.cbSecurity.isLoggedIn();
 	}
 
+	/**
+	 * Verifies if a user is NOT logged in
+	 */
+	boolean function guest(){
+		return variables.cbSecurity.guest();
+	}
+
 	/***************************************************************/
 	/* Verification Methods
 	/***************************************************************/

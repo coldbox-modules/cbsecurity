@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] => 2023-MAR-31
+
+### Added
+
+- Added `guest()` method to CBSecurity model and `Authorizable` delegate
+
 ## [3.2.0] => 2023-MAR-29
 
 ### Added
