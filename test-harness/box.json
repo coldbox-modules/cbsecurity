@@ -5,7 +5,7 @@
     "private":true,
     "description":"",
     "dependencies":{
-        "coldbox":"^6.0.0",
+        "coldbox":"be",
         "cbauth":"^6.0.0",
         "BCrypt":"^2.0.0",
         "jwt-cfml":"^1.0.0",
