@@ -14,16 +14,30 @@ jobs:
     env:
       DB_USER: root
       DB_PASSWORD: root
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
         cfengine: [ "lucee@5", "adobe@2018", "adobe@2021" ]
+        coldboxVersion: [ "^6.0.0" ]
+        experimental: [ false ]
+        include:
+          - coldboxVersion: "be"
+            cfengine: "lucee@5"
+            experimental: true
+          - coldboxVersion: "be"
+            cfengine: "adobe@2018"
+            experimental: true
+          - coldboxVersion: "be"
+            cfengine: "adobe@2021"
+            experimental: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3.2.0
+        uses: actions/checkout@v3
+
 
       - name: Setup Java
-        uses: actions/setup-java@v3.9.0
+        uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: "11"
@@ -54,7 +68,10 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          box run-script install:dependencies
+          box install
+          cd test-harness
+          box package set dependencies.coldbox=${{ matrix.coldboxVersion }}
+          box install
 
       - name: Start ${{ matrix.cfengine }} Server
         run: |
@@ -65,33 +82,32 @@ jobs:
         run: |
           mkdir -p test-harness/tests/results
           box testbox run --verbose outputFile=test-harness/tests/results/test-results outputFormats=json,antjunit
-          ls -lR test-harness/tests
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          files: test-harness/tests/results/**/*.xml
-          check_name: "${{ matrix.cfengine }} Test Results"
+          junit_files: test-harness/tests/results/**/*.xml
+          check_name: "${{ matrix.cfengine }} ColdBox ${{ matrix.coldboxVersion }} Test Results"
 
       - name: Upload Test Results to Artifacts
         if: always()
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3
         with:
-          name: test-results-${{ matrix.cfengine }}
+          name: test-results-${{ matrix.cfengine }}-${{ matrix.coldboxVersion }}
           path: |
             test-harness/tests/results/**/*
 
-      - name: Failure Debugging Log
+      - name: Show Server Log On Failures
         if: ${{ failure() }}
         run: |
           box server log serverConfigFile="server-${{ matrix.cfengine }}.json"
 
-      - name: Upload Debugging Log To Artifacts
+      - name: Upload Debug Logs To Artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3
         with:
-          name: Failure Debugging Info - ${{ matrix.cfengine }}
+          name: Failure Debugging Info - ${{ matrix.cfengine }} - ${{ matrix.coldboxVersion }}
           path: |
             .engine/**/logs/*
             .engine/**/WEB-INF/cfusion/logs/*
@@ -105,6 +121,6 @@ jobs:
           SLACK_COLOR: ${{ job.status }} # or a specific color like 'green' or '#ff00ff'
           SLACK_ICON_EMOJI: ":bell:"
           SLACK_MESSAGE: '${{ github.repository }} tests failed :cry:'
-          SLACK_TITLE: ${{ github.repository }} Tests For ${{ matrix.cfengine }} failed
+          SLACK_TITLE: ${{ github.repository }} Tests For ${{ matrix.cfengine }} with ColdBox ${{ matrix.coldboxVersion }} failed
           SLACK_USERNAME: CI
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
