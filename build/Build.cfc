@@ -76,9 +76,6 @@ component {
 		// checksums
 		buildChecksums();
 
-		// Build latest changelog
-		latestChangelog();
-
 		// Finalize Message
 		print
 			.line()
@@ -130,9 +127,7 @@ component {
 			)
 			.toConsole();
 
-		// Prepare exports directory
-		variables.exportsDir = variables.artifactsDir & "/#projectName#/#arguments.version#";
-		directoryCreate( variables.exportsDir, true, true );
+		ensureExportDir( argumentCollection = arguments );
 
 		// Project Build Dir
 		variables.projectBuildDir = variables.buildDir & "/#projectName#";
@@ -200,11 +195,12 @@ component {
 		version   = "1.0.0",
 		outputDir = ".tmp/apidocs"
 	){
+		ensureExportDir( argumentCollection = arguments );
+
 		// Create project mapping
 		fileSystemUtil.createMapping( arguments.projectName, variables.cwd );
 		// Generate Docs
 		print.greenLine( "Generating API Docs, please wait..." ).toConsole();
-		directoryCreate( arguments.outputDir, true, true );
 
 		command( "docbox generate" )
 			.params(
@@ -226,27 +222,6 @@ component {
 			overwrite = true,
 			recurse   = true
 		);
-	}
-
-	/**
-	 * Build the latest changelog file: changelog-latest.md
-	 */
-	function latestChangelog(){
-		print.blueLine( "Building latest changelog..." ).toConsole();
-
-		if ( !fileExists( variables.cwd & "changelog.md" ) ) {
-			return error( "Cannot continue building, changelog.md file doesn't exist!" );
-		}
-
-		fileWrite(
-			variables.cwd & "changelog-latest.md",
-			fileRead( variables.cwd & "changelog.md" ).split( "----" )[ 2 ].trim() & chr( 13 ) & chr( 10 )
-		);
-
-		print
-			.greenLine( "Latest changelog file created at `changelog-latest.md`" )
-			.line()
-			.line( fileRead( variables.cwd & "changelog-latest.md" ) );
 	}
 
 	/********************************************* PRIVATE HELPERS *********************************************/
@@ -315,4 +290,18 @@ component {
 		return ( createObject( "java", "java.lang.System" ).getProperty( "cfml.cli.exitCode" ) ?: 0 );
 	}
 
+	/**
+	 * Ensure the export directory exists at artifacts/NAME/VERSION/
+	 */
+	private function ensureExportDir(
+		required projectName,
+		version   = "1.0.0"
+	){
+		if ( structKeyExists( variables, "exportsDir" ) && directoryExists( variables.exportsDir ) ){
+			return;
+		}
+		// Prepare exports directory
+		variables.exportsDir = variables.artifactsDir & "/#projectName#/#arguments.version#";
+		directoryCreate( variables.exportsDir, true, true );
+	}
 }
