@@ -12,7 +12,6 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 			beforeEach( function( currentSpec ){
 				// setup properties
 				setup();
-				variables.wirebox = new coldbox.system.ioc.Injector();
 				mockController
 					.$( "getAppHash", hash( "appHash" ) )
 					.$( "getAppRootPath", expandPath( "/root" ) )
@@ -107,7 +106,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				security
 					.$( "getInstance" )
 					.$args( settings.firewall.validator )
-					.$results( wirebox.getInstance( settings.firewall.validator ) );
+					.$results( mockWireBox.getInstance( settings.firewall.validator ) );
 
 				security.afterAspectsLoad();
 
@@ -141,7 +140,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				security
 					.$( "getInstance" )
 					.$args( settings.firewall.validator )
-					.$results( wirebox.getInstance( settings.firewall.validator ) );
+					.$results( mockWireBox.getInstance( settings.firewall.validator ) );
 				security.configure();
 				expect( security.$getProperty( "enableInvalidHandlerCheck" ) ).toBeFalse();
 			} );
@@ -155,7 +154,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				security
 					.$( "getInstance" )
 					.$args( settings.firewall.validator )
-					.$results( wirebox.getInstance( settings.firewall.validator ) );
+					.$results( mockWireBox.getInstance( settings.firewall.validator ) );
 				security.configure();
 				expect( security.$getProperty( "enableInvalidHandlerCheck" ) ).toBeTrue();
 			} );
@@ -166,7 +165,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 					security
 						.$( "getInstance" )
 						.$args( settings.firewall.validator )
-						.$results( wirebox.getInstance( settings.firewall.validator ) );
+						.$results( mockWireBox.getInstance( settings.firewall.validator ) );
 				} );
 
 				it( "can load JSON Rules", function(){
@@ -217,7 +216,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 						)
 						.$( "getInstance" )
 						.$args( settings.firewall.validator )
-						.$results( wirebox.getInstance( settings.firewall.validator ) );
+						.$results( mockWireBox.getInstance( settings.firewall.validator ) );
 				} );
 
 				it( "can load JSON Rules based on module settings", function(){
@@ -275,7 +274,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 		return createMock( "cbsecurity.models.util.RulesLoader" )
 			.init()
 			.setController( variables.mockController )
-			.setWireBox( variables.wirebox );
+			.setWireBox( variables.mockWireBox );
 	}
 
 }
