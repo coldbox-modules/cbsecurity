@@ -104,7 +104,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 					"/tests/resources/security.json.cfm"
 				);
 				settings.firewall.validator = "tests.resources.security";
-				mockValidator = mockWireBox.getInstance( settings.firewall.validator );
+				mockValidator               = mockWireBox.getInstance( settings.firewall.validator );
 				security.getRulesLoader().$( "loadRules", [] );
 
 				security
@@ -168,7 +168,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 			describe( "It can load many types of rules", function(){
 				beforeEach( function( currentSpec ){
 					settings.firewall.validator = "tests.resources.security";
-					mockValidator = mockWireBox.getInstance( settings.firewall.validator );
+					mockValidator               = mockWireBox.getInstance( settings.firewall.validator );
 					security
 						.$( "getInstance" )
 						.$args( settings.firewall.validator )
@@ -212,7 +212,7 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 			describe( "module settings rule loading", function(){
 				beforeEach( function( currentSpec ){
 					settings.firewall.rules.inline = [];
-					mockValidator = mockWireBox.getInstance( settings.firewall.validator );
+					mockValidator                  = mockWireBox.getInstance( settings.firewall.validator );
 					security
 						.$property( propertyName = "securityModules", mock = {} )
 						.$property(
