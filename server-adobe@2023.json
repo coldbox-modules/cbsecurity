@@ -1,5 +1,5 @@
 {
-    "name":"@MODULE_NAME@-adobe@2023",
+    "name":"cbsecurity-adobe@2023",
     "app":{
         "serverHomeDirectory":".engine/adobe2023",
         "cfengine":"adobe@2023.0.0-beta.1"
@@ -13,7 +13,7 @@
         },
 		"webroot": "test-harness",
 		"aliases":{
-            "/moduleroot/@MODULE_NAME@":"../"
+            "/moduleroot/cbsecurity":"../"
         }
     },
     "jvm":{
