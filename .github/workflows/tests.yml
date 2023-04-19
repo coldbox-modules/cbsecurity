@@ -22,6 +22,9 @@ jobs:
         coldboxVersion: [ "^6.0.0" ]
         experimental: [ false ]
         include:
+          - cfengine: "adobe@2023"
+            coldboxVersion: "^6.0.0"
+            experimental: true
           - coldboxVersion: "be"
             cfengine: "lucee@5"
             experimental: true

@@ -1,0 +1,29 @@
+{
+    "name":"@MODULE_NAME@-adobe@2023",
+    "app":{
+        "serverHomeDirectory":".engine/adobe2023",
+        "cfengine":"adobe@2023.0.0-beta.1"
+    },
+    "web":{
+        "http":{
+            "port":"60299"
+        },
+        "rewrites":{
+            "enable":"true"
+        },
+		"webroot": "test-harness",
+		"aliases":{
+            "/moduleroot/@MODULE_NAME@":"../"
+        }
+    },
+    "jvm":{
+        "heapSize":"1024"
+    },
+    "openBrowser":"false",
+	"cfconfig": {
+		"file" : ".cfconfig.json"
+	},
+    "scripts" : {
+        "onServerInstall":"cfpm install zip,debugger"
+    }
+}
