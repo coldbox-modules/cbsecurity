@@ -58,6 +58,8 @@ jobs:
 
       - name: Build ${{ env.MODULE_ID }}
         run: |
+          npm install -g markdownlint-cli
+          markdownlint changelog.md --fix
           box install commandbox-docbox
           box task run taskfile=build/Build target=run :version=${{ env.VERSION }} :projectName=${{ env.MODULE_ID }} :buildID=${{ github.run_number }} :branch=${{ env.BRANCH }}
 
