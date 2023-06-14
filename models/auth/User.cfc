@@ -9,9 +9,9 @@
  * - cbsecurity.interfaces.IAuthUser
  */
 component
-	accessors="true"
+	accessors     ="true"
 	transientCache="false"
-	delegates="
+	delegates     ="
 		Auth@cbSecurity,
 		Authorizable@cbSecurity,
 		JwtSubject@cbSecurity
