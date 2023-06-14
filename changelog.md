@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-----
+* * *
 
 ## [Unreleased]
+
+## [3.4.0] - 2023-06-14
 
 ### Added
 
@@ -145,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add a `secureSameUser` method to throw when passed a different user #29 (https://github.com/coldbox-modules/cbsecurity/pull/29)
+- Add a `secureSameUser` method to throw when passed a different user #29 (<https://github.com/coldbox-modules/cbsecurity/pull/29>)
 
 ## [2.10.0] => 2021-FEB-12
 
@@ -188,14 +190,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Contributed module rules are now pre-pended instead of appended. (@wpdebruin)
 
-
 ### Fixed
 
 - Not loading rules by source file detection due to invalid setting check
 - Don't trigger ColdBox's invalid event looping protection. It also auto-senses between ColdBox 6 and 5 (@homestar9)
 - Fixed token scopes according to JWT spec, it is called `scope` and it is a space separated list. This doesn't change the User interface for it. (@wpdebruin)
 - Update token storages so no token rejection anymore when storage is not enabled. (@wpdebruin)
-
 
 ## [2.6.0] => 2020-JUL-22
 
@@ -210,18 +210,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JWT Validator now passing `permissions` instead of `roles`
 - Token Storage checking was being done even if disabled
 
-
 ## [2.5.0] => 2020-APR-03
 
 - `Feature` : Upgraded to `cbAuth` @ 5.x
 
 ## [2.4.0] => 2020-APR-02
 
-- `Feature` : We now include the `cbcsrf` module to allow for protections of cross site request forgery vectors. Please see all the features included in this module here: https://github.com/coldbox-modules/cbcsrf
+- `Feature` : We now include the `cbcsrf` module to allow for protections of cross site request forgery vectors. Please see all the features included in this module here: <https://github.com/coldbox-modules/cbcsrf>
 
 ## [2.3.0] => 2020-MAR-30
 
-- `Feature` Introduction of the cbSecurity model: https://coldbox-security.ortusbooks.com/intro/release-history/whats-new-with-2.3.0
+- `Feature` Introduction of the cbSecurity model: <https://coldbox-security.ortusbooks.com/intro/release-history/whats-new-with-2.3.0>
 - `Task` : Cfformatting everywhere
 
 ## [2.2.1] => 2020-FEB-26
@@ -230,7 +229,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.2.0] => 2020-FEB-12
 
-- `Feature` : Migrated from the jwt to the `jwtcfml` (https://forgebox.io/view/jwt-cfml) library to expand encoding/decoding capabilities to support `RS` and `ES` algorithms:
+- `Feature` : Migrated from the jwt to the `jwtcfml` (<https://forgebox.io/view/jwt-cfml>) library to expand encoding/decoding capabilities to support `RS` and `ES` algorithms:
   - HS256
   - HS384
   - HS512
@@ -350,7 +349,7 @@ settings = {
 ## [1.0.2]
 
 - Removed `getPlugin()` deprecated calls to new approach.
-- https://ortussolutions.atlassian.net/browse/CCM-26 cbsecurity ocm rules not ColdBox 4 compat
+- <https://ortussolutions.atlassian.net/browse/CCM-26> cbsecurity ocm rules not ColdBox 4 compat
 
 ## [1.0.1]
 
@@ -359,3 +358,7 @@ settings = {
 ## [1.0.0]
 
 - Created first module version
+
+[Unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.0...HEAD
+
+[3.4.0]: https://github.com/coldbox-modules/cbsecurity/compare/849bafc487dc666f22a1ae7bba2408849bc78ae8...v3.4.0
