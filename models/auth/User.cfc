@@ -10,13 +10,18 @@
  */
 component
 	accessors="true"
-	delegates="Auth@cbSecurity,
-			Authorizable@cbSecurity,
-			JwtSubject@cbSecurity"
+	transientCache="false"
+	delegates="
+		Auth@cbSecurity,
+		Authorizable@cbSecurity,
+		JwtSubject@cbSecurity
+	"
 {
 
 	/**
+	 * --------------------------------------------------------------------------
 	 * Properties
+	 * --------------------------------------------------------------------------
 	 */
 	property name="id";
 	property name="firstName";
@@ -27,7 +32,9 @@ component
 	property name="roles";
 
 	/**
+	 * --------------------------------------------------------------------------
 	 * Validation constraints
+	 * --------------------------------------------------------------------------
 	 * https://coldbox-validation.ortusbooks.com/overview/valid-constraints
 	 */
 	this.constraints = {
@@ -38,18 +45,23 @@ component
 	};
 
 	/**
+	 * --------------------------------------------------------------------------
 	 * Validation profiles
+	 * --------------------------------------------------------------------------
 	 * https://coldbox-validation.ortusbooks.com/overview/validating-constraints/validating-with-profiles
 	 */
 	this.constraintProfiles = { "update" : "firstName,lastName,username" };
 
 	/**
-	 * Mementifier serialization
+	 * --------------------------------------------------------------------------
+	 * Mementifier Serialization
+	 * --------------------------------------------------------------------------
 	 * https://forgebox.io/view/mementifier
 	 */
 	this.memento = {
 		// Default properties to serialize
 		defaultIncludes : [
+			"id",
 			"firstName",
 			"lastName",
 			"username",
@@ -61,6 +73,17 @@ component
 		// Never Include
 		neverInclude    : [ "password" ]
 	};
+
+	/**
+	 * --------------------------------------------------------------------------
+	 * Population Control
+	 * --------------------------------------------------------------------------
+	 * https://coldbox.ortusbooks.com/readme/release-history/whats-new-with-7.0.0#population-enhancements
+	 */
+	this.population = {
+		include : [], // if empty, tries to include them all
+		exclude : [ "permissions", "roles" ] // These are not mass assignable
+	}
 
 	/**
 	 * Constructor
