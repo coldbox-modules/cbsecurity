@@ -245,7 +245,7 @@ component accessors="true" singleton threadsafe {
 	private function getLimitStart(){
 		switch ( getDatabaseVendor() ) {
 			case "Microsoft SQL Server": {
-				return " TOP :top ";
+				return " TOP (:top) ";
 			}
 		}
 		return "";
