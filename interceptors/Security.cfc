@@ -15,6 +15,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	property name="cbSecurity"          inject="@cbSecurity";
 	property name="invalidEventHandler" inject="coldbox:setting:invalidEventHandler";
 	property name="DBLogger"            inject="DBLogger@cbsecurity";
+	property name="ipHelper"			inject="ip@ip";
 
 	/**
 	 * The reference to the security validator for this firewall. One-to-One relationship.
@@ -25,6 +26,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Configure the security firewall
 	 */
 	function configure(){
+		//set ipHelper to not load range
+		ipHelper.setLoadRange(false);
+
+
 		// Shorthand for rules
 		if ( isArray( variables.properties.firewall.rules ) ) {
 			variables.properties.firewall.rules = variables.cbSecurity
@@ -835,12 +840,27 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * @allowedIPs The allowedIPs in the rule
 	 */
 	private boolean function isValidIP( required allowedIPs ){
-		// Nothing or ALL
-		if ( !len( arguments.allowedIPs ) || arguments.allowedIPs == "*" ) {
+		var ipList = !len( arguments.allowedIPs ) ? "*" : arguments.allowedIPs;
+
+		if( ipList eq '*' ){
 			return true;
 		}
-		// Else we need to test the ip list against the actual IP
-		return listFindNoCase( arguments.allowedIPs, variables.cbSecurity.getRealIP() );
+
+		var ipRegex = '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+		var realIp = variables.cbSecurity.getRealIP();
+		var ipArray = listToArray(ipList).map( (v) => replaceNoCase(v, " ", "", "ALL") );
+
+		//find ip address
+		var isIpValid = arrayFind( ipArray, (val) => {
+			// if simple ip
+			if( isValid(type='regex', value=val, pattern=ipRegex) ){
+				return realIp eq val;
+			} else {
+				return ipHelper.v4(val).isInRange(realIp);
+			}
+		});
+
+		return isIpValid != 0;
 	}
 
 	/**

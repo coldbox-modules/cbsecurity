@@ -25,6 +25,9 @@
 		<a href="/putpost">PUT/POST Rejection</a>
 	</li>
 	<li>
+		<a href="/iptester">IP Tester Action</a>
+	</li>	
+	<li>
 		<a href="/noAction">Secure No Action</a>
 	</li>
 	<li>

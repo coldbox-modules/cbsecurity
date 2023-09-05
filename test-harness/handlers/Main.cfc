@@ -26,7 +26,7 @@ component {
 	function doLogin( event, rc, prc ){
 		try {
 			var oUser = cbsecure().authenticate( rc.username ?: "", rc.password ?: "" );
-			return "You are logged in!";
+			return "You are logged in! Click <a href='/'>here</a> to go back";
 		} catch ( "InvalidCredentials" e ) {
 			flash.put( "message", "Invalid credentials, try again!" );
 			relocate( "main/login" );

@@ -25,7 +25,8 @@
     "dependencies":{
         "jwt-cfml":"^1.0.0",
         "cbauth":"^6.0.0",
-        "cbcsrf":"^3.0.0"
+        "cbcsrf":"^3.0.0",
+        "ip":"^1.0.0"
     },
     "devDependencies":{
         "commandbox-cfformat":"*",
@@ -62,6 +63,7 @@
     "installPaths":{
         "jwt-cfml":"modules/jwtcfml/",
         "cbauth":"modules/cbauth/",
-        "cbcsrf":"modules/cbcsrf/"
+        "cbcsrf":"modules/cbcsrf/",
+        "ip":"modules/ip/"
     }
 }
