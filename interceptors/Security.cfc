@@ -26,9 +26,6 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	 * Configure the security firewall
 	 */
 	function configure(){
-		// set ipHelper to not load range
-		ipHelper.setLoadRange( false );
-
 
 		// Shorthand for rules
 		if ( isArray( variables.properties.firewall.rules ) ) {
@@ -846,6 +843,7 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			return true;
 		}
 
+		ipHelper.setLoadRange(false);
 		var ipRegex = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
 		var realIp  = variables.cbSecurity.getRealIP();
 		var ipArray = listToArray( ipList ).map( ( v ) => replaceNoCase( v, " ", "", "ALL" ) );
