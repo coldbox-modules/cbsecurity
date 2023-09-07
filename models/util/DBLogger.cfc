@@ -188,7 +188,7 @@ component accessors="true" singleton threadsafe {
 			"select
 				#getLimitStart()#
 				count( id ) as total, #arguments.column#
-				from cbsecurity_logs
+				from #getTable()#
 				group by #arguments.column#
 				order by count( id ) desc
 				#getLimitEnd()#
@@ -207,8 +207,8 @@ component accessors="true" singleton threadsafe {
 	struct function getActionsReport(){
 		return queryExecute(
 			"select
-			count( id ) as total, action, ( count(id) / ( select count(id) from cbsecurity_logs ) ) * 100 as percentage
-			from cbsecurity_logs
+			count( id ) as total, action, ( count(id) / ( select count(id) from #getTable()# ) ) * 100 as percentage
+			from #getTable()#
 			group by action",
 			{},
 			{ datasource : variables.settings.firewall.logs.dsn }
@@ -230,7 +230,7 @@ component accessors="true" singleton threadsafe {
 	 */
 	struct function getBlockTypesReport(){
 		return queryExecute(
-			"select count( id ) as total, blockType from cbsecurity_logs group by blockType",
+			"select count( id ) as total, blockType from #getTable()# group by blockType",
 			{},
 			{ datasource : variables.settings.firewall.logs.dsn }
 		).reduce( ( results, row ) => {
