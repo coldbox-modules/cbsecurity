@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `cbsecurity_logs` is hard coded instead of using module setting
+
+## [3.4.1] - 2023-08-09
+
+### Fixed
+
 - Parenthesis on `top` statements for MSSQL Server on the `DBLogger` thanks to @irvirv
 
 ## [3.4.0] - 2023-06-14
