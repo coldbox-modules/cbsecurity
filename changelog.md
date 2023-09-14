@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Updated security logs columns to work in Oracle as `clob`
 - `cbsecurity_logs` is hard coded instead of using module setting
 
 ## [3.4.1] - 2023-08-09
