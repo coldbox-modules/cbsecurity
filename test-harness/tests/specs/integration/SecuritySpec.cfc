@@ -74,7 +74,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 							var event      = get( "putpost" );
 							var renderData = event.getRenderData();
 							expect( renderData.statusCode ).toBe( 401 );
-							expect( renderData.data ).toInclude( "Unathorized" );
+							expect( renderData.data ).toInclude( "Unauthorized" );
 						} );
 					} );
 				} );
