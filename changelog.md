@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Markdown rules updated to fix duplicate headers
 - Updated security logs columns to work in Oracle as `clob`
 - `cbsecurity_logs` is hard coded instead of using module setting
 
