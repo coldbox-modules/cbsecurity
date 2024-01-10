@@ -129,6 +129,16 @@
 							"action"      : "redirect",
 							"allowedIPs"  : "10.0.0.1"
 						},
+						// Match only given ips
+						{
+							"whitelist"   : "",
+							"securelist"  : "iptester",
+							"match"       : "event",
+							"roles"       : "",
+							"permissions" : "",
+							"action"      : "block",
+							"allowedIPs"  : "127.0.0.1, 172.17.1.140, 172.17.2.0/24"
+						},					
 						// no action, use global default action
 						{
 							"whitelist"   : "",
