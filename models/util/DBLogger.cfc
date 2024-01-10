@@ -459,7 +459,7 @@ component accessors="true" singleton threadsafe {
 				return "TEXT";
 			}
 			case "Oracle": {
-				return "LONGTEXT";
+				return "CLOB";
 			}
 			default: {
 				return "TEXT";

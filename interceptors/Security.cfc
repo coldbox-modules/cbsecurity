@@ -754,9 +754,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			case "block": {
 				arguments.event
 					.renderData(
-						data       = "<h1>Unathorized</h1>",
+						data       = "<h1>Unauthorized</h1>",
 						statusCode = "401",
-						statusText = "Unathorized"
+						statusText = "Unauthorized"
 					)
 					.noExecution();
 				break;
