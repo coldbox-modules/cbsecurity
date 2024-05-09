@@ -137,49 +137,49 @@
 
 	<div class="tab-content w-100 ms-5 me-2">
 		<div class="tab-pane fade show active" id="activity-pane" role="tabpanel" aria-labelledby="activity-tab" tabindex="0">
-			#renderView(
+			#view(
 				view = "home/tabs/activity",
 				module = "cbsecurity"
 			)#
 		</div>
 		<div class="tab-pane fade show" id="authentication-pane" role="tabpanel" aria-labelledby="authentication-tab" tabindex="0">
-			#renderView(
+			#view(
 				view = "home/tabs/authentication",
 				module = "cbsecurity"
 			)#
 		</div>
 		<div class="tab-pane fade show" id="basicAuth-pane" role="tabpanel" aria-labelledby="basicAuth-tab" tabindex="0">
-			#renderView(
+			#view(
 				view = "home/tabs/basicAuth",
 				module = "cbsecurity"
 			)#
 		</div>
 		<div class="tab-pane fade show" id="csrf-pane" role="tabpanel" aria-labelledby="csrf-tab" tabindex="0">
-			#renderView(
+			#view(
 				view = "home/tabs/csrf",
 				module = "cbsecurity"
 			)#
 		</div>
 		<div class="tab-pane fade show" id="firewall-pane" role="tabpanel" aria-labelledby="firewall-tab" tabindex="0">
-			#renderView(
+			#view(
 				view = "home/tabs/firewall",
 				module = "cbsecurity"
 			)#
 		</div>
 		<div class="tab-pane fade show" id="rules-pane" role="tabpanel" aria-labelledby="rules-tab" tabindex="0">
-			#renderView(
+			#view(
 				view = "home/tabs/rules",
 				module = "cbsecurity"
 			)#
 		</div>
 		<div class="tab-pane fade show" id="jwt-pane" role="tabpanel" aria-labelledby="jwt-tab" tabindex="0">
-			#renderView(
+			#view(
 				view = "home/tabs/jwt",
 				module = "cbsecurity"
 			)#
 		</div>
 		<div class="tab-pane fade show" id="security-headers-pane" role="tabpanel" aria-labelledby="security-headers-tab" tabindex="0">
-			#renderView(
+			#view(
 				view = "home/tabs/security-headers",
 				module = "cbsecurity"
 			)#
