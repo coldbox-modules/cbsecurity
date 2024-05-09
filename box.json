@@ -1,6 +1,6 @@
 {
     "name":"ColdBox Security",
-    "version":"3.5.0",
+    "version":"3.4.3",
     "location":"https://downloads.ortussolutions.com/ortussolutions/coldbox-modules/cbsecurity/@build.version@/cbsecurity-@build.version@.zip",
     "author":"Ortus Solutions.com <info@ortussolutions.com>",
     "slug":"cbsecurity",

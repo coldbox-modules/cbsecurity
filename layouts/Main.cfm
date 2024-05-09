@@ -76,7 +76,7 @@
 		</nav>
 
 		<div class="container-fluid m-2 mt-4 mb-5">
-			#renderView()#
+			#view()#
 		</div>
 
 		<!--- Scripts --->
