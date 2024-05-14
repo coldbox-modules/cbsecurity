@@ -5,6 +5,7 @@
         "cfengine":"adobe@2021"
     },
     "web":{
+        "host":"0.0.0.0",
         "http":{
             "port":"60299"
         },
@@ -23,7 +24,7 @@
     "cfconfig":{
         "file":".cfconfig.json"
     },
-	"scripts":{
+    "scripts":{
         "onServerInstall":"cfpm install zip,debugger,mysql"
     }
 }
