@@ -441,7 +441,7 @@ component accessors="true" singleton threadsafe {
 				// Announce the invalid claims
 				variables.interceptorService.announce(
 					"cbSecurity_onJWTInvalidClaims",
-					{ token : arguments.token, payload : decodedToken }
+					{ token : token, payload : decodedToken }
 				);
 
 				throw(
