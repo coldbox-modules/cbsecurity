@@ -1,0 +1,36 @@
+{
+    "app":{
+        "cfengine":"boxlang@be",
+        "serverHomeDirectory":".engine/boxlang"
+    },
+    "name":"cbsecurity-boxlang@1",
+    "force":true,
+    "openBrowser":false,
+    "web":{
+        "directoryBrowsing":true,
+        "http":{
+            "port":"60299"
+        },
+        "rewrites":{
+            "enable":"true"
+        },
+        "webroot":"test-harness",
+        "aliases":{
+            "/moduleroot/cbsecurity":"./"
+        }
+    },
+    "JVM":{
+        "heapSize":"1024",
+        "javaVersion":"openjdk21_jdk",
+        "args":"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9999"
+    },
+    "cfconfig":{
+        "file":".cfconfig.json"
+    },
+    "env":{
+        "BOXLANG_DEBUG":true
+    },
+    "scripts":{
+        "onServerInitialInstall":"install bx-mail,bx-mysql,bx-derby,bx-compat-cfml@be,bx-unsafe-evaluate,bx-esapi --noSave"
+    }
+}
