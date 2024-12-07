@@ -6,13 +6,10 @@
     "description":"",
     "dependencies":{
         "coldbox":"^6.0.0",
-        "cbauth":"^6.0.0",
-        "BCrypt":"^2.0.0",
-        "jwt-cfml":"^1.0.0",
-        "cbcsrf":"^3.0.0"
+        "BCrypt":"^3.1.0+4"
     },
     "devDependencies":{
-		"cbdebugger":"^4.0.0",
+        "cbdebugger":"^4.0.0",
         "testbox":"*",
         "route-visualizer":"*"
     },
