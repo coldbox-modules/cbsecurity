@@ -394,10 +394,10 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				then( "it should use the exp on the token for the storage timeout", function(){
 					var originalTokenStorage = variables.jwtService.getTokenStorage();
 					try {
-						variables.jwtService.getTokenStorage().clearAll();
 						var tokenStorageMock = prepareMock(
-							getWirebox().getInstance( "CacheTokenStorage@cbsecurity" )
+							new cbsecurity.models.jwt.storages.CacheTokenStorage()
 						);
+						getWirebox().autowire( tokenStorageMock );
 						variables.jwtService.setTokenStorage( tokenStorageMock );
 						tokenStorageMock.$( "set", tokenStorageMock );
 						var expirationSeconds = 100;
