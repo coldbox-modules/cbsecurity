@@ -395,7 +395,9 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					var originalTokenStorage = variables.jwtService.getTokenStorage();
 					try {
 						variables.jwtService.getTokenStorage().clearAll();
-						var tokenStorageMock = prepareMock( getWirebox().getInstance( "CacheTokenStorage@cbsecurity" ) );
+						var tokenStorageMock = prepareMock(
+							getWirebox().getInstance( "CacheTokenStorage@cbsecurity" )
+						);
 						variables.jwtService.setTokenStorage( tokenStorageMock );
 						tokenStorageMock.$( "set", tokenStorageMock );
 						var expirationSeconds = 100;
