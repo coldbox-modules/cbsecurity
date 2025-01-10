@@ -48,6 +48,8 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 		variables.jwtService.getSettings().jwt.tokenStorage.enabled = true;
 		variables.jwtService.getSettings().jwt.tokenStorage.driver = "cachebox";
 		variables.jwtService.getSettings().jwt.tokenStorage.properties = { "cacheName" : "default" };
+
+		variables.defaultIssuer = variables.jwtService.getSettings().jwt.issuer;
 		// Recreate Token Storage
 		variables.jwtService.getTokenStorage( force: true );
 	}
@@ -79,6 +81,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					beforeEach( function( currentSpec ){
 						variables.jwtService.getSettings().jwt.enableAutoRefreshValidator = true;
 						variables.jwtAuthValidator = getInstance( "JwtAuthValidator@cbsecurity" );
+						variables.jwtService.getSettings().jwt.issuer = variables.defaultIssuer;
 					} );
 					afterEach( function( currentSpec ){
 						variables.jwtService.getSettings().jwt.enableAutoRefreshValidator = false;
@@ -103,6 +106,7 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					} );
 					given( "Auto refresh is on and an expired access token is sent but no refresh token is sent", function(){
 						then( "the validation should fail", function(){
+							// variables.jwtService.getSettings().jwt.issuer = "http://127.0.0.1:56596/";
 							getRequestContext().setValue( "x-auth-token", variables.expired_token );
 							var results = variables.jwtAuthValidator.validateSecurity( "" );
 							expect( results.allow ).toBeFalse( results.toString() );
@@ -388,10 +392,11 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 			given( "a valid jwt token put in to storage", function(){
 				then( "it should use the exp on the token for the storage timeout", function(){
-					var originalTokenStorage = duplicate( variables.jwtService.getTokenStorage() );
+					var originalTokenStorage = variables.jwtService.getTokenStorage();
 					try {
 						variables.jwtService.getTokenStorage().clearAll();
-						var tokenStorageMock = prepareMock( variables.jwtService.getTokenStorage() );
+						var tokenStorageMock = prepareMock( getWirebox().getInstance( "CacheTokenStorage@cbsecurity" ) );
+						variables.jwtService.setTokenStorage( tokenStorageMock );
 						tokenStorageMock.$( "set", tokenStorageMock );
 						var expirationSeconds = 100;
 						var expirationTime    = variables.jwtService.toEpoch(
