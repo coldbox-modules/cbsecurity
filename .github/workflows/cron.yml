@@ -1,0 +1,28 @@
+name: Weekly Test Engines
+
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: '0 8 * * 4'
+
+jobs:
+    tests:
+        
+        uses: ./.github/workflows/tests.yml
+        secrets: inherit
+
+    notify:
+        needs: [ tests ]
+        runs-on: ubuntu-24.04
+        if: ${{ always() }}
+        steps:
+          - name: Slack Notifications
+            uses: rtCamp/action-slack-notify@v2
+            env:
+              SLACK_CHANNEL: boxlang-cron
+              SLACK_COLOR: ${{ job.status }} # or a specific color like 'green' or '#ff00ff'
+              SLACK_ICON_EMOJI: ":bell:"
+              SLACK_MESSAGE: '${{ github.repository }} weekly tests'
+              SLACK_TITLE: ${{ github.repository }} Tests results
+              SLACK_USERNAME: CI
+              SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
