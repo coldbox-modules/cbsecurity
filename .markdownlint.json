@@ -8,9 +8,9 @@
 	"no-multiple-blanks": {
 		"maximum": 2
 	},
-	"no-duplicate-heading" : false,
 	"no-duplicate-header" : {
 		"siblings_only" : true
 	},
+	"no-duplicate-heading" : false,
 	"no-inline-html" : false
 }

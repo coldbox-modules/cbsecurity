@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - 'development'
+
   workflow_dispatch:
+
+# Unique group name per workflow-branch/tag combo
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ##########################################################################################
@@ -20,6 +26,9 @@ jobs:
   format:
     name: Code Auto-Formatting
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      checks: write
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +38,7 @@ jobs:
           cmd: run-script format
 
       - name: Commit Format Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Apply cfformat changes
 
@@ -40,5 +49,10 @@ jobs:
     uses: ./.github/workflows/release.yml
     needs: [ tests, format ]
     secrets: inherit
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: write
+      issues: write
     with:
       snapshot: true

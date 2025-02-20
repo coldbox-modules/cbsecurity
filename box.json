@@ -28,10 +28,9 @@
         "cbcsrf":"^3.0.0"
     },
     "devDependencies":{
+		"commandbox-boxlang":"*",
         "commandbox-cfformat":"*",
-        "commandbox-docbox":"*",
-        "commandbox-dotenv":"*",
-        "commandbox-cfconfig":"*"
+        "commandbox-docbox":"*"
     },
     "ignore":[
         "**/.*",
@@ -50,16 +49,10 @@
         "format:check":"cfformat check handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc",
         "install:dependencies":"install && cd test-harness && install",
         "start:lucee":"server start serverConfigFile=server-lucee@5.json",
-        "start:2018":"server start serverConfigFile=server-adobe@2018.json",
-        "start:2021":"server start serverConfigFile=server-adobe@2021.json",
         "start:2023":"server start serverConfigFile=server-adobe@2023.json",
         "stop:lucee":"server stop serverConfigFile=server-lucee@5.json",
-        "stop:2018":"server stop serverConfigFile=server-adobe@2018.json",
-        "stop:2021":"server stop serverConfigFile=server-adobe@2021.json",
         "stop:2023":"server stop serverConfigFile=server-adobe@2023.json",
         "logs:lucee":"server log serverConfigFile=server-lucee@5.json --follow",
-        "logs:2018":"server log serverConfigFile=server-adobe@2018.json --follow",
-        "logs:2021":"server log serverConfigFile=server-adobe@2021.json --follow",
         "logs:2023":"server log serverConfigFile=server-adobe@2023.json --follow"
     },
     "installPaths":{

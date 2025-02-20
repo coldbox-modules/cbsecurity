@@ -18,16 +18,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cfengine: [ "lucee@5", "adobe@2018", "adobe@2021", "adobe@2023" ]
-        coldboxVersion: [ "^6.0.0", "^7.0.0" ]
+        cfengine: [ "boxlang-cfml@1", "lucee@5", "lucee@6", "adobe@2021", "adobe@2023" ]
+        coldboxVersion: [ "^7.0.0" ]
         experimental: [ false ]
-        # Here we tests all engines against ColdBox@BE
+        # Experimental: ColdBox BE vs All Engines
         include:
           - coldboxVersion: "be"
             cfengine: "lucee@5"
             experimental: true
           - coldboxVersion: "be"
-            cfengine: "adobe@2018"
+            cfengine: "lucee@6"
             experimental: true
           - coldboxVersion: "be"
             cfengine: "adobe@2021"
@@ -36,26 +36,24 @@ jobs:
             cfengine: "adobe@2023"
             experimental: true
           - coldboxVersion: "be"
-            cfengine: "boxlang@1"
+            cfengine: "boxlang-cfml@1"
             experimental: true
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # DATABASE SETUP: uncomment if you need to setup a database
+      # - name: Setup Database and Fixtures
+      #   run: |
+      #     sudo systemctl start mysql.service
+      #     mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }} -e 'CREATE DATABASE mementifier;'
+      #     mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }} < test-harness/tests/resources/coolblog.sql
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "11"
-
-      - name: Setup Database and Fixtures
-        run: |
-          sudo systemctl start mysql.service
-          # Create Database
-          mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }} -e 'CREATE DATABASE cbsecurity;'
-          # Import Database
-          mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }} < test-harness/tests/resources/cbsecurity.sql
+          java-version: "21"
 
       - name: Setup Environment For Testing Process
         run: |
@@ -72,11 +70,6 @@ jobs:
 
       - name: Setup CommandBox CLI
         uses: Ortus-Solutions/setup-commandbox@v2.0.1
-
-      - name: Update Commandbox Boxlang Module
-        if: ${{ matrix.cfengine == 'boxlang@1' }}
-        run:
-          box install --force commandbox-boxlang
 
       - name: Install Dependencies
         run: |

@@ -1,8 +1,8 @@
 {
-    "name":"cbsecurity-adobe@2018",
+    "name":"cbsecurity-lucee@6",
     "app":{
-        "serverHomeDirectory":".engine/adobe2018",
-        "cfengine":"adobe@2018"
+        "serverHomeDirectory":".engine/lucee6",
+        "cfengine":"lucee@6"
     },
     "web":{
         "http":{
