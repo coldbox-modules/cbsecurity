@@ -163,7 +163,7 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Logout a user and invalidate their access token
 	 *
-	 * @user
+	 * @user        
 	 * @customClaims
 	 */
 	function logout(){
