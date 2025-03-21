@@ -163,7 +163,7 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Logout a user and invalidate their access token
 	 *
-	 * @user        
+	 * @user
 	 * @customClaims
 	 */
 	function logout(){
@@ -652,7 +652,7 @@ component accessors="true" singleton threadsafe {
 	function toEpoch( required target ){
 		return dateDiff(
 			"s",
-			dateConvert( "utc2local", "January 1 1970 00:00" ),
+			dateConvert( "utc2local", "1970-01-01T00:00:00Z" ),
 			arguments.target
 		);
 	}
@@ -666,7 +666,7 @@ component accessors="true" singleton threadsafe {
 		return dateAdd(
 			"s",
 			arguments.target, // should be in utc
-			dateConvert( "utc2local", "January 1 1970 00:00" )
+			dateConvert( "utc2local", "1970-01-01T00:00:00Z" )
 		);
 	}
 
