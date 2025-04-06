@@ -393,6 +393,9 @@ settings = {
 [Unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.3...HEAD
 
 [3.4.3]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.2...v3.4.3
+[Unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.3...HEAD
+
+[3.4.3]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.2...v3.4.3
 
 [3.4.2]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.1...v3.4.2
 
