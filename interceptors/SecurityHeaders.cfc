@@ -104,7 +104,7 @@ component extends="coldbox.system.Interceptor" {
 		if ( variables.settings.securityHeaders.secureSSLRedirects.enabled && !arguments.event.isSSL() ) {
 			// Debug
 			if ( log.canDebug() ) {
-				log.debug( "Non-SSL URI detected (#event.getFullUrl()#), redirecting in ssl" );
+				log.debug( "Non-SSL URI detected (#event.getUrl()#), redirecting in ssl" );
 			}
 			variables.dbLogger.log(
 				action   : "redirect",
@@ -113,7 +113,7 @@ component extends="coldbox.system.Interceptor" {
 				host     : variables.cbSecurity.getRealHost(),
 				userId   : variables.cbSecurity.isLoggedIn() ? variables.cbSecurity.getUser().getId() : ""
 			);
-			relocate( url: arguments.event.getFullUrl(), ssl: true );
+			relocate( url: arguments.event.getUrl(), ssl: true );
 			return;
 		}
 

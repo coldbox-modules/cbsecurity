@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - BoxLang certification
 - Github Actions updates
+- ColdBox 8 Support and certification
 
 ## [3.4.3] - 2024-05-09
 
