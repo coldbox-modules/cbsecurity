@@ -200,11 +200,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen to module loadings, so we can do module rule registrations
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function postModuleLoad( event, interceptData, rc, prc, buffer ){
 		// Is this a cbSecurity Module & not registered
@@ -223,11 +223,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen to module unloadings, so we can do module rule cleanups
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function postModuleUnload( event, interceptData, rc, prc, buffer ){
 		// Is the module registered?
@@ -246,11 +246,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Our firewall kicks in at preProcess
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @rc
-	 * @prc
-	 * @buffer
+	 * @rc           
+	 * @prc          
+	 * @buffer       
 	 */
 	function preProcess( event, interceptData, rc, prc, buffer ){
 		// Add SecureView() into the requestcontext
@@ -290,9 +290,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Process handler annotation based security rules.
 	 *
-	 * @event
+	 * @event        
 	 * @interceptData
-	 * @currentEvent
+	 * @currentEvent 
 	 */
 	function processAnnotationRules(
 		required event,
@@ -779,9 +779,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	private function saveSecuredUrl( required event ){
 		// Create secured URL
 		var securedURL = arguments.event.buildLink(
-			to          : event.getCurrentRoutedURL(),
-			queryString : CGI.QUERY_STRING,
-			translate   : false
+			to         : event.getCurrentRoutedURL(),
+			queryString: CGI.QUERY_STRING,
+			translate  : false
 		);
 
 		// Flash it and place it in RC as well
