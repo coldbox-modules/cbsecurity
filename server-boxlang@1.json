@@ -1,7 +1,7 @@
 {
-    "name":"cbsecurity-boxlang-cfml@1",
+    "name":"cbsecurity-boxlang@1",
     "app":{
-        "serverHomeDirectory":".engine/boxlang-cfml",
+        "serverHomeDirectory":".engine/boxlang",
         "cfengine":"boxlang@1"
     },
     "web":{
@@ -27,6 +27,6 @@
     },
     "env":{},
     "scripts":{
-        "onServerInitialInstall":"install bx-compat-cfml,bx-esapi,bx-mysql --noSave"
+        "onServerInitialInstall":"install bx-esapi,bx-mysql --noSave"
     }
 }

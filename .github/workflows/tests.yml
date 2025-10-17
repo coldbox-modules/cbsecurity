@@ -18,19 +18,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cfengine: [ "boxlang-cfml@1", "lucee@5", "lucee@6", "adobe@2021", "adobe@2023" ]
-        coldboxVersion: [ "^7.0.0" ]
+        cfengine: [ "boxlang-cfml@1", "lucee@5", "lucee@6",  "adobe@2023", "adobe@2025" ]
+        coldboxVersion: [ "^7.0.0", "^8.0.0" ]
         experimental: [ false ]
         # Experimental: ColdBox BE vs All Engines
         include:
           - coldboxVersion: "be"
-            cfengine: "lucee@5"
-            experimental: true
-          - coldboxVersion: "be"
             cfengine: "lucee@6"
-            experimental: true
-          - coldboxVersion: "be"
-            cfengine: "adobe@2021"
             experimental: true
           - coldboxVersion: "be"
             cfengine: "adobe@2023"
@@ -38,9 +32,13 @@ jobs:
           - coldboxVersion: "be"
             cfengine: "boxlang-cfml@1"
             experimental: true
+          # BoxLang PRIME with ColdBox 8
+          - coldboxVersion: "8"
+            cfengine: "boxlang-cfml@1"
+            experimental: true
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Database and Fixtures
         run: |
@@ -51,7 +49,7 @@ jobs:
           mysql -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }} < test-harness/tests/resources/cbsecurity.sql
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "21"
