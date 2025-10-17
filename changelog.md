@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2025-10-17
+
 ### Added
 
 - Upgraded test harness
@@ -20,17 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.4.3] - 2024-05-09
 
-## [3.4.2] - 2024-01-10
-
-## [3.4.1] - 2023-08-09
-
 ### Fixed
 
 - Renamed `renderView()` to `view` to be ColdBox 7 compliant now.
 
 ## [3.4.2] - 2024-01-10
-
-## [3.4.1] - 2023-08-09
 
 ### Fixed
 
@@ -394,15 +390,9 @@ settings = {
 
 - Created first module version
 
-[Unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.3...HEAD
-
+[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.5.0...HEAD
+[3.5.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.3...v3.5.0
 [3.4.3]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.2...v3.4.3
-[Unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.3...HEAD
-
-[3.4.3]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.2...v3.4.3
-
 [3.4.2]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.1...v3.4.2
-
 [3.4.1]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.0...v3.4.1
-
 [3.4.0]: https://github.com/coldbox-modules/cbsecurity/compare/849bafc487dc666f22a1ae7bba2408849bc78ae8...v3.4.0
