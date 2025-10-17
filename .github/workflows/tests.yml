@@ -36,6 +36,10 @@ jobs:
           - coldboxVersion: "8"
             cfengine: "boxlang-cfml@1"
             experimental: true
+          # BoxLang CFML BE with ColdBox 8
+          - coldboxVersion: "8"
+            cfengine: "boxlang-cfml@be"
+            experimental: true
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5

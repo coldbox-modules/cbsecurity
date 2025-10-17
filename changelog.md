@@ -11,9 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Upgraded test harness
 - BoxLang certification
 - Github Actions updates
 - ColdBox 8 Support and certification
+- Added `.github/copilot-instructions.md` — concise AI-agent guidance covering module architecture, validators, interceptor flows, and developer workflows (install, test, server start).
+- Documented test-harness and TestBox runner details for local integration testing (see `test-harness/tests/runner.cfm` and `box.json` scripts).
 
 ## [3.4.3] - 2024-05-09
 

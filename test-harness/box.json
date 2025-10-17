@@ -5,22 +5,13 @@
     "private":true,
     "description":"",
     "dependencies":{
-        "coldbox":"^7",
+        "coldbox":"^8",
         "BCrypt":"^3.1.0+4"
     },
     "devDependencies":{
-        "cbdebugger":"^4.0.0",
         "testbox":"*",
         "route-visualizer":"*"
     },
     "installPaths":{
-        "coldbox":"coldbox/",
-        "testbox":"testbox/",
-        "cbauth":"modules/cbauth/",
-        "BCrypt":"modules/BCrypt/",
-        "route-visualizer":"modules/route-visualizer/",
-        "jwt-cfml":"modules/jwtcfml/",
-        "cbcsrf":"modules/cbcsrf/",
-        "cbdebugger":"modules/cbdebugger/"
     }
 }
