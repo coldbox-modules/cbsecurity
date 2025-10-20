@@ -36,8 +36,9 @@ Apache License, Version 2.0.
 
 ## Requirements
 
+- BoxLang 1+ (Preferred)
 - Lucee 5+
-- ColdFusion 2018+
+- Adobe 2023+
 - ColdBox 6+
 - ColdBox 7+ for delegates and basic auth support only
 
