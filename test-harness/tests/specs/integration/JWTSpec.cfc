@@ -145,6 +145,15 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 								404,
 								event.getResponse().getMessagesString()
 							);
+
+							// Matches the ColdBox RestHandler default response format spec
+							var jsonResponse = deserializeJSON( event.getRenderedContent() );
+							expect( jsonResponse ).toHaveLength( 4 );
+							expect( jsonResponse ).toHaveKey( "data" );
+							expect( jsonResponse ).toHaveKey( "error" );
+							expect( jsonResponse ).toHaveKey( "pagination" );
+							expect( jsonResponse ).toHaveKey( "messages" );
+							expect( jsonResponse.messages[ 1 ] ).toBe( event.getResponse().getMessagesString() );
 						} );
 					} );
 					given( "An activated endpoint but no refresh tokens passed", function(){
