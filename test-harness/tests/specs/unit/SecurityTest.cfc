@@ -277,7 +277,6 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 			} );
 
 			describe( "URL validation for open redirect prevention", () => {
-
 				beforeEach( ( currentSpec ) => {
 					mockValidator = mockWireBox.getInstance( settings.firewall.validator );
 					security
@@ -291,39 +290,55 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 					mockEvent = createMock( "coldbox.system.web.context.RequestContext" )
 						.$( "getCurrentRoutedURL", "/account" )
 						.$( "buildLink" )
-						.$args( to = "/account", queryString = "", translate = false )
+						.$args(
+							to          = "/account",
+							queryString = "",
+							translate   = false
+						)
 						.$results( "/account" )
 						.$( "setValue" );
 
 					mockFlash = createStub().$( "put" );
 					security.$property( "flash", "variables", mockFlash );
 
-                    makePublic( security, "isSafeRedirectUrl" );
-                    makePublic( security, "saveSecuredUrl" );
+					makePublic( security, "isSafeRedirectUrl" );
+					makePublic( security, "saveSecuredUrl" );
 				} );
 
 				it( "allows relative URLs without a host", () => {
-                    var result = security.isSafeRedirectUrl( targetUrl = "/account", event = mockEvent );
+					var result = security.isSafeRedirectUrl( targetUrl = "/account", event = mockEvent );
 					expect( result ).toBeTrue();
 				} );
 
 				it( "allows URLs with the same host", () => {
-					var result = security.isSafeRedirectUrl( targetUrl = "https://mysite.com/account", event = mockEvent );
+					var result = security.isSafeRedirectUrl(
+						targetUrl = "https://mysite.com/account",
+						event     = mockEvent
+					);
 					expect( result ).toBeTrue();
 				} );
 
 				it( "blocks URLs with different hosts", () => {
-					var result = security.isSafeRedirectUrl( targetUrl = "https://malicioussite.com/phishing", event = mockEvent );
+					var result = security.isSafeRedirectUrl(
+						targetUrl = "https://malicioussite.com/phishing",
+						event     = mockEvent
+					);
 					expect( result ).toBeFalse();
 				} );
 
 				it( "blocks URLs with subdomain differences", () => {
-					var result = security.isSafeRedirectUrl( targetUrl = "https://evil.mysite.com/account", event = mockEvent );
+					var result = security.isSafeRedirectUrl(
+						targetUrl = "https://evil.mysite.com/account",
+						event     = mockEvent
+					);
 					expect( result ).toBeFalse();
 				} );
 
 				it( "is case-insensitive when comparing hosts", () => {
-					var result = security.isSafeRedirectUrl( targetUrl = "https://MySite.COM/account", event = mockEvent );
+					var result = security.isSafeRedirectUrl(
+						targetUrl = "https://MySite.COM/account",
+						event     = mockEvent
+					);
 					expect( result ).toBeTrue();
 				} );
 
@@ -333,10 +348,14 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 				} );
 
 				it( "saves secured URL when it is safe", () => {
-                    mockEvent.$( "getCurrentRoutedURL", "/account" );
+					mockEvent.$( "getCurrentRoutedURL", "/account" );
 					mockEvent
-                        .$( "buildLink" )
-						.$args( to = "/account", queryString = cgi.QUERY_STRING, translate = false )
+						.$( "buildLink" )
+						.$args(
+							to          = "/account",
+							queryString = cgi.QUERY_STRING,
+							translate   = false
+						)
 						.$results( "/account" );
 
 					security.saveSecuredUrl( mockEvent );
