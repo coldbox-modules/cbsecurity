@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- BOX-164 Allow Visualizer to show settings when firewall.logging not enabled
 -  JWT Handler improperly returns a value causing it to skip ColdBox's RestHandler's response formatting logic.   This results in the entire response object being returned rather than just invoking getDataPacket()
 
 ## [3.5.0] - 2025-10-17

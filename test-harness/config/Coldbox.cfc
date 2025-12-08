@@ -96,7 +96,7 @@
 					// Firewall Validator
 					//"validator"                   : "BasicAuthValidator@cbsecurity",
 					"logs" : {
-						enabled : true
+						enabled : false
 					},
 					// The global security rules
 					"rules"                      : [
