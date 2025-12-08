@@ -5,6 +5,7 @@
         "cfengine":"boxlang@1"
     },
     "web":{
+        "host":"0.0.0.0",
         "http":{
             "port":"60299"
         },
@@ -21,7 +22,7 @@
         "javaVersion":"openjdk21_jre",
         "args":"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8888"
     },
-    "openBrowser": false,
+    "openBrowser":false,
     "cfconfig":{
         "file":".cfconfig.json"
     },
