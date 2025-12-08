@@ -200,11 +200,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen to module loadings, so we can do module rule registrations
 	 *
-	 * @event        
+	 * @event
 	 * @interceptData
-	 * @rc           
-	 * @prc          
-	 * @buffer       
+	 * @rc
+	 * @prc
+	 * @buffer
 	 */
 	function postModuleLoad( event, interceptData, rc, prc, buffer ){
 		// Is this a cbSecurity Module & not registered
@@ -223,11 +223,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Listen to module unloadings, so we can do module rule cleanups
 	 *
-	 * @event        
+	 * @event
 	 * @interceptData
-	 * @rc           
-	 * @prc          
-	 * @buffer       
+	 * @rc
+	 * @prc
+	 * @buffer
 	 */
 	function postModuleUnload( event, interceptData, rc, prc, buffer ){
 		// Is the module registered?
@@ -246,11 +246,11 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Our firewall kicks in at preProcess
 	 *
-	 * @event        
+	 * @event
 	 * @interceptData
-	 * @rc           
-	 * @prc          
-	 * @buffer       
+	 * @rc
+	 * @prc
+	 * @buffer
 	 */
 	function preProcess( event, interceptData, rc, prc, buffer ){
 		// Add SecureView() into the requestcontext
@@ -290,9 +290,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 	/**
 	 * Process handler annotation based security rules.
 	 *
-	 * @event        
+	 * @event
 	 * @interceptData
-	 * @currentEvent 
+	 * @currentEvent
 	 */
 	function processAnnotationRules(
 		required event,
@@ -773,6 +773,8 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 
 	/**
 	 * Flash the incoming secured Url so we can redirect to it or use it in the next request.
+	 * This method validates the URL to prevent open redirect vulnerabilities by ensuring
+	 * the URL belongs to the same host as the current request.
 	 *
 	 * @event The event object
 	 */
@@ -784,9 +786,56 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			translate  : false
 		);
 
+		// Validate the URL to prevent open redirect attacks
+		if ( !isSafeRedirectUrl( securedURL, arguments.event ) ) {
+			// If the URL is not safe, log a warning and use the home page instead
+			if ( log.canWarn() ) {
+				log.warn(
+					"Potential open redirect attempt detected. Invalid secured URL: #securedURL#. Using home page instead.",
+					{ "ip" : variables.cbSecurity.getRealIp(), "url" : securedURL }
+				);
+			}
+			// Use the application's base URL instead
+			securedURL = arguments.event.buildLink( to = "", translate = false );
+		}
+
 		// Flash it and place it in RC as well
 		flash.put( "_securedUrl", securedURL );
 		arguments.event.setValue( "_securedUrl", securedURL );
+	}
+
+	/**
+	 * Validates that a redirect URL is safe by ensuring it belongs to the same host
+	 * as the current request. This prevents open redirect vulnerabilities.
+	 *
+	 * @targetUrl   The URL to validate
+	 * @event The request context
+	 *
+	 * @return True if the URL is safe to redirect to, false otherwise
+	 */
+	private boolean function isSafeRedirectUrl( required string targetUrl, required event ){
+		try {
+			// Parse the URL to validate
+			var urlToValidate = createObject( "java", "java.net.URI" ).init( arguments.targetUrl );
+
+			// If the URL is relative (no host), it's safe
+			if ( isNull( urlToValidate.getHost() ) || !len( urlToValidate.getHost() ) ) {
+				return true;
+			}
+
+			// Get the current request's host for comparison
+			var currentHost = variables.cbSecurity.getRealHost();
+
+			// Compare hosts (case-insensitive)
+			return compareNoCase( urlToValidate.getHost(), currentHost ) == 0;
+		} catch ( any e ) {
+			// If URL parsing fails, consider it unsafe
+            log.warn(
+                "Error parsing URL for redirect validation: #arguments.targetUrl# : #e.message#",
+                e.detail
+            );
+			return false;
+		}
 	}
 
 	/**

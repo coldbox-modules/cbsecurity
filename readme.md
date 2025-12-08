@@ -36,8 +36,9 @@ Apache License, Version 2.0.
 
 ## Requirements
 
+- BoxLang 1+ (Preferred)
 - Lucee 5+
-- ColdFusion 2018+
+- Adobe 2023+
 - ColdBox 6+
 - ColdBox 7+ for delegates and basic auth support only
 
@@ -339,6 +340,8 @@ Once the firewall has the results, and the user is **NOT** allowed access. Then 
 - The request will be logged via LogBox
 - If the firewall database logs are enabled, then we will log it in our database logs
 - The current URL will be flashed as `_securedURL` so it can be used in relocations
+  - **Security Note**: The URL is validated to ensure it belongs to the same host as the current request to prevent open redirect attacks
+  - Only same-host URLs or relative URLs are allowed; external URLs will be replaced with the application home page
 - If using a rule, the rule will be stored in `prc` as `cbsecurity_matchedRule`
 - The validator results will be stored in `prc` as `cbsecurity_validatorResults`
 - If the type of invalidation is `authentication` the `cbSecurity_onInvalidAuthentication` interception will be announced
