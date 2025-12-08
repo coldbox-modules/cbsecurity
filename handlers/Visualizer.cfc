@@ -19,24 +19,24 @@ component extends="coldbox.system.RestHandler" {
 			return "Page Not Found";
 		}
 		// Settings the visualizer will visualize :)
-		prc.settings               = variables.settings;
-        if( prc.settings.firewall.logs.enabled ){
-            prc.logCounts              = dbLogger.count();
-            prc.actionsReport          = dbLogger.getActionsReport();
-            prc.blockTypesReport       = dbLogger.getBlockTypesReport();
-            prc.topOffendingPaths      = dbLogger.getTopOffending( "path" );
-            prc.topOffendingIps        = dbLogger.getTopOffending( "ip" );
-            prc.topOffendingHosts      = dbLogger.getTopOffending( "host" );
-            prc.topOffendingUserAgents = dbLogger.getTopOffending( "userAgent" );
-            prc.topOffendingMethods    = dbLogger.getTopOffending( "httpMethod" );
-            prc.topOffendingUsers      = dbLogger.getTopOffending( "userId" );
-            prc.logs                   = dbLogger.getLatest(
-                top      : 50,
-                action   : rc.action ?: "",
-                blockType: rc.blockType ?: "",
-                userId   : rc.userId ?: ""
-            );
-        }
+		prc.settings = variables.settings;
+		if ( prc.settings.firewall.logs.enabled ) {
+			prc.logCounts              = dbLogger.count();
+			prc.actionsReport          = dbLogger.getActionsReport();
+			prc.blockTypesReport       = dbLogger.getBlockTypesReport();
+			prc.topOffendingPaths      = dbLogger.getTopOffending( "path" );
+			prc.topOffendingIps        = dbLogger.getTopOffending( "ip" );
+			prc.topOffendingHosts      = dbLogger.getTopOffending( "host" );
+			prc.topOffendingUserAgents = dbLogger.getTopOffending( "userAgent" );
+			prc.topOffendingMethods    = dbLogger.getTopOffending( "httpMethod" );
+			prc.topOffendingUsers      = dbLogger.getTopOffending( "userId" );
+			prc.logs                   = dbLogger.getLatest(
+				top      : 50,
+				action   : rc.action ?: "",
+				blockType: rc.blockType ?: "",
+				userId   : rc.userId ?: ""
+			);
+		}
 		// Show the visualizer
 		event.setView( "home/index" );
 	}
