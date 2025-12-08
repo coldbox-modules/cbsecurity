@@ -48,10 +48,13 @@
         "format:watch":"cfformat watch handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc ./.cfformat.json",
         "format:check":"cfformat check handlers/,interceptors/,models/,test-harness/tests/specs,ModuleConfig.cfc",
         "install:dependencies":"install --force && cd test-harness && install --force",
+        "start:boxlang":"server start serverConfigFile=server-boxlang-cfml@1.json",
         "start:lucee":"server start serverConfigFile=server-lucee@5.json",
         "start:2023":"server start serverConfigFile=server-adobe@2023.json",
+        "stop:boxlang":"server stop serverConfigFile=server-boxlang-cfml@1.json",
         "stop:lucee":"server stop serverConfigFile=server-lucee@5.json",
         "stop:2023":"server stop serverConfigFile=server-adobe@2023.json",
+        "logs:boxlang":"server log serverConfigFile=server-boxlang-cfml@1.json --follow",
         "logs:lucee":"server log serverConfigFile=server-lucee@5.json --follow",
         "logs:2023":"server log serverConfigFile=server-adobe@2023.json --follow"
     },
