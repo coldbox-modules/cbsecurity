@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.0] - 2025-12-08
+
 ### Security
 
 - **CRITICAL**: Fixed open redirect vulnerability in `_securedURL` handling. The `saveSecuredUrl()` method now validates redirect URLs to ensure they belong to the same host as the current request, preventing attackers from crafting malicious URLs that redirect users to external sites after login. Added `isSafeRedirectUrl()` validation using `java.net.URI` to compare hosts.
@@ -16,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - BOX-164 Allow Visualizer to show settings when firewall.logging not enabled
--  JWT Handler improperly returns a value causing it to skip ColdBox's RestHandler's response formatting logic.   This results in the entire response object being returned rather than just invoking getDataPacket()
+- JWT Handler improperly returns a value causing it to skip ColdBox's RestHandler's response formatting logic.   This results in the entire response object being returned rather than just invoking getDataPacket()
 
 ## [3.5.0] - 2025-10-17
 
@@ -399,7 +401,8 @@ settings = {
 
 - Created first module version
 
-[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.5.0...HEAD
+[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.6.0...HEAD
+[3.6.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.3...v3.5.0
 [3.4.3]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.2...v3.4.3
 [3.4.2]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.1...v3.4.2
