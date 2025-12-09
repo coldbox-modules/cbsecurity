@@ -163,7 +163,7 @@ component accessors="true" singleton threadsafe {
 	/**
 	 * Logout a user and invalidate their access token
 	 *
-	 * @user        
+	 * @user
 	 * @customClaims
 	 */
 	function logout(){
@@ -817,7 +817,7 @@ component accessors="true" singleton threadsafe {
 		);
 
 		// If we found it, return it, else try other headers
-		if ( jwtToken.len() ) {
+		if ( !isNull( jwtToken ) && jwtToken.len() ) {
 			return jwtToken;
 		}
 
