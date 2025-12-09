@@ -13,5 +13,9 @@
         "route-visualizer":"*"
     },
     "installPaths":{
+        "coldbox":"coldbox/",
+        "BCrypt":"modules/BCrypt/",
+        "testbox":"testbox/",
+        "route-visualizer":"modules/route-visualizer/"
     }
 }

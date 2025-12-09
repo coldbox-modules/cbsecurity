@@ -164,7 +164,7 @@ component threadsafe singleton accessors="true" {
 		}
 
 		// cbcsrf settings incorporation
-		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, false );
+		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, true );
 		// DBLogger Configuration
 		variables.dbLogger.configure();
 		// Log it
@@ -443,7 +443,7 @@ component threadsafe singleton accessors="true" {
 	 * @message The error message to throw in the exception
 	 *
 	 * @throws NoUserLoggedIn
-	 * @throws NotAuthorized 
+	 * @throws NotAuthorized
 	 */
 	CBSecurity function secureSameUser( required user, message = variables.DEFAULT_ERROR_MESSAGE ){
 		if ( !sameUser( arguments.user ) ) {
