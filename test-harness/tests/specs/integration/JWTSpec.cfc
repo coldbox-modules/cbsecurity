@@ -188,11 +188,21 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					} );
 					given( "An activated endpoint and an invalid refresh token", function(){
 						then( "it should kick me out", function(){
+							var oUser  = variables.userService.retrieveUserByUsername( "test" );
+							var tokens = variables.jwtService.fromUser( oUser );
 							variables.jwtService.getSettings().jwt.enableRefreshEndpoint = true;
+
+							// Force invalidate the refresh token
+							variables.jwtService.invalidate( tokens.refresh_token );
+
 							var event = this.post(
 								"/cbsecurity/refreshtoken",
-								{ "x-refresh-token" : variables.invalid_token }
+								{ "x-refresh-token" : tokens.refresh_token }
 							);
+
+							var jsonResponse = deserializeJSON( event.getRenderedContent() );
+							expect( jsonResponse.messages[ 1 ] ).toBe( event.getResponse().getMessagesString() );
+
 							expect( event.getResponse().getStatusCode() ).toBe(
 								401,
 								event.getResponse().getMessagesString()
