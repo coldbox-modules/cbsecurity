@@ -14,13 +14,7 @@ component extends="coldbox.system.RestHandler" {
 	function refreshToken( event, rc, prc ){
 		// If endpoint not enabled, just 404 it
 		if ( !variables.jwtService.getSettings().jwt.enableRefreshEndpoint ) {
-			event
-				.getResponse()
-				.setErrorMessage(
-					"Refresh Token Endpoint Disabled",
-					404,
-					"Disabled"
-				);
+			event.getResponse().setErrorMessage( "Refresh Token Endpoint Disabled", 404 );
 			return;
 		}
 
@@ -33,31 +27,20 @@ component extends="coldbox.system.RestHandler" {
 				.setData( prc.newTokens )
 				.addMessage( "Tokens refreshed! The passed in refresh token has been invalidated" );
 		} catch ( RefreshTokensNotActive e ) {
-			event.getResponse().setErrorMessage( "Refresh Tokens Not Active", 404, "Disabled" );
+			event.getResponse().setErrorMessage( "Refresh Tokens Not Active", 404 );
 		} catch ( TokenNotFoundException e ) {
 			event
 				.getResponse()
 				.setErrorMessage(
 					"The refresh token was not passed via the header or the rc. Cannot refresh the unrefreshable!",
-					400,
-					"Missing refresh token"
+					400
 				);
 		} catch ( TokenInvalidException e ) {
-			event
-				.getResponse()
-				.setErrorMessage(
-					"Invalid Token - #e.message#",
-					401,
-					"Invalid Token"
-				);
+			event.getResponse().setErrorMessage( "Invalid Token", 401 );
 		} catch ( TokenExpiredException e ) {
-			event
-				.getResponse()
-				.setErrorMessage(
-					"Token Expired - #e.message#",
-					400,
-					"Token Expired"
-				);
+			event.getResponse().setErrorMessage( "Token Expired", 400 );
+		} catch ( TokenRejectionException e ) {
+			event.getResponse().setErrorMessage( "Invalid Token", 401 );
 		}
 	}
 
