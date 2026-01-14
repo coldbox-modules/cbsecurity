@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow for sub-modules to load AFTER cbsecurity loads.
 - Make sure the jwt toke is not null when doing discovery in the JwtService.
 
+### Changed
+
+- Increased VARCHAR field sizes in `DBLogger` table schema to accommodate longer URLs and user agent strings. Fields `host`, `path`, `queryString`, `referer`, and `userAgent` now use VARCHAR(1024) to prevent truncation of data.
+
 ## [3.6.0] - 2025-12-08
 
 ### Security
