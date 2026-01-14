@@ -155,18 +155,33 @@ component accessors="true" singleton threadsafe {
 					cfsqltype : "varchar",
 					value     : "#variables.uuid.randomUUID().toString()#"
 				},
-				logDate     : { cfsqltype : "timestamp", value : now() },
-				action      : { cfsqltype : "varchar", value : arguments.action },
-				blockType   : { cfsqltype : "varchar", value : arguments.blockType },
-				ip          : { cfsqltype : "varchar", value : arguments.ip },
-				host        : { cfsqltype : "varchar", value : left( arguments.host, 1024 ) },
-				httpMethod  : { cfsqltype : "varchar", value : arguments.httpMethod },
-				path        : { cfsqltype : "varchar", value : left( arguments.path, 1024 ) },
-				queryString : { cfsqltype : "varchar", value : left( arguments.queryString, 1024 ) },
-				referer     : { cfsqltype : "varchar", value : left( arguments.referer, 1024 ) },
-				userAgent   : { cfsqltype : "varchar", value : left( arguments.userAgent, 1024 ) },
-				userId      : { cfsqltype : "varchar", value : arguments.userId },
-				rule        : {
+				logDate   : { cfsqltype : "timestamp", value : now() },
+				action    : { cfsqltype : "varchar", value : arguments.action },
+				blockType : { cfsqltype : "varchar", value : arguments.blockType },
+				ip        : { cfsqltype : "varchar", value : arguments.ip },
+				host      : {
+					cfsqltype : "varchar",
+					value     : left( arguments.host, 1024 )
+				},
+				httpMethod : { cfsqltype : "varchar", value : arguments.httpMethod },
+				path       : {
+					cfsqltype : "varchar",
+					value     : left( arguments.path, 1024 )
+				},
+				queryString : {
+					cfsqltype : "varchar",
+					value     : left( arguments.queryString, 1024 )
+				},
+				referer : {
+					cfsqltype : "varchar",
+					value     : left( arguments.referer, 1024 )
+				},
+				userAgent : {
+					cfsqltype : "varchar",
+					value     : left( arguments.userAgent, 1024 )
+				},
+				userId : { cfsqltype : "varchar", value : arguments.userId },
+				rule   : {
 					cfsqltype : "longvarchar",
 					value     : serializeJSON( arguments.rule )
 				}
