@@ -342,6 +342,39 @@ component extends="coldbox.system.testing.BaseInterceptorTest" interceptor="cbse
 					expect( result ).toBeTrue();
 				} );
 
+				it( "allows URLs with non-default ports when host matches", () => {
+					// Simulate getRealHost returning host with port (e.g., during dev)
+					mockSecurityService.$( "getRealHost", "127.0.0.1:61910" );
+
+					var result = security.isSafeRedirectUrl(
+						targetUrl = "http://127.0.0.1:61910/account",
+						event     = mockEvent
+					);
+					expect( result ).toBeTrue();
+				} );
+
+				it( "allows URLs with different ports when host matches", () => {
+					// getRealHost returns host with port
+					mockSecurityService.$( "getRealHost", "mysite.com:8080" );
+
+					// URL has a different port, but same host
+					var result = security.isSafeRedirectUrl(
+						targetUrl = "https://mysite.com:9000/account",
+						event     = mockEvent
+					);
+					expect( result ).toBeTrue();
+				} );
+
+				it( "blocks URLs with different hosts even with same port", () => {
+					mockSecurityService.$( "getRealHost", "mysite.com:8080" );
+
+					var result = security.isSafeRedirectUrl(
+						targetUrl = "https://malicious.com:8080/phishing",
+						event     = mockEvent
+					);
+					expect( result ).toBeFalse();
+				} );
+
 				it( "handles invalid URLs gracefully", () => {
 					var result = security.isSafeRedirectUrl( targetUrl = "not a valid url://", event = mockEvent );
 					expect( result ).toBeFalse();

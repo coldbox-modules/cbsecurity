@@ -827,7 +827,9 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 			}
 
 			// Get the current request's host for comparison
-			var currentHost = variables.cbSecurity.getRealHost();
+			// Normalize host: urlToValidate.getHost() does not include port
+			// Strip port from .getRealHost() for compare
+			var currentHost = listFirst( variables.cbSecurity.getRealHost(), ":" );
 
 			// Compare hosts (case-insensitive)
 			return compareNoCase( urlToValidate.getHost(), currentHost ) == 0;
