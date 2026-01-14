@@ -503,7 +503,7 @@
 					<tr>
 						<td>
 							<small class="text-muted">
-								#dateTimeFormat( prc.logs.logDate.toString(), "dd MMM, YYYY HH:mm:ss z" )#
+								#dateTimeFormat( prc.logs.logDate, "dd MMM, YYYY HH:mm:ss z" )#
 							</small>
 						</td>
 						<td>
