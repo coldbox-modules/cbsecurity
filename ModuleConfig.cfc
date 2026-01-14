@@ -18,14 +18,14 @@ component {
 	this.entryPoint        = "cbsecurity";
 	// Helpers
 	this.applicationHelper = [ "helpers/mixins.cfm" ];
-	// Dependencies
-	this.dependencies      = [ "cbauth", "jwtcfml", "cbcsrf" ];
+	// Dependencies that must be loaded first.
+	this.dependencies      = [];
 
 	/**
 	 * Module Config
 	 */
 	function configure(){
-		settings = {
+		variables.settings = {
 			/**
 			 * --------------------------------------------------------------------------
 			 * Authentication Services
@@ -114,7 +114,7 @@ component {
 		};
 
 		// Security Interceptions
-		interceptorSettings = {
+		variables.interceptorSettings = {
 			customInterceptionPoints : [
 				// Validator Events
 				"cbSecurity_onInvalidAuthentication",

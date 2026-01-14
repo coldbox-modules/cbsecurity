@@ -164,7 +164,7 @@ component threadsafe singleton accessors="true" {
 		}
 
 		// cbcsrf settings incorporation
-		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, false );
+		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, true );
 		// DBLogger Configuration
 		variables.dbLogger.configure();
 		// Log it
