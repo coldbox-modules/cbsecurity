@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-01-14
+
 ### Changed
 
 - Increased VARCHAR field sizes in `DBLogger` table schema to accommodate longer URLs and user agent strings. Fields `host`, `path`, `queryString`, `referer`, and `userAgent` now use VARCHAR(1024) to prevent truncation of data.
@@ -420,7 +422,8 @@ settings = {
 
 - Created first module version
 
-[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.6.0...HEAD
+[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.0...HEAD
+[3.7.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.3...v3.5.0
 [3.4.3]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.2...v3.4.3
