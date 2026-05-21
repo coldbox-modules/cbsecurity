@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **CRITICAL**: Fixed `JwtService.toEpoch()` and `fromEpoch()` producing incorrect epoch seconds on non-UTC servers. The ISO-8601 baseline string combined with `dateConvert("utc2local", ...)` caused a double timezone shift. Now uses `parseDateTime("1970-01-01T00:00:00Z")` directly, producing correct JWT `iat`/`exp` claims on any server timezone. (Affects versions 3.5.0–3.7.0)
+
 ## [3.7.0] - 2026-01-14
 
 ### Changed

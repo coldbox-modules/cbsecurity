@@ -37,11 +37,11 @@ component {
 	}
 
 	function toEpoch( required target ){
-		return dateDiff( "s", dateConvert( "utc2local", "1970-01-01T00:00:00Z" ), arguments.target );
+		return dateDiff( "s", parseDateTime( "1970-01-01T00:00:00Z" ), arguments.target );
 	}
 
 	function fromEpoch( required target ){
-		return dateAdd( "s", arguments.target, dateConvert( "utc2local", "1970-01-01T00:00:00Z" ) );
+		return dateAdd( "s", arguments.target, parseDateTime( "1970-01-01T00:00:00Z" ) );
 	}
 
 }
