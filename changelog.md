@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.1] - 2026-05-21
+
 ### Fixed
 
 - **CRITICAL**: Fixed `JwtService.toEpoch()` and `fromEpoch()` producing incorrect epoch seconds on non-UTC servers. The ISO-8601 baseline string combined with `dateConvert("utc2local", ...)` caused a double timezone shift. Now uses `parseDateTime("1970-01-01T00:00:00Z")` directly, producing correct JWT `iat`/`exp` claims on any server timezone. (Affects versions 3.5.0–3.7.0)
@@ -426,7 +428,8 @@ settings = {
 
 - Created first module version
 
-[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.0...HEAD
+[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.1...HEAD
+[3.7.1]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.0...v3.7.1
 [3.7.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.4.3...v3.5.0
