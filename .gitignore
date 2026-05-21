@@ -20,3 +20,6 @@ modules/**
 
 # log files
 logs/**
+
+# AI
+.agents/skills/**

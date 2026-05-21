@@ -652,7 +652,7 @@ component accessors="true" singleton threadsafe {
 	function toEpoch( required target ){
 		return dateDiff(
 			"s",
-			dateConvert( "utc2local", "1970-01-01T00:00:00Z" ),
+			parseDateTime( "1970-01-01T00:00:00Z" ),
 			arguments.target
 		);
 	}
@@ -665,8 +665,8 @@ component accessors="true" singleton threadsafe {
 	function fromEpoch( required target ){
 		return dateAdd(
 			"s",
-			arguments.target, // should be in utc
-			dateConvert( "utc2local", "1970-01-01T00:00:00Z" )
+			arguments.target,
+			parseDateTime( "1970-01-01T00:00:00Z" )
 		);
 	}
 
