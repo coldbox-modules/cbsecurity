@@ -449,8 +449,14 @@ component accessors="true" singleton threadsafe {
 				];
 
 				indexColumns.each( ( key ) => {
+					var indexDefinition = "#key#";
+					// For MySQL, limit VARCHAR(1024) index prefix to avoid exceeding 3072 byte key limit
+					var longVarcharCols = [ "userAgent", "host", "path", "referer" ];
+					if ( getDatabaseVendor() == "MySQL" && longVarcharCols.find( key ) > 0 ) {
+						indexDefinition = "#key#(255)";
+					}
 					queryExecute(
-						"CREATE INDEX idx_cbsecurity_#key# ON #getTable()# (#key#)",
+						"CREATE INDEX idx_cbsecurity_#key# ON #getTable()# (#indexDefinition#)",
 						{},
 						{ datasource : variables.settings.firewall.logs.dsn }
 					);
