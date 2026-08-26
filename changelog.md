@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Fixed
+
+- Updates for MySQL indexes on version 8+ and index keys to avoid max key length issues with long VARCHAR fields. The `DBLogger` model now creates indexes with a 255 character prefix for `userAgent`, `host`, `path`, and `referer` fields when using MySQL to prevent exceeding the 3072 byte key limit.
+
 ## [3.7.1] - 2026-05-21
 
 ### Fixed

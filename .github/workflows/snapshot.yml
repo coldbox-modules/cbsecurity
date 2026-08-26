@@ -30,7 +30,7 @@ jobs:
       contents: write
       checks: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Auto-format
         uses: Ortus-Solutions/commandbox-action@v1.0.2
