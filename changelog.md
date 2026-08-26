@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.2] - 2026-08-26
+
 ### 🐛 Fixed
 
 - Updates for MySQL indexes on version 8+ and index keys to avoid max key length issues with long VARCHAR fields. The `DBLogger` model now creates indexes with a 255 character prefix for `userAgent`, `host`, `path`, and `referer` fields when using MySQL to prevent exceeding the 3072 byte key limit.
@@ -432,7 +434,8 @@ settings = {
 
 - Created first module version
 
-[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.1...HEAD
+[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.2...HEAD
+[3.7.2]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.1...v3.7.2
 [3.7.1]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.0...v3.7.1
 [3.7.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.5.0...v3.6.0
