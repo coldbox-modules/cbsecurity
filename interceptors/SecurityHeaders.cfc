@@ -250,7 +250,7 @@ component extends="coldbox.system.Interceptor" {
 		}
 
 		if ( variables.settings.securityHeaders.hsts.enabled ) {
-			var headerValue = "max-age: #variables.settings.securityHeaders.hsts[ "max-age" ]#;";
+			var headerValue = "max-age=#variables.settings.securityHeaders.hsts[ "max-age" ]#;";
 			if ( variables.settings.securityHeaders.hsts.includeSubDomains ) {
 				headerValue &= " includeSubDomains";
 			}
