@@ -41,6 +41,30 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				cbauth.logout();
 			} );
 
+			it( "registers the authentication singleton with thread-safe publication", function(){
+				expect(
+					getWireBox()
+						.getBinder()
+						.getMapping( "authenticationService@cbauth" )
+						.getThreadSafe()
+				).toBeTrue();
+			} );
+
+			it( "can log in and out through the cbauth provider", function(){
+				var security = getInstance( "CBSecurity@cbsecurity" );
+				var user     = getInstance( "User" ).setId( "cbauth-compatibility" );
+				try {
+					expect( security.isLoggedIn() ).toBeFalse();
+					cbauth.login( user );
+					expect( security.isLoggedIn() ).toBeTrue();
+					expect( security.getUser().getId() ).toBe( user.getId() );
+					cbauth.logout();
+					expect( security.isLoggedIn() ).toBeFalse();
+				} finally {
+					cbauth.logout();
+				}
+			} );
+
 			it( "can retrieve user,auth and mixin services", function(){
 				var e = get( "/main/cbsecuremixin" );
 				expect( e.getRenderedContent() ).toBeJSON();
