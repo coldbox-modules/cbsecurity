@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Upgraded `cbauth` to `^7.0.0` to support thread-safe authentication startup.
+
+### Fixed
+
+- Corrected the `Strict-Transport-Security` header formatting by removing the extra `": "` in the rendered header value.
+
 ## [3.7.2] - 2026-08-26
 
 ### 🐛 Fixed
