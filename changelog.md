@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.8.0] - 2026-09-21
-
 ### Changed
 
 - Upgraded `cbauth` to `^7.0.0` to support thread-safe authentication startup.
