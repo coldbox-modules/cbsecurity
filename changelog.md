@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Route middleware** for ColdBox 8.2+ route-scoped middleware (`route().middleware()`). Secure routes and groups right where they are declared, without firewall rules: `Authenticated@cbsecurity` (logged in), `Authorized@cbsecurity` (permissions and roles declared in the route `meta()`), `JwtAuth@cbsecurity` and `BasicAuth@cbsecurity`. They use the firewall's validators, invalid actions (redirect, override, block), interception points and logging. Group-level `meta` (one `group()` securing many routes) and `execute()` support in integration tests require ColdBox 8.3+.
+- `Security` interceptor `validateAccess()` and `processInvalidAccess()` public methods, used by the middleware and available to custom integrations.
+
+### Changed
+
+- Handler/action annotation security now shares `processInvalidAccess()` with route middleware. Behavior is unchanged.
+
 ## [3.8.0] - 2026-09-21
 
 ### Changed
