@@ -76,7 +76,9 @@ component extends="BaseMiddleware" {
 		if ( isSimpleValue( spec ) ) {
 			if ( len( spec ) ) {
 				if ( !structKeyExists( config, "limiters" ) || !structKeyExists( config.limiters, spec ) ) {
-					misconfigured( "The throttle limiter [#spec#] is not defined in [middleware.throttle.limiters]" );
+					misconfigured(
+						"The throttle limiter [#spec#] is not defined in [middleware.throttle.limiters]"
+					);
 				}
 				limit.name = spec;
 				spec       = config.limiters[ spec ];

@@ -714,7 +714,9 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					} );
 
 					it( "hasValidSignature() reflects the current request", function(){
-						expect( get( route = "/mw/hasSignature", renderResults = true ).getRenderedContent() ).toBe( "no" );
+						expect( get( route = "/mw/hasSignature", renderResults = true ).getRenderedContent() ).toBe(
+							"no"
+						);
 					} );
 				}
 			);

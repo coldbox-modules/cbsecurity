@@ -44,7 +44,9 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						var event = execute( route = "/mw/authenticated", renderResults = true );
 						expect( event.getValue( "relocate_event" ) ).toBe( "main.index" );
 						expect( event.getRenderedContent() ).notToBe( "mw ok" );
-						expect( event.getPrivateValue( "cbSecurity_validatorResults" ).type ).toBe( "authentication" );
+						expect( event.getPrivateValue( "cbSecurity_validatorResults" ).type ).toBe(
+							"authentication"
+						);
 					} );
 
 					it( "allows logged in users and stores them in the prc", function(){
@@ -107,7 +109,9 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 					it( "denies guests as an authentication failure", function(){
 						var event = execute( route = "/mw/authorized", renderResults = true );
 						expect( event.getValue( "relocate_event" ) ).toBe( "main.index" );
-						expect( event.getPrivateValue( "cbSecurity_validatorResults" ).type ).toBe( "authentication" );
+						expect( event.getPrivateValue( "cbSecurity_validatorResults" ).type ).toBe(
+							"authentication"
+						);
 					} );
 
 					it( "allows a user with one of the route permissions", function(){
@@ -120,13 +124,17 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 						cbauth.login( buildUser() );
 						var event = execute( route = "/mw/admin", renderResults = true );
 						expect( event.getValue( "relocate_event" ) ).toBe( "main.index" );
-						expect( event.getPrivateValue( "cbSecurity_validatorResults" ).type ).toBe( "authorization" );
+						expect( event.getPrivateValue( "cbSecurity_validatorResults" ).type ).toBe(
+							"authorization"
+						);
 						expect( event.getRenderedContent() ).notToBe( "mw ok" );
 					} );
 
 					it( "supports the all mode with an array of permissions", function(){
 						cbauth.login( buildUser() );
-						expect( execute( route = "/mw/all", renderResults = true ).getRenderedContent() ).toBe( "mw ok" );
+						expect( execute( route = "/mw/all", renderResults = true ).getRenderedContent() ).toBe(
+							"mw ok"
+						);
 						expect(
 							execute( route = "/mw/allMissing", renderResults = true ).getValue( "relocate_event" )
 						).toBe( "main.index" );
@@ -134,12 +142,16 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 
 					it( "supports the none mode", function(){
 						cbauth.login( buildUser() );
-						expect( execute( route = "/mw/none", renderResults = true ).getRenderedContent() ).toBe( "mw ok" );
+						expect( execute( route = "/mw/none", renderResults = true ).getRenderedContent() ).toBe(
+							"mw ok"
+						);
 					} );
 
 					it( "supports roles", function(){
 						cbauth.login( buildUser() );
-						expect( execute( route = "/mw/role", renderResults = true ).getRenderedContent() ).toBe( "mw ok" );
+						expect( execute( route = "/mw/role", renderResults = true ).getRenderedContent() ).toBe(
+							"mw ok"
+						);
 						expect(
 							execute( route = "/mw/roleMissing", renderResults = true ).getValue( "relocate_event" )
 						).toBe( "main.index" );
@@ -210,8 +222,12 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 				}
 
 				it( "resolves the ready made middleware with the right validators", function(){
-					expect( prepareMock( getInstance( "BasicAuth@cbsecurity" ) ).$getProperty( "validator" ) ).toBe( "BasicAuthValidator@cbsecurity" );
-					expect( prepareMock( getInstance( "JwtAuth@cbsecurity" ) ).$getProperty( "validator" ) ).toBe( "JwtAuthValidator@cbsecurity" );
+					expect( prepareMock( getInstance( "BasicAuth@cbsecurity" ) ).$getProperty( "validator" ) ).toBe(
+						"BasicAuthValidator@cbsecurity"
+					);
+					expect( prepareMock( getInstance( "JwtAuth@cbsecurity" ) ).$getProperty( "validator" ) ).toBe(
+						"JwtAuthValidator@cbsecurity"
+					);
 				} );
 
 				it( "rejects an invalid mode", function(){
