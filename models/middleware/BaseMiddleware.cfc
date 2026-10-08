@@ -25,7 +25,9 @@ component accessors="true" {
 	 * Get the middleware settings for one middleware, e.g. `apiKey`
 	 */
 	struct function getMiddlewareSettings( required string name ){
-		return variables.settings.middleware[ arguments.name ] ?: {};
+		return structKeyExists( variables.settings.middleware, arguments.name ) ? variables.settings.middleware[
+			arguments.name
+		] : {};
 	}
 
 	/**

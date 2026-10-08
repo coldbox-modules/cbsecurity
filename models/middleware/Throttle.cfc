@@ -62,7 +62,8 @@ component extends="BaseMiddleware" {
 	 */
 	private struct function resolveLimit( required event ){
 		var config = getMiddlewareSettings( "throttle" );
-		var spec   = getRouteMeta( arguments.event ).throttle ?: {};
+		var meta   = getRouteMeta( arguments.event );
+		var spec   = structKeyExists( meta, "throttle" ) ? meta.throttle : {};
 		var limit  = {
 			"maxAttempts"   : config.maxAttempts,
 			"decaySeconds"  : config.decaySeconds,
@@ -74,7 +75,7 @@ component extends="BaseMiddleware" {
 		// A string names a limiter
 		if ( isSimpleValue( spec ) ) {
 			if ( len( spec ) ) {
-				if ( !( config.limiters ?: {} ).keyExists( spec ) ) {
+				if ( !structKeyExists( config, "limiters" ) || !structKeyExists( config.limiters, spec ) ) {
 					misconfigured( "The throttle limiter [#spec#] is not defined in [middleware.throttle.limiters]" );
 				}
 				limit.name = spec;

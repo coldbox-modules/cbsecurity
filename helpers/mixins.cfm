@@ -22,24 +22,23 @@
 	 */
 	string function signedRoute( required string name, struct params = {}, numeric expiresIn = 0 ) {
 		var event     = getRequestContext();
-		var pattern   = getInstance( "router@coldbox" ).findRouteByName( arguments.name ).pattern ?: "";
+		var found     = getInstance( "router@coldbox" ).findRouteByName( arguments.name );
+		var pattern   = structKeyExists( found, "pattern" ) ? found.pattern : "";
 		var routeKeys = {};
-		var extras    = {};
+		var extras    = [];
 
-		arguments.params.each( function( key, value ){
-			if ( reFindNoCase( ":#key#(\W|$)", pattern ) ) {
-				routeKeys[ key ] = value;
+		// Params that match a route segment fill the pattern, the rest become query params
+		for ( var key in arguments.params ) {
+			if ( reFindNoCase( ":" & key & "(\W|$)", pattern ) ) {
+				routeKeys[ key ] = arguments.params[ key ];
 			} else {
-				extras[ key ] = value;
+				extras.append( encodeForURL( key ) & "=" & encodeForURL( arguments.params[ key ] ) );
 			}
-		} );
+		}
 
 		var link = event.route( arguments.name, routeKeys );
-		if ( !extras.isEmpty() ) {
-			link &= "?" & extras.reduce( function( result, key, value ){
-				result.append( encodeForURL( key ) & "=" & encodeForURL( value ) );
-				return result;
-			}, [] ).toList( "&" );
+		if ( extras.len() ) {
+			link &= "?" & extras.toList( "&" );
 		}
 		return getInstance( "UrlSigner@cbsecurity" ).sign( link, arguments.expiresIn );
 	}

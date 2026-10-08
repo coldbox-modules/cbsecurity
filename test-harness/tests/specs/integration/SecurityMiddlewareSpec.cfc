@@ -206,48 +206,54 @@ component extends="coldbox.system.testing.BaseTestCase" appMapping="/root" {
 			/************************** ApiKey **************************/
 
 			describe( "ApiKey@cbsecurity", function(){
-				it( "reads the key from the apiKey request key by default", function(){
-					var event = get(
-						route         = "/mw/apikey",
-						params        = { apiKey : "key-two" },
-						renderResults = true
-					);
-					expect( event.getRenderedContent() ).toBe( "mw ok" );
-				} );
+				describe(
+					title = "routes",
+					skip  = skipRouteSpecs,
+					body  = function(){
+						it( "reads the key from the apiKey request key by default", function(){
+							var event = get(
+								route         = "/mw/apikey",
+								params        = { apiKey : "key-two" },
+								renderResults = true
+							);
+							expect( event.getRenderedContent() ).toBe( "mw ok" );
+						} );
 
-				it( "denies a missing key with a 401", function(){
-					var event = get( route = "/mw/apikey", renderResults = true );
-					expect( event.getRenderData().statusCode ).toBe( 401 );
-				} );
+						it( "denies a missing key with a 401", function(){
+							var event = get( route = "/mw/apikey", renderResults = true );
+							expect( event.getRenderData().statusCode ).toBe( 401 );
+						} );
 
-				it( "denies a wrong key with a 401", function(){
-					var event = get(
-						route         = "/mw/apikey",
-						params        = { apiKey : "key-three" },
-						renderResults = true
-					);
-					expect( event.getRenderData().statusCode ).toBe( 401 );
-				} );
+						it( "denies a wrong key with a 401", function(){
+							var event = get(
+								route         = "/mw/apikey",
+								params        = { apiKey : "key-three" },
+								renderResults = true
+							);
+							expect( event.getRenderData().statusCode ).toBe( 401 );
+						} );
 
-				it( "supports a custom request key from the route meta", function(){
-					var event = get(
-						route         = "/mw/apikey/custom",
-						params        = { token : "key-one" },
-						renderResults = true
-					);
-					expect( event.getRenderedContent() ).toBe( "mw ok" );
-				} );
+						it( "supports a custom request key from the route meta", function(){
+							var event = get(
+								route         = "/mw/apikey/custom",
+								params        = { token : "key-one" },
+								renderResults = true
+							);
+							expect( event.getRenderedContent() ).toBe( "mw ok" );
+						} );
 
-				it( "ignores the default request key when the route names another", function(){
-					var event = get( route = "/mw/apikey/custom", params = { apiKey : "key-one" } );
-					expect( event.getRenderData().statusCode ).toBe( 401 );
-				} );
+						it( "ignores the default request key when the route names another", function(){
+							var event = get( route = "/mw/apikey/custom", params = { apiKey : "key-one" } );
+							expect( event.getRenderData().statusCode ).toBe( 401 );
+						} );
 
-				it( "throws when no keys or validator are configured", function(){
-					expect( function(){
-						get( route = "/mw/apikey/unconfigured" );
-					} ).toThrow( "cbsecurity.MiddlewareMisconfigured" );
-				} );
+						it( "throws when no keys or validator are configured", function(){
+							expect( function(){
+								get( route = "/mw/apikey/unconfigured" );
+							} ).toThrow( "cbsecurity.MiddlewareMisconfigured" );
+						} );
+					}
+				);
 
 				describe( "headers", function(){
 					beforeEach( function(){
