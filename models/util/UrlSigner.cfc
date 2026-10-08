@@ -178,7 +178,7 @@ component accessors="true" singleton threadSafe {
 
 	private struct function getConfig(){
 		var config = variables.settings.signedUrls;
-		if ( !len( config.secret ?: "" ) ) {
+		if ( !structKeyExists( config, "secret" ) || !len( config.secret ) ) {
 			throw(
 				type    = "cbsecurity.SigningSecretMissing",
 				message = "Signed URLs need a secret. Set [signedUrls.secret] in your cbsecurity module settings, for example from the CBSECURITY_SIGNING_SECRET environment variable."

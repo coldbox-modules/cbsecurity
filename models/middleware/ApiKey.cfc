@@ -18,11 +18,10 @@ component extends="BaseMiddleware" {
 
 	boolean function preProcess( required event, rc, prc ){
 		var config    = getMiddlewareSettings( "apiKey" );
-		var routeMeta = getRouteMeta( arguments.event );
-		var header    = routeMeta.apiKeyHeader ?: config.header;
-		var param     = routeMeta.apiKeyParam ?: config.param;
-		var keys      = toArray( routeMeta.apiKeys ?: config.keys );
-		var validator = config.validator ?: "";
+		var header    = getMetaValue( arguments.event, "apiKeyHeader", config.header );
+		var param     = getMetaValue( arguments.event, "apiKeyParam", config.param );
+		var keys      = toArray( getMetaValue( arguments.event, "apiKeys", config.keys ) );
+		var validator = structKeyExists( config, "validator" ) ? config.validator : "";
 
 		if ( !keys.len() && !len( validator ) ) {
 			misconfigured(

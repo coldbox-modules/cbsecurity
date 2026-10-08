@@ -18,7 +18,7 @@ component extends="BaseMiddleware" {
 		}
 
 		var token = arguments.event.getValue( "csrf", arguments.event.getHTTPHeader( "x-csrf-token", "" ) );
-		var key   = getRouteMeta( arguments.event ).csrfKey ?: "default";
+		var key   = getMetaValue( arguments.event, "csrfKey", "default" );
 
 		if (
 			isSimpleValue( token ) && len( token ) && variables.wirebox

@@ -14,8 +14,7 @@
 component extends="BaseMiddleware" {
 
 	boolean function preProcess( required event, rc, prc ){
-		var routeMeta = getRouteMeta( arguments.event );
-		var denied    = toArray( routeMeta.denyIps ?: "" );
+		var denied = toArray( getMetaValue( arguments.event, "denyIps" ) );
 
 		if ( !denied.len() ) {
 			misconfigured( "DenyIPs requires the route meta key [denyIps]" );

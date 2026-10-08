@@ -22,6 +22,23 @@ component accessors="true" {
 	}
 
 	/**
+	 * Read one route metadata value, or a default when the key is not there. This is an explicit key check
+	 * on purpose: the elvis operator treats a false value as missing on some engines.
+	 *
+	 * @event        The request context
+	 * @key          The metadata key
+	 * @defaultValue The value to return when the key is not defined
+	 */
+	any function getMetaValue(
+		required event,
+		required string key,
+		any defaultValue = ""
+	){
+		var routeMeta = getRouteMeta( arguments.event );
+		return structKeyExists( routeMeta, arguments.key ) ? routeMeta[ arguments.key ] : arguments.defaultValue;
+	}
+
+	/**
 	 * Get the middleware settings for one middleware, e.g. `apiKey`
 	 */
 	struct function getMiddlewareSettings( required string name ){

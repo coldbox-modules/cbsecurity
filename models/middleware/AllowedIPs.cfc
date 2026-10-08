@@ -14,8 +14,7 @@
 component extends="BaseMiddleware" {
 
 	boolean function preProcess( required event, rc, prc ){
-		var routeMeta = getRouteMeta( arguments.event );
-		var allowed   = toArray( routeMeta.allowedIps ?: "" );
+		var allowed = toArray( getMetaValue( arguments.event, "allowedIps" ) );
 
 		if ( !allowed.len() ) {
 			misconfigured( "AllowedIPs requires the route meta key [allowedIps]" );

@@ -19,10 +19,13 @@
 component extends="BaseMiddleware" {
 
 	boolean function preProcess( required event, rc, prc ){
-		var config    = getMiddlewareSettings( "honeypot" );
-		var routeMeta = getRouteMeta( arguments.event );
-		var field     = routeMeta.honeypotField ?: config.field;
-		var silent    = routeMeta.honeypotSilent ?: config.silent;
+		var config = getMiddlewareSettings( "honeypot" );
+		var field  = getMetaValue( arguments.event, "honeypotField", config.field );
+		var silent = getMetaValue(
+			arguments.event,
+			"honeypotSilent",
+			config.silent
+		);
 
 		var value = arguments.event.getValue( field, "" );
 		if ( !isSimpleValue( value ) || !len( trim( value ) ) ) {
