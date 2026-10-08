@@ -64,6 +64,12 @@
 			// CB Security
 			cbSecurity : {
 
+				signedUrls : { secret : "harness-signing-secret" },
+
+				middleware : {
+					throttle : { limiters : { strict : { maxAttempts : 2, decaySeconds : 60 } } }
+				},
+
 				basicAuth : {
 					users : {
 						"lmajano" : { password : 'test', permissions : "", roles : "admin" },
