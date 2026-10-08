@@ -117,7 +117,36 @@ component threadsafe singleton accessors="true" {
 			"securityRule" : {}
 		},
 		securityHeaders : { "enabled" : true },
-		securityModules : {}
+		securityModules : {},
+		middleware      : {
+			// Trusted proxies (IPs or CIDR ranges). Forwarded headers are only honored when the request comes from one of these.
+			"trustedProxies" : [],
+			// Redirect GET and HEAD requests to HTTPS. Other methods are always denied.
+			"ensureHttps"    : { "redirect" : true },
+			// Where to look for the API key, which keys are valid and, optionally, a WireBox ID of a validator with isValidKey( key, event )
+			"apiKey"         : {
+				"header"    : "x-api-key",
+				"param"     : "apiKey",
+				"keys"      : [],
+				"validator" : ""
+			},
+			// The form field that bots fill in and humans do not. Silent mode answers 200 so bots think they succeeded.
+			"honeypot" : { "field" : "website_url", "silent" : true },
+			// Rate limiting defaults and named limiters
+			"throttle" : {
+				"maxAttempts"   : 60,
+				"decaySeconds"  : 60,
+				"cacheProvider" : "default",
+				"limiters"      : {}
+			}
+		},
+		signedUrls : {
+			// The secret used to sign URLs. Required to use signed URLs.
+			"secret"         : "",
+			// The name of the query params added to a signed URL
+			"signatureParam" : "signature",
+			"expiresParam"   : "expires"
+		}
 	};
 
 	/**
@@ -141,6 +170,11 @@ component threadsafe singleton accessors="true" {
 		if ( isStruct( variables.settings.firewall.logs ) ) {
 			variables.settings.firewall.logs.append( variables.DEFAULT_SETTINGS.firewall.logs, false );
 		}
+		variables.DEFAULT_SETTINGS.middleware.each( function( key, value ){
+			if ( isStruct( value ) && isStruct( variables.settings.middleware[ key ] ?: "" ) ) {
+				variables.settings.middleware[ key ].append( value, false );
+			}
+		} );
 
 		// Try to discover user service default for cbauth
 		if (

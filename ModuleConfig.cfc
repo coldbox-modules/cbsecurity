@@ -101,6 +101,42 @@ component {
 			securityHeaders : { "enabled" : true },
 			/**
 			 * --------------------------------------------------------------------------
+			 * Route Middleware
+			 * --------------------------------------------------------------------------
+			 * Defaults for the route middleware: EnsureHttps, AllowedIPs, DenyIPs, ApiKey, Honeypot, VerifyCsrf and Throttle.
+			 * Every value can be overridden per route using `.meta()`. See the docs for the meta keys.
+			 */
+			middleware : {
+				// Trusted proxies (IPs or CIDR ranges). Forwarded headers are only honored from these.
+				"trustedProxies" : [],
+				"ensureHttps"    : { "redirect" : true },
+				"apiKey"         : {
+					"header"    : "x-api-key",
+					"param"     : "apiKey",
+					"keys"      : [],
+					"validator" : ""
+				},
+				"honeypot" : { "field" : "website_url", "silent" : true },
+				"throttle" : {
+					"maxAttempts"   : 60,
+					"decaySeconds"  : 60,
+					"cacheProvider" : "default",
+					"limiters"      : {}
+				}
+			},
+			/**
+			 * --------------------------------------------------------------------------
+			 * Signed URLs
+			 * --------------------------------------------------------------------------
+			 * Used by `signedUrl()`, `signedRoute()` and the `Signed@cbsecurity` middleware. The secret is required.
+			 */
+			signedUrls : {
+				"secret"         : getSystemSetting( "CBSECURITY_SIGNING_SECRET", "" ),
+				"signatureParam" : "signature",
+				"expiresParam"   : "expires"
+			},
+			/**
+			 * --------------------------------------------------------------------------
 			 * Json Web Tokens Settings
 			 * --------------------------------------------------------------------------
 			 * Here you can configure the JWT services for operation and storage.  In order for your firewall
