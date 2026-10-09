@@ -204,16 +204,11 @@ component threadsafe singleton accessors="true" {
 		}
 
 		// cbcsrf settings incorporation. Precedence, highest first:
-		// 1. Settings explicitly set in the cbcsrf module settings
-		// 2. Settings explicitly set in cbsecurity.csrf
-		// 3. The defaults, which are the same in both modules
+		// 1. Settings explicitly set in cbsecurity.csrf
+		// 2. Settings of the cbcsrf module (its own overrides or its defaults)
 		var cbcsrfSettings = variables.moduleSettings.cbcsrf.settings;
 		cbcsrfSettings.append(
-			resolveCsrfSettings(
-				cbsecurityCsrf = explicitCsrf,
-				cbcsrfSettings = cbcsrfSettings,
-				cbcsrfExplicit = getExplicitCbcsrfKeys()
-			),
+			resolveCsrfSettings( cbsecurityCsrf = explicitCsrf, cbcsrfSettings = cbcsrfSettings ),
 			true
 		);
 		// Make cbsecurity.csrf show the values that are really in effect
@@ -229,69 +224,19 @@ component threadsafe singleton accessors="true" {
 	}
 
 	/**
-	 * Work out the settings for the cbcsrf module. The cbcsrf module settings win when the user set them
-	 * explicitly, then the keys the user set in cbsecurity.csrf, then the defaults.
-	 *
-	 * A cbcsrf key counts as set by the user when it is in the module settings of the app configuration, or when
-	 * its current value differs from the default, which also covers a `config/modules/cbcsrf.cfc` override.
+	 * Work out the settings for the cbcsrf module. The keys the user explicitly set in cbsecurity.csrf win, every
+	 * other key keeps the value the cbcsrf module already has, so its own overrides are never replaced by
+	 * cbsecurity defaults.
 	 *
 	 * @cbsecurityCsrf The keys the user explicitly set in cbsecurity.csrf
 	 * @cbcsrfSettings The current settings of the cbcsrf module
-	 * @cbcsrfExplicit The cbcsrf keys the user set in the module settings of the app configuration
 	 *
 	 * @return The cbcsrf settings to use
 	 */
-	struct function resolveCsrfSettings(
-		required struct cbsecurityCsrf,
-		required struct cbcsrfSettings,
-		array cbcsrfExplicit = []
-	){
+	struct function resolveCsrfSettings( required struct cbsecurityCsrf, required struct cbcsrfSettings ){
 		var resolved = duplicate( arguments.cbcsrfSettings );
-
-		for ( var key in arguments.cbsecurityCsrf ) {
-			// The user configured this key on the cbcsrf module itself, so it wins
-			if ( arrayFindNoCase( arguments.cbcsrfExplicit, key ) ) {
-				continue;
-			}
-			// The value is not the default, so someone overrode it on the cbcsrf module, so it wins
-			if (
-				structKeyExists( arguments.cbcsrfSettings, key ) &&
-				structKeyExists( variables.DEFAULT_SETTINGS.csrf, key ) &&
-				!sameValue( arguments.cbcsrfSettings[ key ], variables.DEFAULT_SETTINGS.csrf[ key ] )
-			) {
-				continue;
-			}
-			resolved[ key ] = arguments.cbsecurityCsrf[ key ];
-		}
-
+		resolved.append( arguments.cbsecurityCsrf, true );
 		return resolved;
-	}
-
-	/**
-	 * The keys the user explicitly set for the cbcsrf module in the moduleSettings of the app configuration.
-	 * Returns an empty array if they cannot be read.
-	 */
-	private array function getExplicitCbcsrfKeys(){
-		try {
-			var appSettings    = variables.wirebox.getInstance( dsl = "coldbox" ).getConfigSettings();
-			var moduleSettings = appSettings.coldBoxConfig.getPropertyMixin( "moduleSettings", "variables", {} );
-			if ( structKeyExists( moduleSettings, "cbcsrf" ) && isStruct( moduleSettings.cbcsrf ) ) {
-				return structKeyArray( moduleSettings.cbcsrf );
-			}
-		} catch ( any e ) {
-			log.warn( "Could not read the cbcsrf module settings from the app configuration: #e.message#" );
-		}
-		return [];
-	}
-
-	/**
-	 * Compare two setting values, simple or complex
-	 */
-	private boolean function sameValue( required any a, required any b ){
-		if ( isSimpleValue( arguments.a ) && isSimpleValue( arguments.b ) ) {
-			return compare( arguments.a, arguments.b ) == 0;
-		}
-		return serializeJSON( arguments.a ) == serializeJSON( arguments.b );
 	}
 
 	/**
