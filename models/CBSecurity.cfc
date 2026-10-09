@@ -157,6 +157,12 @@ component threadsafe singleton accessors="true" {
 	}
 
 	function onDIComplete(){
+		// What the user explicitly set in cbsecurity.csrf, captured before the defaults fill the gaps
+		var explicitCsrf = {};
+		if ( structKeyExists( variables.settings, "csrf" ) && isStruct( variables.settings.csrf ) ) {
+			explicitCsrf = duplicate( variables.settings.csrf );
+		}
+
 		// Default level-1 settings
 		variables.settings.append( variables.DEFAULT_SETTINGS, false );
 		// Default level-2 settings
@@ -197,12 +203,40 @@ component threadsafe singleton accessors="true" {
 			log.info( "+ Basic Auth Validator Detected -> User Service set to BasicAuthUserService" );
 		}
 
-		// cbcsrf settings incorporation
-		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, true );
+		// cbcsrf settings incorporation. Precedence, highest first:
+		// 1. Settings explicitly set in cbsecurity.csrf
+		// 2. Settings of the cbcsrf module (its own overrides or its defaults)
+		var cbcsrfSettings = variables.moduleSettings.cbcsrf.settings;
+		cbcsrfSettings.append(
+			resolveCsrfSettings( cbsecurityCsrf = explicitCsrf, cbcsrfSettings = cbcsrfSettings ),
+			true
+		);
+		// Make cbsecurity.csrf show the values that are really in effect
+		for ( var csrfKey in variables.DEFAULT_SETTINGS.csrf ) {
+			if ( structKeyExists( cbcsrfSettings, csrfKey ) ) {
+				variables.settings.csrf[ csrfKey ] = cbcsrfSettings[ csrfKey ];
+			}
+		}
 		// DBLogger Configuration
 		variables.dbLogger.configure();
 		// Log it
 		log.info( "√ CBSecurity Services started and configured." );
+	}
+
+	/**
+	 * Work out the settings for the cbcsrf module. The keys the user explicitly set in cbsecurity.csrf win, every
+	 * other key keeps the value the cbcsrf module already has, so its own overrides are never replaced by
+	 * cbsecurity defaults.
+	 *
+	 * @cbsecurityCsrf The keys the user explicitly set in cbsecurity.csrf
+	 * @cbcsrfSettings The current settings of the cbcsrf module
+	 *
+	 * @return The cbcsrf settings to use
+	 */
+	struct function resolveCsrfSettings( required struct cbsecurityCsrf, required struct cbcsrfSettings ){
+		var resolved = duplicate( arguments.cbcsrfSettings );
+		resolved.append( arguments.cbsecurityCsrf, true );
+		return resolved;
 	}
 
 	/**

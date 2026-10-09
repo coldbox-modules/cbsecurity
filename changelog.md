@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Handler/action annotation security now shares `processInvalidAccess()` with route middleware. Behavior is unchanged.
 
+### Fixed
+
+- Settings you set on the `cbcsrf` module itself were silently overwritten by the `csrf` key of the cbsecurity settings, even when you never set that key, because cbsecurity copied its defaults over them. Now only the keys you explicitly set in `cbsecurity.csrf` are applied, and they win over the `cbcsrf` module settings. Every other key keeps the `cbcsrf` value. `cbsecurity.csrf` now shows the values that are in effect.
+
 ## [3.8.0] - 2026-09-21
 
 ### Changed
