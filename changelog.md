@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Route middleware** for ColdBox 8.2+ route-scoped middleware (`route().middleware()`). Secure routes and groups right where they are declared, without firewall rules: `Authenticated@cbsecurity` (logged in), `Authorized@cbsecurity` (permissions and roles declared in the route `meta()`), `JwtAuth@cbsecurity` and `BasicAuth@cbsecurity`. They use the firewall's validators, invalid actions (redirect, override, block), interception points and logging. Group-level `meta` (one `group()` securing many routes) and `execute()` support in integration tests require ColdBox 8.3+.
+- **More route middleware**, configured with route `meta()` and the new `middleware` module settings: `Throttle@cbsecurity` (named or inline limits on any CacheBox cache, default `default`, with `429` and `Retry-After`), `ApiKey@cbsecurity` (`x-api-key` header or `apiKey` request key by default, both configurable, optional validator service), `AllowedIPs@cbsecurity` and `DenyIPs@cbsecurity` (IPv4, IPv6, CIDR and `trustedProxies`), `EnsureHttps@cbsecurity`, `VerifyCsrf@cbsecurity` (uses cbcsrf) and `Honeypot@cbsecurity`.
+- `RateLimiter@cbsecurity`: a cache backed fixed window rate limiter (`hit()`, `tooManyAttempts()`, `attempts()`, `remaining()`, `availableIn()`, `clear()`) for use anywhere.
+- **Signed URLs**: `Signed@cbsecurity` middleware, `UrlSigner@cbsecurity` and the `signedRoute()`, `signedUrl()` and `hasValidSignature()` mixins. HMAC-SHA256 signatures with optional expiration, configured with the `signedUrls.secret` setting.
+- `Security` interceptor `validateAccess()` and `processInvalidAccess()` public methods, used by the middleware and available to custom integrations.
+
+### Changed
+
+- Handler/action annotation security now shares `processInvalidAccess()` with route middleware. Behavior is unchanged.
+
+### Fixed
+
+- Settings you set on the `cbcsrf` module itself were silently overwritten by the `csrf` key of the cbsecurity settings, even when you never set that key, because cbsecurity copied its defaults over them. Now only the keys you explicitly set in `cbsecurity.csrf` are applied, and they win over the `cbcsrf` module settings. Every other key keeps the `cbcsrf` value. `cbsecurity.csrf` now shows the values that are in effect.
+
 ## [3.8.0] - 2026-09-21
 
 ### Changed

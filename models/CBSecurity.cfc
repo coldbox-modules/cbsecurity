@@ -117,7 +117,36 @@ component threadsafe singleton accessors="true" {
 			"securityRule" : {}
 		},
 		securityHeaders : { "enabled" : true },
-		securityModules : {}
+		securityModules : {},
+		middleware      : {
+			// Trusted proxies (IPs or CIDR ranges). Forwarded headers are only honored when the request comes from one of these.
+			"trustedProxies" : [],
+			// Redirect GET and HEAD requests to HTTPS. Other methods are always denied.
+			"ensureHttps"    : { "redirect" : true },
+			// Where to look for the API key, which keys are valid and, optionally, a WireBox ID of a validator with isValidKey( key, event )
+			"apiKey"         : {
+				"header"    : "x-api-key",
+				"param"     : "apiKey",
+				"keys"      : [],
+				"validator" : ""
+			},
+			// The form field that bots fill in and humans do not. Silent mode answers 200 so bots think they succeeded.
+			"honeypot" : { "field" : "website_url", "silent" : true },
+			// Rate limiting defaults and named limiters
+			"throttle" : {
+				"maxAttempts"   : 60,
+				"decaySeconds"  : 60,
+				"cacheProvider" : "default",
+				"limiters"      : {}
+			}
+		},
+		signedUrls : {
+			// The secret used to sign URLs. Required to use signed URLs.
+			"secret"         : "",
+			// The name of the query params added to a signed URL
+			"signatureParam" : "signature",
+			"expiresParam"   : "expires"
+		}
 	};
 
 	/**
@@ -128,6 +157,12 @@ component threadsafe singleton accessors="true" {
 	}
 
 	function onDIComplete(){
+		// What the user explicitly set in cbsecurity.csrf, captured before the defaults fill the gaps
+		var explicitCsrf = {};
+		if ( structKeyExists( variables.settings, "csrf" ) && isStruct( variables.settings.csrf ) ) {
+			explicitCsrf = duplicate( variables.settings.csrf );
+		}
+
 		// Default level-1 settings
 		variables.settings.append( variables.DEFAULT_SETTINGS, false );
 		// Default level-2 settings
@@ -141,6 +176,11 @@ component threadsafe singleton accessors="true" {
 		if ( isStruct( variables.settings.firewall.logs ) ) {
 			variables.settings.firewall.logs.append( variables.DEFAULT_SETTINGS.firewall.logs, false );
 		}
+		variables.DEFAULT_SETTINGS.middleware.each( function( key, value ){
+			if ( isStruct( value ) && isStruct( variables.settings.middleware[ key ] ?: "" ) ) {
+				variables.settings.middleware[ key ].append( value, false );
+			}
+		} );
 
 		// Try to discover user service default for cbauth
 		if (
@@ -163,12 +203,40 @@ component threadsafe singleton accessors="true" {
 			log.info( "+ Basic Auth Validator Detected -> User Service set to BasicAuthUserService" );
 		}
 
-		// cbcsrf settings incorporation
-		variables.moduleSettings.cbcsrf.settings.append( variables.settings.csrf, true );
+		// cbcsrf settings incorporation. Precedence, highest first:
+		// 1. Settings explicitly set in cbsecurity.csrf
+		// 2. Settings of the cbcsrf module (its own overrides or its defaults)
+		var cbcsrfSettings = variables.moduleSettings.cbcsrf.settings;
+		cbcsrfSettings.append(
+			resolveCsrfSettings( cbsecurityCsrf = explicitCsrf, cbcsrfSettings = cbcsrfSettings ),
+			true
+		);
+		// Make cbsecurity.csrf show the values that are really in effect
+		for ( var csrfKey in variables.DEFAULT_SETTINGS.csrf ) {
+			if ( structKeyExists( cbcsrfSettings, csrfKey ) ) {
+				variables.settings.csrf[ csrfKey ] = cbcsrfSettings[ csrfKey ];
+			}
+		}
 		// DBLogger Configuration
 		variables.dbLogger.configure();
 		// Log it
 		log.info( "√ CBSecurity Services started and configured." );
+	}
+
+	/**
+	 * Work out the settings for the cbcsrf module. The keys the user explicitly set in cbsecurity.csrf win, every
+	 * other key keeps the value the cbcsrf module already has, so its own overrides are never replaced by
+	 * cbsecurity defaults.
+	 *
+	 * @cbsecurityCsrf The keys the user explicitly set in cbsecurity.csrf
+	 * @cbcsrfSettings The current settings of the cbcsrf module
+	 *
+	 * @return The cbcsrf settings to use
+	 */
+	struct function resolveCsrfSettings( required struct cbsecurityCsrf, required struct cbcsrfSettings ){
+		var resolved = duplicate( arguments.cbcsrfSettings );
+		resolved.append( arguments.cbsecurityCsrf, true );
+		return resolved;
 	}
 
 	/**

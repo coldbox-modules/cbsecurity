@@ -372,10 +372,32 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		required validatorResults,
 		required type
 	){
+		return processInvalidAccess(
+			event            = arguments.event,
+			validatorResults = arguments.validatorResults,
+			source           = arguments.type
+		);
+	}
+
+	/**
+	 * Process an invalid access that was detected outside of the firewall rules: handler/action annotations
+	 * or route middleware. It logs, flashes the secured URL, announces the invalid authentication/authorization
+	 * interception point and executes the configured invalid actions (redirect, override or block), exactly like a
+	 * firewall rule would.
+	 *
+	 * @event            The request context
+	 * @validatorResults The validation results: { allow:boolean, type:authentication|authorization }
+	 * @source           Where the invalid access was detected: handler, action or middleware
+	 */
+	function processInvalidAccess(
+		required event,
+		required validatorResults,
+		string source = "middleware"
+	){
 		// Log Block
 		if ( log.canWarn() ) {
 			log.warn(
-				"Invalid #arguments.validatorResults.type# by User (#variables.cbSecurity.getRealIp()#), blocked access to event=#arguments.event.getCurrentEvent()# via annotation (#arguments.type#) security"
+				"Invalid #arguments.validatorResults.type# by User (#variables.cbSecurity.getRealIp()#), blocked access to event=#arguments.event.getCurrentEvent()# via #arguments.source# security"
 			);
 		}
 
@@ -385,10 +407,10 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		// Announce the block event
 		var iData = {
 			"ip"               : variables.cbSecurity.getRealIp(), // The offending IP
-			"rule"             : {}, // An empty rule, since it is by annotation security
+			"rule"             : {}, // An empty rule, since it is not by firewall rule security
 			"settings"         : getProperties(), // All the config settings, just in case
 			"validatorResults" : arguments.validatorResults,
-			"annotationType"   : arguments.type,
+			"annotationType"   : arguments.source,
 			"processActions"   : true // Boolean indicator if the invalid actions should process or not
 		};
 		announce( "cbSecurity_onInvalid#arguments.validatorResults.type#", iData );
@@ -576,6 +598,45 @@ component accessors="true" extends="coldbox.system.Interceptor" {
 		}
 
 		return variables.validator;
+	}
+
+	/**
+	 * Validate access for the current user using the firewall validator, or the validator you pass in.
+	 * This is what route middleware uses so it behaves exactly like a firewall rule or a secured annotation.
+	 *
+	 * @event       The request context
+	 * @permissions A list of permissions, any one of them satisfies the check
+	 * @roles       A list of roles, any one of them satisfies the check
+	 * @validator   An optional WireBox ID of a validator to use instead of the firewall's validator
+	 *
+	 * @return { allow:boolean, type:string(authentication|authorization), messages:string }
+	 */
+	struct function validateAccess(
+		required event,
+		string permissions = "",
+		string roles       = "",
+		string validator   = ""
+	){
+		var thisValidator = len( arguments.validator ) ? variables.wirebox.getInstance( arguments.validator ) : getValidator(
+			arguments.event
+		);
+
+		var results = thisValidator.ruleValidator(
+			rule: variables.rulesLoader
+				.getRuleTemplate()
+				.append( {
+					"permissions" : arguments.permissions,
+					"roles"       : arguments.roles
+				} ),
+			controller: variables.controller
+		);
+
+		// Verify type, else default to "authentication"
+		if ( !reFindNoCase( "(authentication|authorization)", results.type ) ) {
+			results.type = "authentication";
+		}
+
+		return results;
 	}
 
 	/********************************* PRIVATE ******************************/
