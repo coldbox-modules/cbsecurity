@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.0] - 2026-10-14
+
 ### Added
 
 - **Route middleware** for ColdBox 8.2+ route-scoped middleware (`route().middleware()`). Secure routes and groups right where they are declared, without firewall rules: `Authenticated@cbsecurity` (logged in), `Authorized@cbsecurity` (permissions and roles declared in the route `meta()`), `JwtAuth@cbsecurity` and `BasicAuth@cbsecurity`. They use the firewall's validators, invalid actions (redirect, override, block), interception points and logging. Group-level `meta` (one `group()` securing many routes) and `execute()` support in integration tests require ColdBox 8.3+.
@@ -460,7 +462,8 @@ settings = {
 
 - Created first module version
 
-[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.8.0...HEAD
+[unreleased]: https://github.com/coldbox-modules/cbsecurity/compare/v3.9.0...HEAD
+[3.9.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.8.0...v3.9.0
 [3.8.0]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.2...v3.8.0
 [3.7.2]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.1...v3.7.2
 [3.7.1]: https://github.com/coldbox-modules/cbsecurity/compare/v3.7.0...v3.7.1
